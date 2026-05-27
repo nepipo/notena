@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --app --no-src-dir --use-npm --eslint --turbopack --import-alias \"@/*\" --yes)"
+      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --app --no-src-dir --use-npm --eslint --turbopack --import-alias \"@/*\" --yes)",
+      "Bash(cp ~/Desktop/project-x/CLAUDE.md ~/project-x/CLAUDE.md)",
+      "Bash(cp ~/Desktop/project-x/SKILLS_UND_TOOLS.md ~/project-x/SKILLS_UND_TOOLS.md)"
     ]
   }
 }
