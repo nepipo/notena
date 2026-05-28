@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { AnimatedNumber } from "@/components/animated-number";
 
 const sparks = [40, 50, 45, 55, 60, 65, 70, 75, 72, 80, 85, 88];
 
@@ -27,7 +28,7 @@ export default function Home() {
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         {/* Hero — Schnitt */}
         <section
-          className="animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
+          className="lift animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
           style={{
             background: "var(--hero-grad)",
             borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
@@ -38,7 +39,6 @@ export default function Home() {
             className="pointer-events-none absolute -right-24 -top-28 size-80 rounded-full opacity-50"
             style={{
               background: "radial-gradient(circle, var(--brand) 0%, transparent 65%)",
-              animation: "drift 12s ease-in-out infinite",
             }}
           />
           <div className="relative z-[2]">
@@ -46,7 +46,9 @@ export default function Home() {
               Schnitt · 2. HJ 25/26
             </div>
             <div className="mt-3 flex items-end">
-              <span
+              <AnimatedNumber
+                value={10.2}
+                decimals={1}
                 className="font-display text-[120px] font-extrabold leading-[0.85] tracking-[-0.06em]"
                 style={{
                   background: "var(--num-grad)",
@@ -54,9 +56,7 @@ export default function Home() {
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
-              >
-                10,2
-              </span>
+              />
               <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/15</span>
             </div>
             <div className="mt-3 flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function Home() {
         <div className="grid gap-4">
           {/* Nächste Klausur */}
           <section
-            className="animate-fade-up relative overflow-hidden rounded-3xl border-2 p-6"
+            className="lift animate-fade-up relative overflow-hidden rounded-3xl border-2 p-6"
             style={{
               background:
                 "linear-gradient(135deg, color-mix(in srgb, var(--destructive) 22%, var(--surface-2)) 0%, color-mix(in srgb, var(--destructive) 10%, var(--surface-1)) 100%)",
@@ -113,7 +113,7 @@ export default function Home() {
 
           {/* Stat-Card */}
           <section
-            className="animate-fade-up rounded-3xl border border-border p-6"
+            className="lift animate-fade-up rounded-3xl border border-border p-6"
             style={{ background: "var(--card-grad)", animationDelay: "0.3s" }}
           >
             <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-text-dim">
