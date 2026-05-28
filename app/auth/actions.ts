@@ -93,6 +93,53 @@ export async function signInWithGoogle(): Promise<void> {
   }
 }
 
+export async function requestPasswordReset(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) {
+    return { error: "Bitte gib deine E-Mail ein." };
+  }
+
+  const supabase = await createClient();
+  const origin = getOrigin(await headers());
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/confirm?next=/auth/reset`,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  // Generische Erfolgsmeldung (verhindert, dass man rät, welche Mails existieren).
+  return {
+    success:
+      "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link zum Zurücksetzen geschickt.",
+  };
+}
+
+export async function updatePassword(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) {
+    return { error: "Das Passwort muss mindestens 8 Zeichen haben." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    return { error: "Link abgelaufen oder ungültig. Fordere einen neuen an." };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
