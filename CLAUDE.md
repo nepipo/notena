@@ -2,8 +2,14 @@
 
 *Diese Datei wird in jeden Claude-Code-Chat dieses Projekts geladen. Sie definiert die Marschrichtung.*
 
-**Stand:** 27.05.2026
+**Stand:** 28.05.2026
 **Arbeitstitel:** Project X (finaler Name kommt vor Launch)
+
+### Fortschritt
+- **Phase 0 (Setup):** ✅ Next.js 16 + TS + Tailwind v4, GitHub (`nepipo/project-x`), Vercel Auto-Deploy, Supabase Frankfurt (`rxmcexzlwocgfocyligd`), Theme (Azurblau/Indigo, Fonts, shadcn/ui), Showcase-Startseite.
+- **Phase 1 (Auth):** ✅ Supabase Auth — Email/Passwort-Login + Signup, geschütztes Dashboard, Proxy (Next.js 16 `proxy.ts`) mit `getClaims()`. Google-OAuth im Code vorbereitet (Provider-Config offen). Apple bewusst später (€99/Jahr).
+- **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Notenrechner-UI · DB-Schema anwenden.
+- **Live:** https://project-x-seven-tawny.vercel.app
 
 ---
 
@@ -52,13 +58,13 @@
 - **KI:** Claude API (Sonnet 4.6 für Briefing, Haiku 4.5 für Klassifikation)
 - **Sprache Code:** TypeScript strict
 - **Sprache UI:** Deutsch
-- **Theme:** Dark Mode default, Blue/Dark Accents (Coral/Indigo aus Mockup v4 als Inspiration)
+- **Theme:** Dark Mode default, Azurblau (#1da1ff) + Indigo Akzente (aus Mockup v4 abgeleitet)
 
 ---
 
 ## 4. Design-Prinzipien
 
-**Vibe:** Premium Performance / Future Founder. Schwarz mit kräftigen Akzenten in Coral + Indigo. Animationen lebendig (Glows, Driften, Counters, Particles). Soft & Flowing trotzdem.
+**Vibe:** Premium Performance / Future Founder. Schwarz mit kräftigen Akzenten in Azurblau (#1da1ff) + Indigo. Animationen lebendig aber ruhig (statischer Glow, Number-Counter, Hover-Lift, Stagger-Reveal — KEIN driftender Background, das nervt).
 
 **Layouts:** Mobile-first. Drei Form-Factor-Versionen:
 - Handy (≤ 480px) — Single-column stack
