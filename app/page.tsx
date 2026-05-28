@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AnimatedNumber } from "@/components/animated-number";
 
@@ -132,12 +133,21 @@ export default function Home() {
         className="animate-fade-up mt-8 flex flex-wrap items-center gap-3"
         style={{ animationDelay: "0.4s" }}
       >
-        <Button size="lg" className="font-display font-bold">
+        <Button
+          render={<Link href="/signup" />}
+          size="lg"
+          className="font-display font-bold"
+        >
           Los geht&apos;s
         </Button>
-        <span className="font-mono text-xs text-text-mute">
-          Theme-Showcase · Coral / Indigo · Dark Default
-        </span>
+        <Button
+          render={<Link href="/login" />}
+          variant="outline"
+          size="lg"
+          className="border-border bg-surface-2 font-display font-bold hover:bg-surface-3"
+        >
+          Anmelden
+        </Button>
       </div>
     </main>
   );
