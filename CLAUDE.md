@@ -2,13 +2,14 @@
 
 *Diese Datei wird in jeden Claude-Code-Chat dieses Projekts geladen. Sie definiert die Marschrichtung.*
 
-**Stand:** 28.05.2026
+**Stand:** 02.06.2026
 **Arbeitstitel:** Project X (finaler Name kommt vor Launch)
 
 ### Fortschritt
 - **Phase 0 (Setup):** ✅ Next.js 16 + TS + Tailwind v4, GitHub (`nepipo/project-x`), Vercel Auto-Deploy, Supabase Frankfurt (`rxmcexzlwocgfocyligd`), Theme (Azurblau/Indigo, Fonts, shadcn/ui), Showcase-Startseite.
 - **Phase 1 (Auth):** ✅ Supabase Auth — Email/Passwort-Login + Signup, geschütztes Dashboard, Proxy (Next.js 16 `proxy.ts`) mit `getClaims()`. Google-OAuth im Code vorbereitet (Provider-Config offen). Apple bewusst später (€99/Jahr).
-- **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Notenrechner-UI · DB-Schema anwenden.
+- **DB-Schema:** ✅ Angewendet auf Supabase (`0001_initial_schema`). 4 Tabellen mit RLS: `nutzer_profil`, `schule_fach`, `schule_note`, `schule_klausur`. Auto-Profil-Trigger `on_auth_user_created`. TS-Types in `lib/supabase/database.types.ts`. Hardening (`0002_harden_handle_new_user`): RPC-Zugriff auf den Trigger-Helper entzogen.
+- **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo).
 - **Live:** https://project-x-seven-tawny.vercel.app
 
 ---
