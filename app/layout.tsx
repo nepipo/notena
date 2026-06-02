@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Onest, JetBrains_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -42,7 +43,10 @@ export default function RootLayout({
       lang="de"
       className={`dark ${bricolage.variable} ${onest.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <Toaster theme="dark" position="top-center" richColors />
+      </body>
     </html>
   );
 }
