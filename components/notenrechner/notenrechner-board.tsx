@@ -44,7 +44,10 @@ export function NotenrechnerBoard({
   schuljahr: string;
 }) {
   const [faecher, setFaecher] = useState<Fach[]>(initialFaecher);
-  const [klausuren] = useState<KlausurRow[]>(initialKlausuren);
+  // Klausuren NICHT in useState einfrieren: nach addKlausur/removeKlausur ruft
+  // die KlausurSection router.refresh(), das frische Server-Props liefert.
+  // useState(initialProp) würde den Erstwert festhalten -> Liste aktualisiert nie.
+  const klausuren = initialKlausuren;
   const [neuesFach, setNeuesFach] = useState("");
   const [dialogFachId, setDialogFachId] = useState<string | null>(null);
   const [ansicht, setAnsicht] = useState<"halbjahr" | "jahr">("halbjahr");
