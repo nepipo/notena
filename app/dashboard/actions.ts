@@ -57,6 +57,8 @@ export async function addNote(
   fachId: string,
   punkte: number,
   kategorie: Kategorie,
+  bezeichnung?: string,
+  gewicht?: number,
 ): Promise<ActionResult> {
   if (!Number.isFinite(punkte) || punkte < 0 || punkte > 15) {
     return { ok: false, error: "Punkte muessen zwischen 0 und 15 liegen." };
@@ -69,6 +71,8 @@ export async function addNote(
       fach_id: fachId,
       punkte: Math.round(punkte),
       kategorie,
+      bezeichnung: bezeichnung?.trim() || null,
+      gewicht: gewicht ?? 1,
     });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
@@ -86,6 +90,109 @@ export async function removeNote(noteId: string): Promise<ActionResult> {
       .from("schule_note")
       .delete()
       .eq("id", noteId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function updateFach(
+  fachId: string,
+  updates: {
+    niveau?: string;
+    farbe?: string | null;
+    gewicht_klausur?: number;
+    gewicht_muendlich?: number;
+    fach_gewicht?: number;
+  },
+): Promise<ActionResult> {
+  try {
+    await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("schule_fach")
+      .update(updates)
+      .eq("id", fachId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function addKlausur(
+  titel: string,
+  datum: string,
+  fachId?: string,
+): Promise<ActionResult> {
+  const trimmed = titel.trim();
+  if (!trimmed) return { ok: false, error: "Bitte einen Titel eingeben." };
+  if (!datum) return { ok: false, error: "Bitte ein Datum angeben." };
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase.from("schule_klausur").insert({
+      user_id: userId,
+      titel: trimmed,
+      datum,
+      fach_id: fachId ?? null,
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function removeKlausur(klausurId: string): Promise<ActionResult> {
+  try {
+    await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("schule_klausur")
+      .delete()
+      .eq("id", klausurId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function updatePraeferenzen(
+  eingabeModus: "punkte" | "note",
+): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ eingabe_modus: eingabeModus })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    revalidatePath("/settings");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function completeOnboarding(
+  eingabeModus: "punkte" | "note",
+): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ onboarding_abgeschlossen: true, eingabe_modus: eingabeModus })
+      .eq("id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     return { ok: true };
