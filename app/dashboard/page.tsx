@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { NotenrechnerBoard } from "@/components/notenrechner/notenrechner-board";
 import {
   assembleFaecher,
-  assembleKlausuren,
   type FachRow,
   type NoteRow,
   type KlausurRow,
@@ -41,6 +40,17 @@ export default async function DashboardPage() {
     .eq("halbjahr", halbjahr)
     .order("created_at", { ascending: true });
 
+  // Verfügbare Halbjahre (distinct) über ALLE Fächer des Users
+  const { data: hjRows } = await supabase.from("schule_fach").select("halbjahr");
+  const verfuegbareHalbjahre = Array.from(
+    new Set([
+      halbjahr,
+      ...(hjRows ?? [])
+        .map((r) => r.halbjahr)
+        .filter((h): h is string => !!h),
+    ]),
+  ).sort();
+
   const fachIds = (fachRows ?? []).map((f) => f.id);
   const { data: noteRows } = fachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
@@ -58,8 +68,7 @@ export default async function DashboardPage() {
     (fachRows ?? []) as FachRow[],
     (noteRows ?? []) as NoteRow[],
   );
-  const klausurMap = assembleKlausuren((klausurRows ?? []) as KlausurRow[]);
-  const klausuren = Array.from(klausurMap.values());
+  const klausuren = (klausurRows ?? []) as KlausurRow[];
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
@@ -98,6 +107,7 @@ export default async function DashboardPage() {
         initialFaecher={faecher}
         halbjahr={halbjahr}
         initialKlausuren={klausuren}
+        verfuegbareHalbjahre={verfuegbareHalbjahre}
       />
     </main>
   );

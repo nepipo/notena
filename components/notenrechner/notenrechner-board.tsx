@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FachCard } from "./fach-card";
 import { FachDialog } from "./fach-dialog";
+import { HalbjahrSwitcher } from "./halbjahr-switcher";
+import { KlausurSection } from "./klausur-section";
 import { addFach, removeNote, addNote } from "@/app/dashboard/actions";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import type { Fach, Kategorie } from "@/lib/grades/types";
-import type { KlausurRow } from "@/lib/grades/db";
+import { assembleKlausuren, type KlausurRow } from "@/lib/grades/db";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -26,10 +28,12 @@ export function NotenrechnerBoard({
   initialFaecher,
   halbjahr,
   initialKlausuren,
+  verfuegbareHalbjahre,
 }: {
   initialFaecher: Fach[];
   halbjahr: string;
   initialKlausuren: KlausurRow[];
+  verfuegbareHalbjahre: string[];
 }) {
   const [faecher, setFaecher] = useState<Fach[]>(initialFaecher);
   const [klausuren] = useState<KlausurRow[]>(initialKlausuren);
@@ -41,9 +45,7 @@ export function NotenrechnerBoard({
   const gesamtFarbe = schnittFarbe(gesamt);
   const dialogFach = faecher.find((f) => f.id === dialogFachId) ?? null;
 
-  const klausurByFach = new Map(
-    klausuren.filter((k) => k.fach_id).map((k) => [k.fach_id as string, k]),
-  );
+  const klausurByFach = assembleKlausuren(klausuren);
 
   function handleAddFach() {
     const name = neuesFach.trim();
@@ -121,6 +123,15 @@ export function NotenrechnerBoard({
 
   return (
     <>
+      {/* Halbjahr-Switcher */}
+      <div className="animate-fade-up mb-4">
+        <HalbjahrSwitcher
+          verfuegbareHalbjahre={verfuegbareHalbjahre}
+          aktuellesHj={halbjahr}
+          aktuelleFaecher={faecher}
+        />
+      </div>
+
       {/* Hero */}
       <section
         className="lift animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
@@ -190,6 +201,9 @@ export function NotenrechnerBoard({
           </Button>
         </section>
       </div>
+
+      {/* Klausuren & Termine */}
+      <KlausurSection faecher={faecher} klausuren={klausuren} />
 
       {/* Fach-Dialog */}
       {dialogFach && (

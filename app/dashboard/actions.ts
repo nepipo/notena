@@ -200,3 +200,65 @@ export async function completeOnboarding(
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }
 }
+
+export async function setHalbjahr(hj: string): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ aktuelles_halbjahr: hj })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export interface NeuesFachInput {
+  name: string;
+  niveau: string;
+  farbe: string | null;
+  gewicht_klausur: number;
+  gewicht_muendlich: number;
+  fach_gewicht: number;
+}
+
+export async function neuesHalbjahr(
+  neuesHj: string,
+  faecher: NeuesFachInput[],
+): Promise<ActionResult> {
+  if (!neuesHj.trim()) return { ok: false, error: "Halbjahr fehlt." };
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+
+    if (faecher.length > 0) {
+      const rows = faecher.map((f) => ({
+        user_id: userId,
+        name: f.name,
+        niveau: f.niveau,
+        farbe: f.farbe,
+        gewicht_klausur: f.gewicht_klausur,
+        gewicht_muendlich: f.gewicht_muendlich,
+        fach_gewicht: f.fach_gewicht,
+        halbjahr: neuesHj,
+      }));
+      const { error } = await supabase.from("schule_fach").insert(rows);
+      if (error) return { ok: false, error: error.message };
+    }
+
+    const { error: profilError } = await supabase
+      .from("nutzer_profil")
+      .update({ aktuelles_halbjahr: neuesHj })
+      .eq("id", userId);
+    if (profilError) return { ok: false, error: profilError.message };
+
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
