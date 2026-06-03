@@ -56,15 +56,6 @@ export default async function Home() {
           </Button>
         </div>
       </section>
-
-      {/* Demo-Link (ohne Anmeldung) */}
-      <Link
-        href="/demo/notenrechner"
-        className="animate-fade-up mt-6 font-mono text-xs text-text-mute underline-offset-4 hover:text-text-dim hover:underline"
-        style={{ animationDelay: "0.2s" }}
-      >
-        Erst ausprobieren? → Notenrechner-Demo ohne Anmeldung
-      </Link>
     </main>
   );
 }
