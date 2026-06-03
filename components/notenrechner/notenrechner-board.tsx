@@ -29,11 +29,13 @@ export function NotenrechnerBoard({
   halbjahr,
   initialKlausuren,
   verfuegbareHalbjahre,
+  vorherSchnitte,
 }: {
   initialFaecher: Fach[];
   halbjahr: string;
   initialKlausuren: KlausurRow[];
   verfuegbareHalbjahre: string[];
+  vorherSchnitte: Record<string, number>;
 }) {
   const [faecher, setFaecher] = useState<Fach[]>(initialFaecher);
   const [klausuren] = useState<KlausurRow[]>(initialKlausuren);
@@ -174,6 +176,7 @@ export function NotenrechnerBoard({
             fach={fach}
             index={i}
             naechsteKlausur={klausurByFach.get(fach.id) ?? null}
+            vorherSchnitt={vorherSchnitte[fach.name] ?? null}
             onAddNote={handleAddNote}
             onRemoveNote={handleRemoveNote}
             onOpenDialog={(id) => setDialogFachId(id)}

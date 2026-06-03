@@ -25,14 +25,24 @@ export function halbjahrLabel(hj: string): string {
   return `${p.nummer}. Halbjahr · ${p.startjahr}/${p.kurz}`;
 }
 
+/** Baut den Halbjahr-String aus Startjahr und Nummer (z.B. 2025, 2 -> "2025/26-2"). */
+export function baueHalbjahr(startjahr: number, nummer: 1 | 2): string {
+  const kurz = String((startjahr + 1) % 100).padStart(2, "0");
+  return `${startjahr}/${kurz}-${nummer}`;
+}
+
 /** Liefert das chronologisch nächste Halbjahr. HJ-1 -> HJ-2, HJ-2 -> HJ-1 des Folgejahres. */
 export function naechstesHalbjahr(hj: string): string {
   const p = parseHalbjahr(hj);
   if (!p) return hj;
-  if (p.nummer === 1) {
-    return `${p.startjahr}/${p.kurz}-2`;
-  }
-  const neuStart = p.startjahr + 1;
-  const neuKurz = String((neuStart + 1) % 100).padStart(2, "0");
-  return `${neuStart}/${neuKurz}-1`;
+  if (p.nummer === 1) return baueHalbjahr(p.startjahr, 2);
+  return baueHalbjahr(p.startjahr + 1, 1);
+}
+
+/** Liefert das chronologisch vorherige Halbjahr. HJ-2 -> HJ-1, HJ-1 -> HJ-2 des Vorjahres. */
+export function vorherigesHalbjahr(hj: string): string {
+  const p = parseHalbjahr(hj);
+  if (!p) return hj;
+  if (p.nummer === 2) return baueHalbjahr(p.startjahr, 1);
+  return baueHalbjahr(p.startjahr - 1, 2);
 }

@@ -35,6 +35,7 @@ export function FachCard({
   fach,
   index,
   naechsteKlausur,
+  vorherSchnitt,
   onAddNote,
   onRemoveNote,
   onOpenDialog,
@@ -42,6 +43,7 @@ export function FachCard({
   fach: Fach;
   index: number;
   naechsteKlausur?: { id: string; titel: string; datum: string } | null;
+  vorherSchnitt?: number | null;
   onAddNote: (
     fachId: string,
     punkte: number,
@@ -92,16 +94,23 @@ export function FachCard({
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <span
-              className="font-display text-2xl font-extrabold"
-              style={{ color: farbe }}
-            >
-              {fmt(schnitt)}
-            </span>
-            {schnitt !== null && (
-              <span className="ml-1.5 font-mono text-xs text-text-dim">
-                {punkteZuNote(schnitt)}
+            <div>
+              <span
+                className="font-display text-2xl font-extrabold"
+                style={{ color: farbe }}
+              >
+                {fmt(schnitt)}
               </span>
+              {schnitt !== null && (
+                <span className="ml-1.5 font-mono text-xs text-text-dim">
+                  {punkteZuNote(schnitt)}
+                </span>
+              )}
+            </div>
+            {vorherSchnitt != null && (
+              <div className="font-mono text-[10px] text-text-mute">
+                Vorher: {fmt(vorherSchnitt)}
+              </div>
             )}
           </div>
           <button
