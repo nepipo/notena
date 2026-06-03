@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FachCard } from "./fach-card";
+import { FachDialog } from "./fach-dialog";
 import { addFach, removeNote, addNote } from "@/app/dashboard/actions";
-
-/** Temp-IDs beginnen immer mit "temp-" — echte UUIDs nie. */
-const isTempId = (id: string) => id.startsWith("temp-");
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
+import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import type { Fach, Kategorie } from "@/lib/grades/types";
+import type { KlausurRow } from "@/lib/grades/db";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -20,18 +20,30 @@ function fmt(n: number | null): string {
 
 let tempCounter = 0;
 const tempId = () => `temp-${tempCounter++}`;
+const isTempId = (id: string) => id.startsWith("temp-");
 
 export function NotenrechnerBoard({
-  initialFaecher, halbjahr,
+  initialFaecher,
+  halbjahr,
+  initialKlausuren,
 }: {
   initialFaecher: Fach[];
   halbjahr: string;
+  initialKlausuren: KlausurRow[];
 }) {
   const [faecher, setFaecher] = useState<Fach[]>(initialFaecher);
+  const [klausuren] = useState<KlausurRow[]>(initialKlausuren);
   const [neuesFach, setNeuesFach] = useState("");
+  const [dialogFachId, setDialogFachId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const gesamt = gesamtSchnittGerundet(faecher);
+  const gesamtFarbe = schnittFarbe(gesamt);
+  const dialogFach = faecher.find((f) => f.id === dialogFachId) ?? null;
+
+  const klausurByFach = new Map(
+    klausuren.filter((k) => k.fach_id).map((k) => [k.fach_id as string, k]),
+  );
 
   function handleAddFach() {
     const name = neuesFach.trim();
@@ -46,8 +58,6 @@ export function NotenrechnerBoard({
         setFaecher(snapshot);
         toast.error(`Fach konnte nicht angelegt werden: ${res.error}`);
       } else {
-        // Temp-ID durch echte DB-UUID ersetzen, damit spätere addNote-Calls
-        // eine valide fach_id schicken.
         setFaecher((prev) =>
           prev.map((f) => (f.id === optimistic.id ? { ...f, id: res.id } : f)),
         );
@@ -55,19 +65,31 @@ export function NotenrechnerBoard({
     });
   }
 
-  function handleAddNote(fachId: string, punkte: number, kategorie: Kategorie) {
-    // Fach wird noch gespeichert — noch keine echte UUID vorhanden.
+  function handleAddNote(
+    fachId: string,
+    punkte: number,
+    kategorie: Kategorie,
+    bezeichnung?: string,
+    gewicht?: number,
+  ) {
     if (isTempId(fachId)) {
       toast.error("Fach wird noch gespeichert — bitte einen Moment warten.");
       return;
     }
     const snapshot = faecher;
     const optId = tempId();
-    setFaecher((prev) => prev.map((f) =>
-      f.id === fachId ? { ...f, noten: [...f.noten, { id: optId, punkte, kategorie }] } : f,
-    ));
+    setFaecher((prev) =>
+      prev.map((f) =>
+        f.id === fachId
+          ? {
+              ...f,
+              noten: [...f.noten, { id: optId, punkte, kategorie, bezeichnung, gewicht }],
+            }
+          : f,
+      ),
+    );
     startTransition(async () => {
-      const res = await addNote(fachId, punkte, kategorie);
+      const res = await addNote(fachId, punkte, kategorie, bezeichnung, gewicht);
       if (!res.ok) {
         setFaecher(snapshot);
         toast.error(`Note konnte nicht gespeichert werden: ${res.error}`);
@@ -77,9 +99,11 @@ export function NotenrechnerBoard({
 
   function handleRemoveNote(fachId: string, noteId: string) {
     const snapshot = faecher;
-    setFaecher((prev) => prev.map((f) =>
-      f.id === fachId ? { ...f, noten: f.noten.filter((n) => n.id !== noteId) } : f,
-    ));
+    setFaecher((prev) =>
+      prev.map((f) =>
+        f.id === fachId ? { ...f, noten: f.noten.filter((n) => n.id !== noteId) } : f,
+      ),
+    );
     startTransition(async () => {
       const res = await removeNote(noteId);
       if (!res.ok) {
@@ -89,8 +113,15 @@ export function NotenrechnerBoard({
     });
   }
 
+  function handleUpdateFach(fachId: string, updates: Partial<Fach>) {
+    setFaecher((prev) =>
+      prev.map((f) => (f.id === fachId ? { ...f, ...updates } : f)),
+    );
+  }
+
   return (
     <>
+      {/* Hero */}
       <section
         className="lift animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
         style={{
@@ -110,10 +141,7 @@ export function NotenrechnerBoard({
           <div className="mt-3 flex items-end">
             <span
               className="font-display text-[110px] font-extrabold leading-[0.85] tracking-[-0.06em]"
-              style={{
-                background: "var(--num-grad)", WebkitBackgroundClip: "text",
-                backgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}
+              style={{ color: gesamtFarbe }}
             >
               {fmt(gesamt)}
             </span>
@@ -127,14 +155,21 @@ export function NotenrechnerBoard({
         </div>
       </section>
 
+      {/* Fächer-Grid */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {faecher.map((fach, i) => (
           <FachCard
-            key={fach.id} fach={fach} index={i}
-            onAddNote={handleAddNote} onRemoveNote={handleRemoveNote}
+            key={fach.id}
+            fach={fach}
+            index={i}
+            naechsteKlausur={klausurByFach.get(fach.id) ?? null}
+            onAddNote={handleAddNote}
+            onRemoveNote={handleRemoveNote}
+            onOpenDialog={(id) => setDialogFachId(id)}
           />
         ))}
 
+        {/* Fach hinzufügen */}
         <section
           className="animate-fade-up flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed p-6"
           style={{
@@ -150,9 +185,21 @@ export function NotenrechnerBoard({
             placeholder="Neues Fach, z. B. Mathe"
             className="h-9 bg-surface-2 text-center font-mono"
           />
-          <Button onClick={handleAddFach} className="font-display font-bold">+ Fach hinzufügen</Button>
+          <Button onClick={handleAddFach} className="font-display font-bold">
+            + Fach hinzufügen
+          </Button>
         </section>
       </div>
+
+      {/* Fach-Dialog */}
+      {dialogFach && (
+        <FachDialog
+          fach={dialogFach}
+          open={dialogFachId !== null}
+          onClose={() => setDialogFachId(null)}
+          onUpdate={(updates) => handleUpdateFach(dialogFach.id, updates)}
+        />
+      )}
     </>
   );
 }
