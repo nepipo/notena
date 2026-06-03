@@ -10,7 +10,8 @@ import {
   type NoteRow,
   type KlausurRow,
 } from "@/lib/grades/db";
-import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
+import { aktuellesHalbjahr, vorherigesHalbjahr } from "@/lib/grades/halbjahr";
+import { fachSchnittGerundet } from "@/lib/grades/calc";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -70,6 +71,26 @@ export default async function DashboardPage() {
   );
   const klausuren = (klausurRows ?? []) as KlausurRow[];
 
+  // Vorhalbjahres-Schnitte (pro Fachname) als Referenz im neuen HJ.
+  const vorigesHj = vorherigesHalbjahr(halbjahr);
+  const { data: vorFachRows } = await supabase
+    .from("schule_fach")
+    .select("*")
+    .eq("halbjahr", vorigesHj);
+  const vorFachIds = (vorFachRows ?? []).map((f) => f.id);
+  const { data: vorNoteRows } = vorFachIds.length
+    ? await supabase.from("schule_note").select("*").in("fach_id", vorFachIds)
+    : { data: [] as NoteRow[] };
+  const vorFaecher = assembleFaecher(
+    (vorFachRows ?? []) as FachRow[],
+    (vorNoteRows ?? []) as NoteRow[],
+  );
+  const vorherSchnitte: Record<string, number> = {};
+  for (const vf of vorFaecher) {
+    const s = fachSchnittGerundet(vf.noten, vf.gewichtung);
+    if (s !== null) vorherSchnitte[vf.name] = s;
+  }
+
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
       <header className="animate-fade-up mb-8 flex items-start justify-between">
@@ -108,6 +129,7 @@ export default async function DashboardPage() {
         halbjahr={halbjahr}
         initialKlausuren={klausuren}
         verfuegbareHalbjahre={verfuegbareHalbjahre}
+        vorherSchnitte={vorherSchnitte}
       />
     </main>
   );
