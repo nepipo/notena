@@ -7,8 +7,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { neuesHalbjahr, type NeuesFachInput } from "@/app/dashboard/actions";
-import { halbjahrLabel } from "@/lib/grades/halbjahr";
+import { baueHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { Fach } from "@/lib/grades/types";
+
+/** Zerlegt einen Halbjahr-String in Startjahr + Nummer; Fallback aufs aktuelle Jahr. */
+function zerlege(hj: string): { startjahr: number; nummer: 1 | 2 } {
+  const m = /^(\d{4})\/\d{2}-([12])$/.exec(hj);
+  if (m) return { startjahr: Number(m[1]), nummer: Number(m[2]) as 1 | 2 };
+  return { startjahr: new Date().getFullYear(), nummer: 1 };
+}
 
 interface FachAuswahl {
   uebernehmen: boolean;
@@ -27,7 +34,10 @@ export function NeuesHalbjahrDialog({
   vorschlagHj: string;
   aktuelleFaecher: Fach[];
 }) {
-  const [hj, setHj] = useState(vorschlagHj);
+  const initial = zerlege(vorschlagHj);
+  const [startjahr, setStartjahr] = useState(initial.startjahr);
+  const [nummer, setNummer] = useState<1 | 2>(initial.nummer);
+  const hj = baueHalbjahr(startjahr, nummer);
   const [auswahl, setAuswahl] = useState<FachAuswahl[]>(
     aktuelleFaecher.map((f) => ({
       uebernehmen: true,
@@ -91,21 +101,50 @@ export function NeuesHalbjahrDialog({
             Welche Fächer nimmst du mit? Noten werden nicht kopiert.
           </p>
 
-          {/* Halbjahr-Eingabe */}
-          <div className="mt-4">
-            <div className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
-              Halbjahr (Format JJJJ/JJ-N)
+          {/* Halbjahr-Auswahl */}
+          <div className="mt-4 flex gap-3">
+            <div className="flex-1">
+              <div className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+                Schuljahr
+              </div>
+              <select
+                value={startjahr}
+                onChange={(e) => setStartjahr(Number(e.target.value))}
+                className="h-9 w-full rounded-lg border border-border bg-surface-2 px-2 font-mono text-sm"
+              >
+                {Array.from({ length: 6 }, (_, i) => initial.startjahr - 2 + i).map(
+                  (jahr) => (
+                    <option key={jahr} value={jahr}>
+                      {baueHalbjahr(jahr, 1).split("-")[0]}
+                    </option>
+                  ),
+                )}
+              </select>
             </div>
-            <Input
-              value={hj}
-              onChange={(e) => setHj(e.target.value)}
-              placeholder="2026/27-1"
-              className="bg-surface-2 font-mono"
-            />
-            <p className="mt-1 font-mono text-[11px] text-text-mute">
-              {halbjahrLabel(hj)}
-            </p>
+            <div className="flex-1">
+              <div className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+                Halbjahr
+              </div>
+              <div className="flex overflow-hidden rounded-lg border border-border">
+                {([1, 2] as const).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setNummer(n)}
+                    className={`flex-1 py-2 font-mono text-sm transition-colors ${
+                      nummer === n
+                        ? "bg-brand font-semibold text-black"
+                        : "bg-surface-2 text-text-dim hover:bg-surface-3"
+                    }`}
+                  >
+                    {n}.
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+          <p className="mt-2 font-mono text-[11px] text-text-mute">
+            → {halbjahrLabel(hj)}
+          </p>
 
           {/* Fächer-Liste */}
           <div className="mt-4 space-y-2">
