@@ -30,6 +30,17 @@ export interface NoteRow {
   created_at: string;
 }
 
+export interface KlausurRow {
+  id: string;
+  user_id: string;
+  fach_id: string | null;
+  titel: string;
+  datum: string;
+  vorbereitung_prozent: number;
+  notiz: string | null;
+  created_at: string;
+}
+
 function mapNote(row: NoteRow): Note {
   return {
     id: row.id,
@@ -37,6 +48,7 @@ function mapNote(row: NoteRow): Note {
     kategorie: row.kategorie as Kategorie,
     gewicht: row.gewicht,
     datum: row.datum ?? undefined,
+    bezeichnung: row.bezeichnung ?? undefined,
   };
 }
 
@@ -61,5 +73,23 @@ export function assembleFaecher(
       sonstige: f.gewicht_sonstige,
     },
     fachGewicht: f.fach_gewicht,
+    farbe: f.farbe,
+    niveau: f.niveau,
   }));
+}
+
+/**
+ * Baut eine Map fach_id → nächste Klausur.
+ * Pro Fach wird nur die zeitlich erste Klausur gemerkt (Rows kommen sortiert an).
+ */
+export function assembleKlausuren(
+  rows: KlausurRow[],
+): Map<string, KlausurRow> {
+  const map = new Map<string, KlausurRow>();
+  for (const k of rows) {
+    if (k.fach_id && !map.has(k.fach_id)) {
+      map.set(k.fach_id, k);
+    }
+  }
+  return map;
 }
