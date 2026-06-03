@@ -3,8 +3,17 @@
  * Reine Typen — keine Logik, kein React, keine DB.
  */
 
-/** Kategorie einer Leistung. In Hamburg typ. Klausur vs. laufende Mitarbeit. */
-export type Kategorie = "klausur" | "muendlich" | "sonstige";
+/**
+ * Kategorie einer Leistung.
+ * Gruppen: klausur = schriftlich, alle anderen = mündlich.
+ */
+export type Kategorie =
+  | "klausur"
+  | "muendlich"
+  | "test"
+  | "referat"
+  | "hausaufgabe"
+  | "sonstige";
 
 /** Eine einzelne Note/Leistung. */
 export interface Note {
@@ -14,14 +23,17 @@ export interface Note {
   kategorie: Kategorie;
   /** ISO-Datum, optional (für Sortierung/Verlauf). */
   datum?: string;
-  /** Einzelgewicht innerhalb der Kategorie (z.B. doppelt zählende Klausur). Default 1. */
+  /** Einzelgewicht innerhalb der Gruppe (z.B. 2 für doppelt zählende Klausur). Default 1. */
   gewicht?: number;
+  /** Freitext-Bezeichnung (z.B. "1. Klausur", "Referat Klimawandel"). */
+  bezeichnung?: string;
 }
 
-/** Gewichtung der Kategorien für den Fach-Schnitt (Summe muss nicht 1 ergeben — wird normalisiert). */
+/** Gewichtung der zwei Gruppen für den Fach-Schnitt (wird normalisiert). */
 export interface Kategoriegewichtung {
   klausur: number;
   muendlich: number;
+  /** @deprecated Nicht mehr verwendet. Alle Nicht-Klausur-Kategorien zählen zur muendlich-Gruppe. */
   sonstige: number;
 }
 
@@ -30,13 +42,17 @@ export interface Fach {
   id: string;
   name: string;
   noten: Note[];
-  /** Kategoriegewichtung; fehlende Werte fallen auf den Default (50/50 Klausur/Mündlich). */
+  /** Kategoriegewichtung; fehlende Werte fallen auf den Default (50/50). */
   gewichtung?: Partial<Kategoriegewichtung>;
-  /** Gewicht des Fachs im Gesamtschnitt (z.B. erhöhtes Niveau höher). Default 1. */
+  /** Gewicht des Fachs im Gesamtschnitt (LK = 2, GK = 1). Default 1. */
   fachGewicht?: number;
+  /** Hex-Farbe für UI-Akzent. */
+  farbe?: string | null;
+  /** 'grund' = GK, 'erhoeht' = LK. */
+  niveau?: string;
 }
 
-/** Standard-Gewichtung, wenn ein Fach nichts anderes konfiguriert: 50 % Klausur, 50 % mündlich. */
+/** Standard-Gewichtung: 50% Klausur, 50% mündlich. */
 export const DEFAULT_GEWICHTUNG: Kategoriegewichtung = {
   klausur: 0.5,
   muendlich: 0.5,

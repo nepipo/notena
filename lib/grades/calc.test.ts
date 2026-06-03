@@ -8,8 +8,41 @@ import {
   fachSchnittGerundet,
   gesamtSchnitt,
   wasWaereWenn,
+  kategorieZurGruppe,
 } from "./calc";
 import type { Fach, Note } from "./types";
+
+describe("kategorieZurGruppe", () => {
+  it("mappt klausur auf klausur", () => {
+    expect(kategorieZurGruppe("klausur")).toBe("klausur");
+  });
+  it("mappt muendlich, test, referat, hausaufgabe, sonstige auf muendlich", () => {
+    expect(kategorieZurGruppe("muendlich")).toBe("muendlich");
+    expect(kategorieZurGruppe("test")).toBe("muendlich");
+    expect(kategorieZurGruppe("referat")).toBe("muendlich");
+    expect(kategorieZurGruppe("hausaufgabe")).toBe("muendlich");
+    expect(kategorieZurGruppe("sonstige")).toBe("muendlich");
+  });
+});
+
+describe("fachSchnitt mit neuen Kategorien", () => {
+  it("Test-Noten fliessen in die muendlich-Gruppe", () => {
+    const noten: Note[] = [
+      { punkte: 12, kategorie: "klausur" },
+      { punkte: 8, kategorie: "test" },
+    ];
+    const result = fachSchnitt(noten, { klausur: 0.5, muendlich: 0.5 });
+    expect(result).toBeCloseTo(10, 5);
+  });
+  it("Referat + Mündlich kombinieren sich in der muendlich-Gruppe", () => {
+    const noten: Note[] = [
+      { punkte: 14, kategorie: "referat", gewicht: 2 },
+      { punkte: 10, kategorie: "muendlich", gewicht: 1 },
+    ];
+    const result = fachSchnitt(noten);
+    expect(result).toBeCloseTo(38 / 3, 5);
+  });
+});
 
 describe("clampPunkte", () => {
   it("begrenzt auf 0–15", () => {

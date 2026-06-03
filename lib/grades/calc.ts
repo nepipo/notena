@@ -3,10 +3,11 @@
  *
  * Reine Funktionen, vollständig ohne Seiteneffekte — leicht testbar.
  * Regeln:
- *  - Innerhalb einer Kategorie: gewichteter Durchschnitt der Einzelnoten.
- *  - Fach-Schnitt: gewichtete Kombination der Kategorien. Kategorien OHNE Noten
- *    werden ignoriert und die Gewichte der verbleibenden Kategorien renormalisiert.
- *  - Gesamt-Schnitt: über die Fächer, gewichtet mit `fachGewicht`.
+ *  - Alle Kategorien außer 'klausur' zählen zur muendlich-Gruppe.
+ *  - Innerhalb einer Gruppe: gewichteter Durchschnitt (Note.gewicht).
+ *  - Fach-Schnitt: gewichtete Kombination der zwei Gruppen. Gruppen OHNE Noten
+ *    werden ignoriert und die Gewichte der verbleibenden renormalisiert.
+ *  - Gesamt-Schnitt: über die Fächer, gewichtet mit fachGewicht.
  */
 
 import {
@@ -17,15 +18,13 @@ import {
   DEFAULT_GEWICHTUNG,
 } from "./types";
 
-const KATEGORIEN: Kategorie[] = ["klausur", "muendlich", "sonstige"];
-
 /** Begrenzt einen Punktwert auf den gültigen Bereich 0–15. */
 export function clampPunkte(punkte: number): number {
   if (Number.isNaN(punkte)) return 0;
   return Math.min(15, Math.max(0, punkte));
 }
 
-/** Rundet einen Wert auf n Dezimalstellen (Standard: 1, wie im UI „10,2"). */
+/** Rundet einen Wert auf n Dezimalstellen (Standard: 1). */
 export function runde(wert: number, dezimal = 1): number {
   const f = 10 ** dezimal;
   return Math.round(wert * f) / f;
@@ -33,21 +32,27 @@ export function runde(wert: number, dezimal = 1): number {
 
 /**
  * Wandelt Punkte (0–15) in die klassische Notendarstellung um (z.B. 13 → "1−").
- * Nutzt das offizielle Mapping der gymnasialen Oberstufe.
  */
 export function punkteZuNote(punkte: number): string {
   const p = Math.round(clampPunkte(punkte));
   if (p === 0) return "6";
-  // Grundnote 1–5: je 3 Punkte eine Notenstufe (13–15→1, 10–12→2, …, 1–3→5).
   const grundnote = 6 - Math.ceil(p / 3);
-  // Tendenz innerhalb der 3er-Gruppe: höchster Punktwert "+", mittlerer "", niedrigster "−".
-  const rest = (p - 1) % 3; // 0 = "−", 1 = "", 2 = "+"
+  const rest = (p - 1) % 3;
   const tendenz = rest === 2 ? "+" : rest === 0 ? "−" : "";
   return `${grundnote}${tendenz}`;
 }
 
 /**
- * Gewichteter Durchschnitt der Noten EINER Kategorie.
+ * Ordnet eine Kategorie einer der zwei Gruppen zu.
+ * Nur 'klausur' ist schriftlich — alles andere ist mündlich.
+ */
+export function kategorieZurGruppe(k: Kategorie): "klausur" | "muendlich" {
+  return k === "klausur" ? "klausur" : "muendlich";
+}
+
+/**
+ * Gewichteter Durchschnitt der Noten EINER exakten Kategorie.
+ * Wird für Detailansichten verwendet; fachSchnitt nutzt Gruppen.
  * @returns Schnitt (0–15) oder null, wenn keine Noten in der Kategorie.
  */
 export function kategorieSchnitt(
@@ -76,24 +81,40 @@ function aufloesenGewichtung(
 }
 
 /**
- * Schnitt eines Fachs: gewichtete Kombination der Kategorien.
- * Kategorien ohne Noten werden ignoriert, die übrigen Gewichte renormalisiert.
- * @returns Schnitt (0–15) oder null, wenn das Fach keine Noten hat.
+ * Schnitt eines Fachs über zwei Gruppen (klausur / muendlich).
+ * Alle Noten werden per kategorieZurGruppe einer Gruppe zugeordnet.
+ * Gruppen ohne Noten werden ignoriert, die übrigen Gewichte renormalisiert.
  */
 export function fachSchnitt(
   noten: Note[],
   gewichtung?: Partial<Kategoriegewichtung>,
 ): number | null {
   const g = aufloesenGewichtung(gewichtung);
+  const gruppen = ["klausur", "muendlich"] as const;
 
   let summe = 0;
   let gewichtSumme = 0;
-  for (const kat of KATEGORIEN) {
-    const schnitt = kategorieSchnitt(noten, kat);
-    if (schnitt === null) continue;
-    const katGewicht = g[kat];
+
+  for (const gruppe of gruppen) {
+    const gruppenNoten = noten.filter(
+      (n) => kategorieZurGruppe(n.kategorie) === gruppe,
+    );
+    if (gruppenNoten.length === 0) continue;
+
+    let gruppeSumme = 0;
+    let gruppeGewicht = 0;
+    for (const n of gruppenNoten) {
+      const gew = n.gewicht ?? 1;
+      gruppeSumme += clampPunkte(n.punkte) * gew;
+      gruppeGewicht += gew;
+    }
+    if (gruppeGewicht === 0) continue;
+
+    const gruppenSchnitt = gruppeSumme / gruppeGewicht;
+    const katGewicht = g[gruppe];
     if (katGewicht <= 0) continue;
-    summe += schnitt * katGewicht;
+
+    summe += gruppenSchnitt * katGewicht;
     gewichtSumme += katGewicht;
   }
 
@@ -111,9 +132,8 @@ export function fachSchnittGerundet(
 }
 
 /**
- * Gesamt-Schnitt über mehrere Fächer, gewichtet mit `fachGewicht`.
+ * Gesamt-Schnitt über mehrere Fächer, gewichtet mit fachGewicht.
  * Fächer ohne Noten werden ignoriert.
- * @returns Schnitt (0–15) oder null, wenn kein Fach Noten hat.
  */
 export function gesamtSchnitt(faecher: Fach[]): number | null {
   let summe = 0;
@@ -138,7 +158,6 @@ export function gesamtSchnittGerundet(faecher: Fach[]): number | null {
 
 /**
  * „Was-wäre-wenn": Fach-Schnitt, wenn eine hypothetische Note hinzukäme.
- * Verändert die Eingabedaten nicht.
  */
 export function wasWaereWenn(
   noten: Note[],
