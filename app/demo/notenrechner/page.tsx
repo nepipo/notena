@@ -43,6 +43,9 @@ const KAT_LABEL: Record<Kategorie, string> = {
   klausur: "Klausur",
   muendlich: "Mündlich",
   sonstige: "Sonstige",
+  test: "Test",
+  referat: "Referat",
+  hausaufgabe: "Hausaufgabe",
 };
 
 function fmt(n: number | null): string {

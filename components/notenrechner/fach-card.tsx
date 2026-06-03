@@ -8,6 +8,7 @@ import type { Fach, Kategorie } from "@/lib/grades/types";
 
 const KAT_KUERZEL: Record<Kategorie, string> = {
   klausur: "K", muendlich: "M", sonstige: "S",
+  test: "T", referat: "R", hausaufgabe: "H",
 };
 
 function fmt(n: number | null): string {
