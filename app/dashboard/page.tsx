@@ -10,8 +10,14 @@ import {
   type NoteRow,
   type KlausurRow,
 } from "@/lib/grades/db";
-import { aktuellesHalbjahr, vorherigesHalbjahr } from "@/lib/grades/halbjahr";
+import {
+  aktuellesHalbjahr,
+  vorherigesHalbjahr,
+  halbjahreImSchuljahr,
+  schuljahrLabel,
+} from "@/lib/grades/halbjahr";
 import { fachSchnittGerundet } from "@/lib/grades/calc";
+import { berechneJahresUebersicht } from "@/lib/grades/jahr";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -91,6 +97,28 @@ export default async function DashboardPage() {
     if (s !== null) vorherSchnitte[vf.name] = s;
   }
 
+  // Jahres-Übersicht: beide Halbjahre des aktuellen Schuljahres
+  const [shj1, shj2] = halbjahreImSchuljahr(halbjahr);
+  const { data: jahrFachRows } = await supabase
+    .from("schule_fach")
+    .select("*")
+    .in("halbjahr", [shj1, shj2]);
+  const jahrFachIds = (jahrFachRows ?? []).map((f) => f.id);
+  const { data: jahrNoteRows } = jahrFachIds.length
+    ? await supabase.from("schule_note").select("*").in("fach_id", jahrFachIds)
+    : { data: [] as NoteRow[] };
+  const alleJahrFach = (jahrFachRows ?? []) as FachRow[];
+  const alleJahrNoten = (jahrNoteRows ?? []) as NoteRow[];
+  const shj1Faecher = assembleFaecher(
+    alleJahrFach.filter((f) => f.halbjahr === shj1),
+    alleJahrNoten,
+  );
+  const shj2Faecher = assembleFaecher(
+    alleJahrFach.filter((f) => f.halbjahr === shj2),
+    alleJahrNoten,
+  );
+  const jahresUebersicht = berechneJahresUebersicht(shj1Faecher, shj2Faecher);
+
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
       <header className="animate-fade-up mb-8 flex items-start justify-between">
@@ -130,6 +158,8 @@ export default async function DashboardPage() {
         initialKlausuren={klausuren}
         verfuegbareHalbjahre={verfuegbareHalbjahre}
         vorherSchnitte={vorherSchnitte}
+        jahresUebersicht={jahresUebersicht}
+        schuljahr={schuljahrLabel(halbjahr)}
       />
     </main>
   );
