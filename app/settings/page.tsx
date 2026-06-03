@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { updatePraeferenzen } from "@/app/dashboard/actions";
+import { updatePraeferenzen } from "@/lib/actions/schule";
 
 export default async function SettingsPage() {
   const supabase = await createClient();

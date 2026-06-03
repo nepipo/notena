@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { setHalbjahr } from "@/app/dashboard/actions";
+import { setHalbjahr } from "@/lib/actions/schule";
 import { halbjahrLabel, naechstesHalbjahr } from "@/lib/grades/halbjahr";
 import { NeuesHalbjahrDialog } from "./neues-halbjahr-dialog";
 import type { Fach } from "@/lib/grades/types";

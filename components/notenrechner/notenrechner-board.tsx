@@ -9,7 +9,7 @@ import { FachDialog } from "./fach-dialog";
 import { HalbjahrSwitcher } from "./halbjahr-switcher";
 import { KlausurSection } from "./klausur-section";
 import { JahresTabelle } from "./jahres-tabelle";
-import { addFach, removeNote, addNote } from "@/app/dashboard/actions";
+import { addFach, removeNote, addNote } from "@/lib/actions/schule";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import type { Fach, Kategorie } from "@/lib/grades/types";
