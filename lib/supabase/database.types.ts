@@ -24,6 +24,7 @@ export type Database = {
           klasse: number | null
           name: string | null
           notensystem: string
+          onboarding_abgeschlossen: boolean
           plan_tier: string
           schule: string | null
           updated_at: string
@@ -37,6 +38,7 @@ export type Database = {
           klasse?: number | null
           name?: string | null
           notensystem?: string
+          onboarding_abgeschlossen?: boolean
           plan_tier?: string
           schule?: string | null
           updated_at?: string
@@ -50,6 +52,7 @@ export type Database = {
           klasse?: number | null
           name?: string | null
           notensystem?: string
+          onboarding_abgeschlossen?: boolean
           plan_tier?: string
           schule?: string | null
           updated_at?: string
