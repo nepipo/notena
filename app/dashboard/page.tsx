@@ -2,18 +2,40 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
+import { NotenrechnerBoard } from "@/components/notenrechner/notenrechner-board";
+import { assembleFaecher, type FachRow, type NoteRow } from "@/lib/grades/db";
+import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
-
-  // Doppelte Absicherung (zusätzlich zum Proxy)
-  if (!claims) {
-    redirect("/login");
-  }
+  if (!claims) redirect("/login");
 
   const email = typeof claims.email === "string" ? claims.email : "Account";
+
+  // Aktuelles Halbjahr: aus Profil, sonst aus Datum.
+  const { data: profil } = await supabase
+    .from("nutzer_profil")
+    .select("aktuelles_halbjahr")
+    .single();
+  const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+
+  const { data: fachRows } = await supabase
+    .from("schule_fach")
+    .select("*")
+    .eq("halbjahr", halbjahr)
+    .order("created_at", { ascending: true });
+
+  const fachIds = (fachRows ?? []).map((f) => f.id);
+  const { data: noteRows } = fachIds.length
+    ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
+    : { data: [] as NoteRow[] };
+
+  const faecher = assembleFaecher(
+    (fachRows ?? []) as FachRow[],
+    (noteRows ?? []) as NoteRow[],
+  );
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
@@ -21,38 +43,19 @@ export default async function DashboardPage() {
         <div>
           <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
             <span className="inline-block size-1.5 rounded-full bg-success" />
-            Dashboard
+            Dashboard · Schule
           </div>
-          <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">
-            Eingeloggt. 🎉
-          </h1>
+          <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">Dein Notenrechner.</h1>
           <p className="mt-2 text-sm text-text-dim">
-            Angemeldet als{" "}
-            <span className="font-mono text-foreground">{email}</span>
+            Angemeldet als <span className="font-mono text-foreground">{email}</span> · Halbjahr {halbjahr}
           </p>
         </div>
         <form action={signOut}>
-          <Button variant="outline" className="border-border bg-surface-2 hover:bg-surface-3">
-            Abmelden
-          </Button>
+          <Button variant="outline" className="border-border bg-surface-2 hover:bg-surface-3">Abmelden</Button>
         </form>
       </header>
 
-      <section
-        className="lift animate-fade-up rounded-3xl border border-border p-8"
-        style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
-      >
-        <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-text-dim">
-          Bald hier
-        </div>
-        <h2 className="mt-3 font-display text-2xl font-extrabold tracking-[-0.02em]">
-          Dein Notenrechner
-        </h2>
-        <p className="mt-2 max-w-md text-sm text-text-dim">
-          Der Multi-User-Auth-Flow steht. Als Nächstes kommt das Schul-Cockpit:
-          Fächer, Klausuren und der Notenrechner mit 0–15-Punkte-System.
-        </p>
-      </section>
+      <NotenrechnerBoard initialFaecher={faecher} halbjahr={halbjahr} />
     </main>
   );
 }

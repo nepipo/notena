@@ -18,10 +18,12 @@ export type Database = {
         Row: {
           aktuelles_halbjahr: string | null
           created_at: string
+          eingabe_modus: string
           geburtsjahr: number | null
           id: string
           klasse: number | null
           name: string | null
+          notensystem: string
           plan_tier: string
           schule: string | null
           updated_at: string
@@ -29,10 +31,12 @@ export type Database = {
         Insert: {
           aktuelles_halbjahr?: string | null
           created_at?: string
+          eingabe_modus?: string
           geburtsjahr?: number | null
           id: string
           klasse?: number | null
           name?: string | null
+          notensystem?: string
           plan_tier?: string
           schule?: string | null
           updated_at?: string
@@ -40,10 +44,12 @@ export type Database = {
         Update: {
           aktuelles_halbjahr?: string | null
           created_at?: string
+          eingabe_modus?: string
           geburtsjahr?: number | null
           id?: string
           klasse?: number | null
           name?: string | null
+          notensystem?: string
           plan_tier?: string
           schule?: string | null
           updated_at?: string
