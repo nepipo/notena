@@ -166,3 +166,28 @@ export function wasWaereWenn(
 ): number | null {
   return fachSchnitt([...noten, hypothese], gewichtung);
 }
+
+/**
+ * Zielnoten-Rechner: kleinste Punktzahl (0–15) für eine zusätzliche Note
+ * (gegebene Kategorie + Gewicht), damit der gerundete Fach-Schnitt das Ziel erreicht.
+ * @returns Punktzahl 0–15, "erreicht" (Ziel schon erfüllt) oder "unmoeglich" (auch 15 reicht nicht).
+ */
+export function benoetigtePunkte(
+  noten: Note[],
+  gewichtung: Partial<Kategoriegewichtung> | undefined,
+  kategorie: Kategorie,
+  gewicht: number,
+  ziel: number,
+): number | "erreicht" | "unmoeglich" {
+  const aktuell = fachSchnitt(noten, gewichtung);
+  if (aktuell !== null && runde(aktuell) >= ziel) return "erreicht";
+
+  for (let p = 0; p <= 15; p++) {
+    const mitProbe = fachSchnitt(
+      [...noten, { punkte: p, kategorie, gewicht }],
+      gewichtung,
+    );
+    if (mitProbe !== null && runde(mitProbe) >= ziel) return p;
+  }
+  return "unmoeglich";
+}
