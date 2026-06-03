@@ -9,8 +9,31 @@ import {
   gesamtSchnitt,
   wasWaereWenn,
   kategorieZurGruppe,
+  benoetigtePunkte,
 } from "./calc";
 import type { Fach, Note } from "./types";
+
+describe("benoetigtePunkte", () => {
+  it("gibt 'erreicht' wenn das Ziel schon erfüllt ist", () => {
+    const noten: Note[] = [{ punkte: 13, kategorie: "klausur" }];
+    expect(benoetigtePunkte(noten, undefined, "klausur", 1, 10)).toBe("erreicht");
+  });
+  it("liefert die kleinste Punktzahl, die das Ziel erreicht", () => {
+    // Eine Klausur mit 8. Zweite Klausur, gleiches Gewicht. Ziel-Schnitt 10.
+    // (8 + x) / 2 >= 10  ->  x >= 12.
+    const noten: Note[] = [{ punkte: 8, kategorie: "klausur" }];
+    expect(benoetigtePunkte(noten, undefined, "klausur", 1, 10)).toBe(12);
+  });
+  it("gibt 'unmoeglich' wenn selbst 15 Punkte nicht reichen", () => {
+    // Klausur 0. Ziel 10. (0 + 15)/2 = 7.5 < 10 -> unmöglich.
+    const noten: Note[] = [{ punkte: 0, kategorie: "klausur" }];
+    expect(benoetigtePunkte(noten, undefined, "klausur", 1, 10)).toBe("unmoeglich");
+  });
+  it("rechnet das erste Fach (noch keine Noten) korrekt", () => {
+    // Keine Noten. Eine Klausur. Ziel 12 -> brauchst genau 12.
+    expect(benoetigtePunkte([], undefined, "klausur", 1, 12)).toBe(12);
+  });
+});
 
 describe("kategorieZurGruppe", () => {
   it("mappt klausur auf klausur", () => {
