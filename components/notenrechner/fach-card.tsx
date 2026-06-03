@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fachSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
+import { WasWaereWennPanel } from "./was-waere-wenn-panel";
 import type { Fach, Kategorie } from "@/lib/grades/types";
 
 const KAT_KUERZEL: Record<Kategorie, string> = {
@@ -54,6 +55,7 @@ export function FachCard({
   onRemoveNote: (fachId: string, noteId: string) => void;
   onOpenDialog: (fachId: string) => void;
 }) {
+  const [wwwOffen, setWwwOffen] = useState(false);
   const schnitt = fachSchnittGerundet(fach.noten, fach.gewichtung);
   const farbe = schnittFarbe(schnitt);
   const tage = naechsteKlausur ? tageBis(naechsteKlausur.datum) : null;
@@ -114,6 +116,13 @@ export function FachCard({
             )}
           </div>
           <button
+            onClick={() => setWwwOffen((v) => !v)}
+            title="Was-wäre-wenn"
+            className={`ml-1 transition-colors ${wwwOffen ? "text-brand" : "text-text-mute hover:text-foreground"}`}
+          >
+            🔮
+          </button>
+          <button
             onClick={() => onOpenDialog(fach.id)}
             title="Fach konfigurieren"
             className="ml-1 text-text-mute transition-colors hover:text-foreground"
@@ -160,6 +169,8 @@ export function FachCard({
       </div>
 
       <AddNote onAdd={(p, k, bez, gew) => onAddNote(fach.id, p, k, bez, gew)} />
+
+      {wwwOffen && <WasWaereWennPanel fach={fach} />}
     </section>
   );
 }
