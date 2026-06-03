@@ -13,22 +13,25 @@ async function requireUserId(): Promise<string> {
 }
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
+export type AddFachResult = { ok: true; id: string } | { ok: false; error: string };
 
 export async function addFach(
   name: string,
   halbjahr: string,
-): Promise<ActionResult> {
+): Promise<AddFachResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Bitte einen Fachnamen eingeben." };
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("schule_fach")
-      .insert({ user_id: userId, name: trimmed, halbjahr });
+      .insert({ user_id: userId, name: trimmed, halbjahr })
+      .select("id")
+      .single();
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
-    return { ok: true };
+    return { ok: true, id: data.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }

@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FachCard } from "./fach-card";
 import { addFach, removeNote, addNote } from "@/app/dashboard/actions";
+
+/** Temp-IDs beginnen immer mit "temp-" — echte UUIDs nie. */
+const isTempId = (id: string) => id.startsWith("temp-");
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import type { Fach, Kategorie } from "@/lib/grades/types";
 
@@ -42,11 +45,22 @@ export function NotenrechnerBoard({
       if (!res.ok) {
         setFaecher(snapshot);
         toast.error(`Fach konnte nicht angelegt werden: ${res.error}`);
+      } else {
+        // Temp-ID durch echte DB-UUID ersetzen, damit spätere addNote-Calls
+        // eine valide fach_id schicken.
+        setFaecher((prev) =>
+          prev.map((f) => (f.id === optimistic.id ? { ...f, id: res.id } : f)),
+        );
       }
     });
   }
 
   function handleAddNote(fachId: string, punkte: number, kategorie: Kategorie) {
+    // Fach wird noch gespeichert — noch keine echte UUID vorhanden.
+    if (isTempId(fachId)) {
+      toast.error("Fach wird noch gespeichert — bitte einen Moment warten.");
+      return;
+    }
     const snapshot = faecher;
     const optId = tempId();
     setFaecher((prev) => prev.map((f) =>
