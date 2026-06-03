@@ -5,6 +5,8 @@ import {
   naechstesHalbjahr,
   vorherigesHalbjahr,
   baueHalbjahr,
+  schuljahrLabel,
+  halbjahreImSchuljahr,
 } from "./halbjahr";
 
 describe("aktuellesHalbjahr", () => {
@@ -63,5 +65,22 @@ describe("baueHalbjahr", () => {
   });
   it("padded das Kurzjahr (2099 -> 00)", () => {
     expect(baueHalbjahr(2099, 1)).toBe("2099/00-1");
+  });
+});
+
+describe("schuljahrLabel", () => {
+  it("gibt das Schuljahr ohne HJ-Nummer", () => {
+    expect(schuljahrLabel("2025/26-2")).toBe("2025/26");
+    expect(schuljahrLabel("2026/27-1")).toBe("2026/27");
+  });
+  it("gibt ungültigen Input unverändert zurück", () => {
+    expect(schuljahrLabel("quatsch")).toBe("quatsch");
+  });
+});
+
+describe("halbjahreImSchuljahr", () => {
+  it("liefert beide Halbjahre des Schuljahres (egal welches HJ rein geht)", () => {
+    expect(halbjahreImSchuljahr("2025/26-2")).toEqual(["2025/26-1", "2025/26-2"]);
+    expect(halbjahreImSchuljahr("2025/26-1")).toEqual(["2025/26-1", "2025/26-2"]);
   });
 });

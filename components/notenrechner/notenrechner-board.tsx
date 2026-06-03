@@ -8,11 +8,13 @@ import { FachCard } from "./fach-card";
 import { FachDialog } from "./fach-dialog";
 import { HalbjahrSwitcher } from "./halbjahr-switcher";
 import { KlausurSection } from "./klausur-section";
+import { JahresTabelle } from "./jahres-tabelle";
 import { addFach, removeNote, addNote } from "@/app/dashboard/actions";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import type { Fach, Kategorie } from "@/lib/grades/types";
 import { assembleKlausuren, type KlausurRow } from "@/lib/grades/db";
+import type { JahresUebersicht } from "@/lib/grades/jahr";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -30,17 +32,22 @@ export function NotenrechnerBoard({
   initialKlausuren,
   verfuegbareHalbjahre,
   vorherSchnitte,
+  jahresUebersicht,
+  schuljahr,
 }: {
   initialFaecher: Fach[];
   halbjahr: string;
   initialKlausuren: KlausurRow[];
   verfuegbareHalbjahre: string[];
   vorherSchnitte: Record<string, number>;
+  jahresUebersicht: JahresUebersicht;
+  schuljahr: string;
 }) {
   const [faecher, setFaecher] = useState<Fach[]>(initialFaecher);
   const [klausuren] = useState<KlausurRow[]>(initialKlausuren);
   const [neuesFach, setNeuesFach] = useState("");
   const [dialogFachId, setDialogFachId] = useState<string | null>(null);
+  const [ansicht, setAnsicht] = useState<"halbjahr" | "jahr">("halbjahr");
   const [, startTransition] = useTransition();
 
   const gesamt = gesamtSchnittGerundet(faecher);
@@ -125,6 +132,30 @@ export function NotenrechnerBoard({
 
   return (
     <>
+      {/* Ansicht-Tabs */}
+      <div className="animate-fade-up mb-4 inline-flex gap-1 rounded-xl border border-border bg-surface-2 p-1">
+        {([
+          ["halbjahr", "Halbjahr"],
+          ["jahr", "Ganzes Jahr"],
+        ] as const).map(([wert, label]) => (
+          <button
+            key={wert}
+            onClick={() => setAnsicht(wert)}
+            className={`rounded-lg px-4 py-1.5 font-sans text-sm font-semibold transition-colors ${
+              ansicht === wert
+                ? "bg-brand text-black"
+                : "text-text-dim hover:bg-surface-3"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {ansicht === "jahr" ? (
+        <JahresTabelle uebersicht={jahresUebersicht} schuljahr={schuljahr} />
+      ) : (
+        <>
       {/* Halbjahr-Switcher */}
       <div className="animate-fade-up mb-4">
         <HalbjahrSwitcher
@@ -216,6 +247,8 @@ export function NotenrechnerBoard({
           onClose={() => setDialogFachId(null)}
           onUpdate={(updates) => handleUpdateFach(dialogFach.id, updates)}
         />
+      )}
+        </>
       )}
     </>
   );

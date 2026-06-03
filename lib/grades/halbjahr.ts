@@ -46,3 +46,17 @@ export function vorherigesHalbjahr(hj: string): string {
   if (p.nummer === 2) return baueHalbjahr(p.startjahr, 1);
   return baueHalbjahr(p.startjahr - 1, 2);
 }
+
+/** "2025/26-2" -> "2025/26" (Schuljahr ohne HJ-Nummer). */
+export function schuljahrLabel(hj: string): string {
+  const p = parseHalbjahr(hj);
+  if (!p) return hj;
+  return `${p.startjahr}/${p.kurz}`;
+}
+
+/** Liefert beide Halbjahre des Schuljahres, in das das gegebene HJ fällt. */
+export function halbjahreImSchuljahr(hj: string): [string, string] {
+  const p = parseHalbjahr(hj);
+  if (!p) return [hj, hj];
+  return [baueHalbjahr(p.startjahr, 1), baueHalbjahr(p.startjahr, 2)];
+}
