@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { FachCard } from "./fach-card";
 import { FachDialog } from "./fach-dialog";
 import { HalbjahrSwitcher } from "./halbjahr-switcher";
-import { KlausurSection } from "./klausur-section";
 import { JahresTabelle } from "./jahres-tabelle";
 import { addFach, removeNote, addNote } from "@/lib/actions/schule";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
@@ -246,9 +245,6 @@ export function NotenrechnerBoard({
           </Button>
         </section>
       </div>
-
-      {/* Klausuren & Termine */}
-      <KlausurSection faecher={faecher} klausuren={klausuren} />
 
       {/* Fach-Dialog */}
       {dialogFach && (
