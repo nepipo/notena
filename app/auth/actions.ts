@@ -142,7 +142,18 @@ export async function updatePassword(
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
-  revalidatePath("/", "layout");
+  await supabase.auth.signOut({ scope: "local" });
+  redirect("/login");
+}
+
+export async function deleteAccount(): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) return { error: "Nicht eingeloggt." };
+
+  const { error } = await supabase.rpc("delete_current_user");
+  if (error) return { error: "Konto konnte nicht gelöscht werden." };
+
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/login");
 }

@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "@/app/auth/actions";
+import { signOut, deleteAccount } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import { ProfilForm } from "@/components/profil-form";
+import { DeleteAccountButton } from "@/components/delete-account-button";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
@@ -39,14 +40,26 @@ export default async function ProfilPage() {
         <p className="mt-2 text-sm text-text-dim">
           Angemeldet als <span className="font-mono text-foreground">{email}</span>
         </p>
+
         <form action={signOut} className="mt-4">
-          <Button variant="outline" className="border-border bg-surface-2 hover:bg-surface-3">
+          <Button
+            type="submit"
+            variant="outline"
+            className="border-border bg-surface-2 hover:bg-surface-3"
+          >
             Abmelden
           </Button>
         </form>
-        <p className="mt-4 font-mono text-[11px] text-text-mute">
-          Account löschen? Schreib uns — kommt bald als Self-Service.
-        </p>
+
+        <div className="mt-6 border-t border-border/40 pt-6">
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-destructive/70">
+            Gefahrenzone
+          </div>
+          <p className="mt-2 text-sm text-text-dim">
+            Löscht dein Konto und alle deine Daten unwiderruflich.
+          </p>
+          <DeleteAccountButton deleteAction={deleteAccount} />
+        </div>
       </section>
     </main>
   );
