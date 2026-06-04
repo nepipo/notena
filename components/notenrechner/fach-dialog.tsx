@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { updateFach } from "@/app/dashboard/actions";
+import { updateFach } from "@/lib/actions/schule";
 import type { Fach } from "@/lib/grades/types";
 
 const PRESET_FARBEN = [

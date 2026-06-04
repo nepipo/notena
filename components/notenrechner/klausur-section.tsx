@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addKlausur, removeKlausur } from "@/app/dashboard/actions";
+import { addKlausur, removeKlausur } from "@/lib/actions/schule";
 import type { Fach } from "@/lib/grades/types";
 import type { KlausurRow } from "@/lib/grades/db";
 

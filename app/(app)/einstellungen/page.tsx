@@ -1,12 +1,9 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { updatePraeferenzen } from "@/app/dashboard/actions";
+import { updatePraeferenzen } from "@/lib/actions/schule";
 
-export default async function SettingsPage() {
+// Auth-Check macht app/(app)/layout.tsx zentral.
+export default async function EinstellungenPage() {
   const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  if (!data?.claims) redirect("/login");
 
   const { data: profil } = await supabase
     .from("nutzer_profil")
@@ -23,12 +20,6 @@ export default async function SettingsPage() {
           Einstellungen
         </div>
         <h1 className="text-4xl font-extrabold leading-none">Einstellungen.</h1>
-        <Link
-          href="/dashboard"
-          className="mt-3 inline-block font-mono text-sm text-text-dim hover:text-foreground"
-        >
-          ← Zurück zum Dashboard
-        </Link>
       </header>
 
       {/* Eingabe-Modus */}

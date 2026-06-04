@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { completeOnboarding } from "@/app/dashboard/actions";
+import { completeOnboarding } from "@/lib/actions/schule";
 
 type Modus = "punkte" | "note";
 

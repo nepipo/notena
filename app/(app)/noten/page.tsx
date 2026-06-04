@@ -1,8 +1,4 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "@/app/auth/actions";
-import { Button } from "@/components/ui/button";
 import { NotenrechnerBoard } from "@/components/notenrechner/notenrechner-board";
 import {
   assembleFaecher,
@@ -19,24 +15,14 @@ import {
 import { fachSchnittGerundet } from "@/lib/grades/calc";
 import { berechneJahresUebersicht } from "@/lib/grades/jahr";
 
-export default async function DashboardPage() {
+// Auth + Onboarding-Check macht app/(app)/layout.tsx zentral.
+export default async function NotenPage() {
   const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  if (!claims) redirect("/login");
 
-  const email = typeof claims.email === "string" ? claims.email : "Account";
-
-  // Profil laden (onboarding + halbjahr)
   const { data: profil } = await supabase
     .from("nutzer_profil")
-    .select("aktuelles_halbjahr, onboarding_abgeschlossen")
+    .select("aktuelles_halbjahr")
     .single();
-
-  // Onboarding noch nicht abgeschlossen → weiterleiten
-  if (profil && profil.onboarding_abgeschlossen === false) {
-    redirect("/onboarding");
-  }
 
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
@@ -121,35 +107,15 @@ export default async function DashboardPage() {
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
-      <header className="animate-fade-up mb-8 flex items-start justify-between">
-        <div>
-          <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
-            <span className="inline-block size-1.5 rounded-full bg-success" />
-            Dashboard · Schule
-          </div>
-          <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">
-            Dein Notenrechner.
-          </h1>
-          <p className="mt-2 text-sm text-text-dim">
-            {email} · Halbjahr {halbjahr}
-          </p>
+      <header className="animate-fade-up mb-8">
+        <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
+          <span className="inline-block size-1.5 rounded-full bg-success" />
+          Notenrechner
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/settings"
-            className="rounded-xl border border-border bg-surface-2 px-4 py-2 font-sans text-sm transition-colors hover:bg-surface-3"
-          >
-            Einstellungen
-          </Link>
-          <form action={signOut}>
-            <Button
-              variant="outline"
-              className="border-border bg-surface-2 hover:bg-surface-3"
-            >
-              Abmelden
-            </Button>
-          </form>
-        </div>
+        <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">
+          Deine Noten.
+        </h1>
+        <p className="mt-2 text-sm text-text-dim">Halbjahr {halbjahr}</p>
       </header>
 
       <NotenrechnerBoard

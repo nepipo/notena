@@ -6,7 +6,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { neuesHalbjahr, type NeuesFachInput } from "@/app/dashboard/actions";
+import { neuesHalbjahr, type NeuesFachInput } from "@/lib/actions/schule";
 import { baueHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { Fach } from "@/lib/grades/types";
 
