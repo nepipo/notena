@@ -194,7 +194,7 @@ export function NotenrechnerBoard({
           </div>
           <div className="mt-3 flex items-end">
             <span
-              className="font-display text-[110px] font-extrabold leading-[0.85] tracking-[-0.06em]"
+              className="font-display text-[72px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[110px]"
               style={{ color: gesamtFarbe }}
             >
               {fmt(gesamt)}

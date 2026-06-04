@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, X, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
@@ -165,6 +165,27 @@ export function StundenplanBoard({
   const [editWerte, setEditWerte] = useState<FormWerte>(FORM_LEER);
   const [pending, start] = useTransition();
   const router = useRouter();
+
+  const [jetztMin, setJetztMin] = useState(() => {
+    const n = new Date();
+    return n.getHours() * 60 + n.getMinutes();
+  });
+  useEffect(() => {
+    const t = setInterval(() => {
+      const n = new Date();
+      setJetztMin(n.getHours() * 60 + n.getMinutes());
+    }, 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const heuteWochentag = new Date().getDay();
+  const heuteIndex = weekOffset === 0 && heuteWochentag >= 1 && heuteWochentag <= 5
+    ? heuteWochentag - 1
+    : -1;
+  const jetztTopPct =
+    heuteIndex >= 0
+      ? Math.max(0, Math.min(100, ((jetztMin - START_H * 60) / TOTAL_MIN) * 100))
+      : -1;
 
   const tagIsos = wocheDaten(weekOffset);
   const kw = kwVonIso(tagIsos[0]);
@@ -359,9 +380,19 @@ export function StundenplanBoard({
             <div />
             {TAGE.map((t, i) => {
               const { kls, has } = eventsProTag[i];
+              const istHeute = i === heuteIndex;
               return (
-                <div key={t} className="py-2 text-center">
-                  <div className="font-display text-sm font-extrabold text-foreground">{t}</div>
+                <div
+                  key={t}
+                  className="py-2 text-center"
+                  style={istHeute ? { background: "color-mix(in srgb, var(--brand) 6%, transparent)" } : undefined}
+                >
+                  <div
+                    className="font-display text-sm font-extrabold"
+                    style={{ color: istHeute ? "var(--brand)" : "var(--foreground)" }}
+                  >
+                    {t}
+                  </div>
                   <div className="font-mono text-[10px] text-text-mute">{fmtTagDatum(tagIsos[i])}</div>
                   {(kls.length > 0 || has.length > 0) && (
                     <div className="mt-1 flex flex-wrap items-center justify-center gap-0.5 px-1">
@@ -425,6 +456,45 @@ export function StundenplanBoard({
                 }}
               />
             ))}
+
+            {/* Heute-Spalte Highlight */}
+            {heuteIndex >= 0 && (
+              <div
+                className="pointer-events-none absolute inset-y-0"
+                style={{
+                  left: `calc(52px + ${(heuteIndex / 5) * 100}%)`,
+                  width: `${(1 / 5) * 100}%`,
+                  background: "color-mix(in srgb, var(--brand) 4%, transparent)",
+                }}
+              />
+            )}
+
+            {/* Jetzt-Linie */}
+            {heuteIndex >= 0 && jetztTopPct >= 0 && (
+              <div
+                className="pointer-events-none absolute inset-x-0 z-10 flex items-center"
+                style={{ top: `${jetztTopPct}%` }}
+              >
+                <div className="w-[52px] flex-shrink-0 pr-1.5 text-right">
+                  <span className="font-mono text-[8px] font-bold" style={{ color: "#ff3050" }}>
+                    {String(Math.floor(jetztMin / 60)).padStart(2, "0")}:{String(jetztMin % 60).padStart(2, "0")}
+                  </span>
+                </div>
+                <div
+                  className="flex-1 border-t-2"
+                  style={{ borderColor: "#ff3050", opacity: 0.7 }}
+                />
+                <div
+                  className="absolute h-2 w-2 rounded-full"
+                  style={{
+                    background: "#ff3050",
+                    left: `calc(52px + ${(heuteIndex / 5) * 100}%)`,
+                    transform: "translate(-50%, -50%)",
+                    boxShadow: "0 0 8px #ff3050",
+                  }}
+                />
+              </div>
+            )}
 
             {/* Stunden-Blöcke */}
             {proTag.map((stundenAmTag, tagIndex) =>

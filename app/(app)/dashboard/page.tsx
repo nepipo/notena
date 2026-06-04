@@ -76,7 +76,7 @@ export default async function DashboardPage() {
           <span className="inline-block size-1.5 rounded-full bg-success" />
           Übersicht · {halbjahr}
         </div>
-        <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">Dein Cockpit.</h1>
+        <h1 className="text-3xl font-extrabold leading-none sm:text-4xl md:text-5xl">Dein Cockpit.</h1>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -94,7 +94,7 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-3 flex items-end">
             <span
-              className="font-display text-[88px] font-extrabold leading-[0.85] tracking-[-0.06em]"
+              className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[88px]"
               style={{ color: schnittFarbe(gesamt) }}
             >
               {fmt(gesamt)}
