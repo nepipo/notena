@@ -1,14 +1,26 @@
-import { CalendarDays } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { StundenplanBoard } from "@/components/stundenplan/stundenplan-board";
+import type { StundeRow } from "@/lib/stundenplan/types";
+import type { FachRow } from "@/lib/grades/db";
 
-export default function StundenplanPage() {
+export default async function StundenplanPage() {
+  const supabase = await createClient();
+
+  const [{ data: stundeRows }, { data: fachRows }] = await Promise.all([
+    supabase
+      .from("stundenplan_stunde")
+      .select("*")
+      .order("wochentag")
+      .order("zeit_start"),
+    supabase.from("schule_fach").select("*").order("name"),
+  ]);
+
+  const stunden = (stundeRows ?? []) as StundeRow[];
+  const faecher = (fachRows ?? []) as FachRow[];
+
   return (
-    <main className="relative z-[5] mx-auto flex min-h-[60vh] w-full max-w-[600px] flex-col items-center justify-center px-5 py-10 text-center sm:px-8">
-      <CalendarDays className="size-12 text-brand" />
-      <h1 className="mt-4 font-display text-3xl font-extrabold">Stundenplan kommt bald.</h1>
-      <p className="mt-2 max-w-sm text-sm text-text-dim">
-        Hier wird bald dein Wochen-Stundenplan stehen — mit Fächern, Zeiten und Räumen.
-        Wir bauen ihn als Nächstes.
-      </p>
+    <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-8 sm:px-8">
+      <StundenplanBoard stunden={stunden} faecher={faecher} />
     </main>
   );
 }
