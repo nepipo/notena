@@ -151,7 +151,7 @@ export function HausaufgabenListe({
                     : {}
                 }
               >
-                {ha.erledigt && <span className="text-[11px] font-black text-black">✓</span>}
+                {ha.erledigt && <span className="text-[11px] font-black text-white">✓</span>}
               </button>
               <button
                 onClick={() => loeschen(ha.id)}
