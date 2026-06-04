@@ -15,6 +15,7 @@ export default async function AppLayout({
   const { data: profil } = await supabase
     .from("nutzer_profil")
     .select("name, onboarding_abgeschlossen")
+    .eq("id", claims.sub)
     .single();
 
   if (profil && profil.onboarding_abgeschlossen === false) {
