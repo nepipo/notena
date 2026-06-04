@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
+import { PushToggle } from "@/components/push-toggle";
 
 // Auth-Check macht app/(app)/layout.tsx zentral.
 export default async function EinstellungenPage() {
@@ -69,6 +70,25 @@ export default async function EinstellungenPage() {
         </p>
         <p className="mt-2 font-mono text-[11px] text-text-mute">
           Weitere Systeme (Schweiz, Österreich, IB) folgen in einer späteren Version.
+        </p>
+      </section>
+
+      {/* Push-Benachrichtigungen */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Benachrichtigungen
+        </div>
+        <p className="mt-1 text-sm text-text-dim">
+          Push-Alerts für Klausuren und Hausaufgaben — direkt aufs Handy.
+        </p>
+        <div className="mt-4">
+          <PushToggle />
+        </div>
+        <p className="mt-3 font-mono text-[11px] text-text-mute">
+          Funktioniert als PWA (Homescreen-App) und im Browser. Benötigt einmalige Browser-Erlaubnis.
         </p>
       </section>
     </main>
