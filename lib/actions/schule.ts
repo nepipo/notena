@@ -150,6 +150,8 @@ export async function addKlausur(
     });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/aufgaben");
+    revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -167,6 +169,8 @@ export async function removeKlausur(klausurId: string): Promise<ActionResult> {
       .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/aufgaben");
+    revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
