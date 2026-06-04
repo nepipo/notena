@@ -107,6 +107,14 @@ export function NotenrechnerBoard({
       if (!res.ok) {
         setFaecher(snapshot);
         toast.error(`Note konnte nicht gespeichert werden: ${res.error}`);
+      } else {
+        setFaecher((prev) =>
+          prev.map((f) =>
+            f.id === fachId
+              ? { ...f, noten: f.noten.map((n) => n.id === optId ? { ...n, id: res.id } : n) }
+              : f,
+          ),
+        );
       }
     });
   }

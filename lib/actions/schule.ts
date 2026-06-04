@@ -14,6 +14,7 @@ async function requireUserId(): Promise<string> {
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 export type AddFachResult = { ok: true; id: string } | { ok: false; error: string };
+export type AddNoteResult = { ok: true; id: string } | { ok: false; error: string };
 
 export async function addFach(
   name: string,
@@ -39,12 +40,13 @@ export async function addFach(
 
 export async function removeFach(fachId: string): Promise<ActionResult> {
   try {
-    await requireUserId();
+    const userId = await requireUserId();
     const supabase = await createClient();
     const { error } = await supabase
       .from("schule_fach")
       .delete()
-      .eq("id", fachId);
+      .eq("id", fachId)
+      .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     return { ok: true };
@@ -59,24 +61,24 @@ export async function addNote(
   kategorie: Kategorie,
   bezeichnung?: string,
   gewicht?: number,
-): Promise<ActionResult> {
+): Promise<AddNoteResult> {
   if (!Number.isFinite(punkte) || punkte < 0 || punkte > 15) {
     return { ok: false, error: "Punkte muessen zwischen 0 und 15 liegen." };
   }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
-    const { error } = await supabase.from("schule_note").insert({
+    const { data, error } = await supabase.from("schule_note").insert({
       user_id: userId,
       fach_id: fachId,
       punkte: Math.round(punkte),
       kategorie,
       bezeichnung: bezeichnung?.trim() || null,
       gewicht: gewicht ?? 1,
-    });
+    }).select("id").single();
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
-    return { ok: true };
+    return { ok: true, id: data.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }
@@ -84,12 +86,13 @@ export async function addNote(
 
 export async function removeNote(noteId: string): Promise<ActionResult> {
   try {
-    await requireUserId();
+    const userId = await requireUserId();
     const supabase = await createClient();
     const { error } = await supabase
       .from("schule_note")
       .delete()
-      .eq("id", noteId);
+      .eq("id", noteId)
+      .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     return { ok: true };
@@ -109,12 +112,13 @@ export async function updateFach(
   },
 ): Promise<ActionResult> {
   try {
-    await requireUserId();
+    const userId = await requireUserId();
     const supabase = await createClient();
     const { error } = await supabase
       .from("schule_fach")
       .update(updates)
-      .eq("id", fachId);
+      .eq("id", fachId)
+      .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     return { ok: true };
@@ -150,12 +154,13 @@ export async function addKlausur(
 
 export async function removeKlausur(klausurId: string): Promise<ActionResult> {
   try {
-    await requireUserId();
+    const userId = await requireUserId();
     const supabase = await createClient();
     const { error } = await supabase
       .from("schule_klausur")
       .delete()
-      .eq("id", klausurId);
+      .eq("id", klausurId)
+      .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     return { ok: true };

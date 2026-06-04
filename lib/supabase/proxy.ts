@@ -44,7 +44,12 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/signup") ||
     path.startsWith("/forgot-password") ||
     path.startsWith("/auth") ||
-    path.startsWith("/demo");
+    path.startsWith("/demo") ||
+    // PWA-Ressourcen: müssen ohne Login erreichbar sein
+    path === "/manifest.webmanifest" ||
+    path === "/icon" ||
+    path === "/icon512" ||
+    path === "/apple-icon";
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

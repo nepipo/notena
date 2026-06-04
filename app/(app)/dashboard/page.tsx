@@ -30,9 +30,13 @@ const SCHNELLZUGRIFF = [
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+  const userId = authData?.claims?.sub ?? "";
+
   const { data: profil } = await supabase
     .from("nutzer_profil")
     .select("aktuelles_halbjahr")
+    .eq("id", userId)
     .single();
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
