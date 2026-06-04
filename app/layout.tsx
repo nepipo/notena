@@ -25,12 +25,22 @@ export const metadata: Metadata = {
   title: "Project X — Dein Schul-Cockpit",
   description:
     "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Project X",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#1da1ff",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
+  maximumScale: 1,
 };
 
 export default function RootLayout({

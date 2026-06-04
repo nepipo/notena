@@ -70,7 +70,12 @@
       "Bash(curl -s -o /dev/null -w \"dashboard: %{http_code}\\\\n\" --max-time 10 http://localhost:3000/dashboard)",
       "Bash(curl -s -o /dev/null -w \"Status: %{http_code}, landet auf: %{redirect_url}\\\\n\" --max-time 10 https://project-x-seven-tawny.vercel.app/dashboard)",
       "Bash(curl -s --max-time 10 https://project-x-seven-tawny.vercel.app/)",
-      "Bash(curl -s --max-time 10 http://localhost:3000/)"
+      "Bash(curl -s --max-time 10 http://localhost:3000/)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)"
     ]
   }
 }
