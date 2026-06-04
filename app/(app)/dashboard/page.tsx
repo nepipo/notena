@@ -19,7 +19,11 @@ function fmt(n: number | null): string {
 }
 
 function tageBis(iso: string): number {
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+  const heute = new Date();
+  const ziel = new Date(iso);
+  const heut = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate());
+  const zielt = new Date(ziel.getFullYear(), ziel.getMonth(), ziel.getDate());
+  return Math.round((zielt.getTime() - heut.getTime()) / 86400000);
 }
 
 const SCHNELLZUGRIFF = [

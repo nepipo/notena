@@ -32,6 +32,7 @@ export async function addFach(
       .single();
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
     return { ok: true, id: data.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -49,6 +50,7 @@ export async function removeFach(fachId: string): Promise<ActionResult> {
       .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -78,6 +80,7 @@ export async function addNote(
     }).select("id").single();
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
     return { ok: true, id: data.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -95,6 +98,7 @@ export async function removeNote(noteId: string): Promise<ActionResult> {
       .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -181,7 +185,7 @@ export async function updatePraeferenzen(
       .eq("id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
-    revalidatePath("/settings");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -262,6 +266,7 @@ export async function neuesHalbjahr(
     if (profilError) return { ok: false, error: profilError.message };
 
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
