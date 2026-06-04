@@ -7,6 +7,7 @@ import {
   Calculator,
   Sparkles,
   CalendarDays,
+  ClipboardList,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const TABS: Tab[] = [
   { href: "/noten", label: "Noten", icon: Calculator },
   { href: "/what-if", label: "What-If", icon: Sparkles },
   { href: "/stundenplan", label: "Stundenplan", icon: CalendarDays },
+  { href: "/aufgaben", label: "Aufgaben", icon: ClipboardList },
   { href: "/einstellungen", label: "Einstellungen", icon: Settings },
 ];
 
