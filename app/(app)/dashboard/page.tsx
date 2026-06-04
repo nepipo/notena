@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { BriefingKarte } from "@/components/dashboard/briefing-karte";
+import { CoachChat } from "@/components/dashboard/coach-chat";
 import {
   assembleFaecher,
   type FachRow,
@@ -19,10 +22,10 @@ function fmt(n: number | null): string {
 }
 
 function tageBis(iso: string): number {
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  const zielt = new Date(y, m - 1, d);
   const heute = new Date();
-  const ziel = new Date(iso);
   const heut = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate());
-  const zielt = new Date(ziel.getFullYear(), ziel.getMonth(), ziel.getDate());
   return Math.round((zielt.getTime() - heut.getTime()) / 86400000);
 }
 
@@ -54,10 +57,11 @@ export default async function DashboardPage() {
     ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
     : { data: [] as NoteRow[] };
 
+  const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
   const { data: klausurRows } = await supabase
     .from("schule_klausur")
     .select("*")
-    .gte("datum", new Date().toISOString())
+    .gte("datum", todayUtc)
     .order("datum", { ascending: true })
     .limit(1);
 
@@ -79,7 +83,17 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-extrabold leading-none sm:text-4xl md:text-5xl">Dein Cockpit.</h1>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* Briefing */}
+      <Suspense fallback={<BriefingSkeleton />}>
+        <BriefingKarte />
+      </Suspense>
+
+      {/* KI-Coach */}
+      <div className="mt-4">
+        <CoachChat />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {/* Gesamtschnitt */}
         <section
           className="lift animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
@@ -135,6 +149,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Schnellzugriff */}
+
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         {SCHNELLZUGRIFF.map((s, i) => {
           const Icon = s.icon;
@@ -152,5 +167,24 @@ export default async function DashboardPage() {
         })}
       </div>
     </main>
+  );
+}
+
+function BriefingSkeleton() {
+  return (
+    <div
+      className="animate-pulse rounded-[28px] border border-border p-6 sm:p-8"
+      style={{ background: "var(--surface-1)" }}
+    >
+      <div className="mb-3 flex items-center gap-2">
+        <div className="size-1.5 rounded-full bg-brand/40" />
+        <div className="h-2.5 w-24 rounded bg-surface-2" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-full rounded bg-surface-2" />
+        <div className="h-4 w-4/5 rounded bg-surface-2" />
+        <div className="h-4 w-3/5 rounded bg-surface-2" />
+      </div>
+    </div>
   );
 }
