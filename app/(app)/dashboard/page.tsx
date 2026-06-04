@@ -24,7 +24,7 @@ function tageBis(iso: string): number {
 
 const SCHNELLZUGRIFF = [
   { href: "/noten", label: "Notenrechner", icon: Calculator },
-  { href: "/was-waere-wenn", label: "Was-wäre-wenn", icon: Sparkles },
+  { href: "/what-if", label: "What-If", icon: Sparkles },
   { href: "/stundenplan", label: "Stundenplan", icon: CalendarDays },
 ];
 

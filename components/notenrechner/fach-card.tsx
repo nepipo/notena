@@ -117,7 +117,7 @@ export function FachCard({
           </div>
           <button
             onClick={() => setWwwOffen((v) => !v)}
-            title="Was-wäre-wenn"
+            title="What-If"
             className={`ml-1 transition-colors ${wwwOffen ? "text-brand" : "text-text-mute hover:text-foreground"}`}
           >
             🔮

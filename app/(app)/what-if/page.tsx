@@ -35,7 +35,7 @@ export default async function WasWaereWennPage() {
       <header className="animate-fade-up mb-8">
         <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
           <span className="inline-block size-1.5 rounded-full bg-brand" />
-          Was-wäre-wenn
+          What-If
         </div>
         <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">Spiel es durch.</h1>
         <p className="mt-2 text-sm text-text-dim">
