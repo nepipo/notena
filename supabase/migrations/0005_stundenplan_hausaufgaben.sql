@@ -51,3 +51,14 @@ alter table public.nutzer_profil
     check (wochen_modus in ('standard', 'AB')) default 'standard',
   add column if not exists aktuelle_woche text
     check (aktuelle_woche in ('A', 'B')) default 'A';
+
+-- ── 4. Zusätzliche Indizes + Integrity-Constraint ─────────────────────────
+create index if not exists stundenplan_stunde_fach_idx
+  on public.stundenplan_stunde (fach_id);
+
+create index if not exists hausaufgabe_fach_idx
+  on public.hausaufgabe (fach_id);
+
+alter table public.stundenplan_stunde
+  add constraint stundenplan_stunde_zeit_valid
+  check (zeit_start < zeit_end);
