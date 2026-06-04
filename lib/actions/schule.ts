@@ -262,3 +262,31 @@ export async function neuesHalbjahr(
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }
 }
+
+export async function updateProfil(
+  name: string,
+  klasse: number | null,
+  schule: string,
+): Promise<ActionResult> {
+  if (klasse !== null && (klasse < 5 || klasse > 13)) {
+    return { ok: false, error: "Klasse muss zwischen 5 und 13 liegen." };
+  }
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({
+        name: name.trim() || null,
+        klasse,
+        schule: schule.trim() || null,
+      })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/profil");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
