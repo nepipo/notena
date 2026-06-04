@@ -6,6 +6,7 @@ export interface StundeRow {
   zeit_start: string;      // "HH:MM:SS" (Postgres time)
   zeit_end: string;
   raum: string | null;
+  lehrer: string | null;
   woche_typ: "A" | "B" | null;
 }
 

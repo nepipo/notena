@@ -31,11 +31,6 @@ function hoehePct(start: string, end: string): number {
 const TAGE = ["Mo", "Di", "Mi", "Do", "Fr"] as const;
 const STUNDEN_LABELS = Array.from({ length: END_H - START_H }, (_, i) => START_H + i);
 
-const STANDARD_ZEITEN = [
-  "07:30", "08:15", "09:05", "09:50", "10:50", "11:35", "12:30", "13:15",
-  "14:15", "15:00", "15:45", "16:30",
-];
-
 // ── Typen ────────────────────────────────────────────────────────────────────
 interface StundeAngereichert extends StundeRow {
   fach?: FachRow;
@@ -65,6 +60,7 @@ export function StundenplanBoard({
   const [zeitEnd, setZeitEnd] = useState("09:30");
   const [fachId, setFachId] = useState("");
   const [raum, setRaum] = useState("");
+  const [lehrer, setLehrer] = useState("");
 
   function hinzufuegen() {
     if (!zeitStart || !zeitEnd) {
@@ -82,6 +78,7 @@ export function StundenplanBoard({
         zeitStart,
         zeitEnd,
         raum: raum.trim() || null,
+        lehrer: lehrer.trim() || null,
         wocheTyp: null,
       });
       if (!res.ok) {
@@ -91,6 +88,7 @@ export function StundenplanBoard({
       toast.success("Stunde eingetragen.");
       setShowForm(false);
       setRaum("");
+      setLehrer("");
       router.refresh();
     });
   }
@@ -167,46 +165,24 @@ export function StundenplanBoard({
               <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
                 Beginn
               </label>
-              <select
+              <Input
+                type="time"
                 value={zeitStart}
                 onChange={(e) => setZeitStart(e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-surface-2 px-2 font-mono text-sm text-foreground"
-              >
-                {STANDARD_ZEITEN.map((z) => (
-                  <option key={z} value={z}>{z}</option>
-                ))}
-                <option value="custom">Andere…</option>
-              </select>
-              {zeitStart === "custom" && (
-                <Input
-                  type="time"
-                  onChange={(e) => setZeitStart(e.target.value || "custom")}
-                  className="mt-1 h-9 bg-surface-2 font-mono text-sm"
-                />
-              )}
+                className="h-9 bg-surface-2 font-mono text-sm"
+              />
             </div>
             {/* Ende */}
             <div className="space-y-1">
               <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
                 Ende
               </label>
-              <select
+              <Input
+                type="time"
                 value={zeitEnd}
                 onChange={(e) => setZeitEnd(e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-surface-2 px-2 font-mono text-sm text-foreground"
-              >
-                {STANDARD_ZEITEN.map((z) => (
-                  <option key={z} value={z}>{z}</option>
-                ))}
-                <option value="custom">Andere…</option>
-              </select>
-              {zeitEnd === "custom" && (
-                <Input
-                  type="time"
-                  onChange={(e) => setZeitEnd(e.target.value || "custom")}
-                  className="mt-1 h-9 bg-surface-2 font-mono text-sm"
-                />
-              )}
+                className="h-9 bg-surface-2 font-mono text-sm"
+              />
             </div>
             {/* Fach */}
             <div className="space-y-1">
@@ -224,6 +200,18 @@ export function StundenplanBoard({
                 ))}
               </select>
             </div>
+            {/* Lehrer */}
+            <div className="space-y-1">
+              <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
+                Lehrer
+              </label>
+              <Input
+                value={lehrer}
+                onChange={(e) => setLehrer(e.target.value)}
+                placeholder="z. B. Hr. Müller (optional)"
+                className="h-9 bg-surface-2 font-mono text-sm"
+              />
+            </div>
             {/* Raum */}
             <div className="space-y-1">
               <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
@@ -240,7 +228,7 @@ export function StundenplanBoard({
           <div className="mt-4 flex gap-2">
             <Button
               onClick={hinzufuegen}
-              disabled={pending || zeitStart === "custom" || zeitEnd === "custom"}
+              disabled={pending}
               className="font-display font-bold"
             >
               Eintragen
@@ -323,7 +311,6 @@ export function StundenplanBoard({
                 const farbe = s.fach?.farbe ?? FACH_FALLBACK_FARBE;
                 const top = topPct(s.zeit_start);
                 const height = hoehePct(s.zeit_start, s.zeit_end);
-                const colStart = tagIndex + 2; // CSS-Grid 1-indexed, Spalte 1 = Zeit
 
                 return (
                   <div
@@ -356,9 +343,9 @@ export function StundenplanBoard({
                         >
                           {s.fach?.name ?? "Freizeit"}
                         </div>
-                        {s.raum && (
+                        {(s.lehrer || s.raum) && (
                           <div className="truncate font-mono text-[9px] text-text-dim">
-                            {s.raum}
+                            {[s.lehrer, s.raum].filter(Boolean).join(" · ")}
                           </div>
                         )}
                       </div>

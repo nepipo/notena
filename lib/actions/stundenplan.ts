@@ -19,6 +19,7 @@ export async function addStunde(params: {
   zeitStart: string;
   zeitEnd: string;
   raum: string | null;
+  lehrer: string | null;
   wocheTyp: "A" | "B" | null;
 }): Promise<ActionResult> {
   if (params.wochentag < 1 || params.wochentag > 7) {
@@ -37,6 +38,7 @@ export async function addStunde(params: {
       zeit_start: params.zeitStart,
       zeit_end: params.zeitEnd,
       raum: params.raum || null,
+      lehrer: params.lehrer || null,
       woche_typ: params.wocheTyp,
     });
     if (error) return { ok: false, error: error.message };
