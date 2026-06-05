@@ -191,7 +191,11 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
                     {/* Zeile 2: Fach + Lehrer + Raum */}
                     <div className="flex items-center gap-2">
                       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-                        <span className="truncate font-display text-sm font-bold">{s.fachName}</span>
+                        <Input
+                          value={s.fachName}
+                          onChange={(e) => updateStunde(s.tempId, { fachName: e.target.value })}
+                          className="h-7 min-w-0 flex-1 bg-surface-1 font-display text-sm font-bold"
+                        />
                         {s.isNew && (
                           <span
                             className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-wider"

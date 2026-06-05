@@ -141,7 +141,7 @@ export async function importStunden(
         user_id: userId,
         name,
         farbe: FACH_FARBEN[i % FACH_FARBEN.length],
-        niveau: "Grundkurs",
+        niveau: "grund",
         halbjahr: null,
         fach_gewicht: 1,
         gewicht_klausur: 50,
