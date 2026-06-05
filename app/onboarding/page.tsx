@@ -7,7 +7,7 @@ import { completeOnboarding, addFach, updateFach } from "@/lib/actions/schule";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 
 type Modus = "punkte" | "note";
-type Niveau = "GK" | "LK";
+type Niveau = "grund" | "erhoeht";
 
 interface FachEintrag {
   id: string;
@@ -28,7 +28,7 @@ export default function OnboardingPage() {
   const [eingabeModus, setEingabeModus] = useState<Modus>("punkte");
   const [faecher, setFaecher] = useState<FachEintrag[]>([]);
   const [freitextName, setFreitextName] = useState("");
-  const [freitextNiveau, setFreitextNiveau] = useState<Niveau>("GK");
+  const [freitextNiveau, setFreitextNiveau] = useState<Niveau>("grund");
   const [, startTransition] = useTransition();
   const router = useRouter();
 
@@ -43,7 +43,7 @@ export default function OnboardingPage() {
       const fach = faecher.find((f) => f.name === vorschlag);
       if (fach) removeFach(fach.id);
     } else {
-      fachHinzufuegen(vorschlag, "GK");
+      fachHinzufuegen(vorschlag, "grund");
     }
   }
 
@@ -74,7 +74,7 @@ export default function OnboardingPage() {
     if (!freitextName.trim()) return;
     fachHinzufuegen(freitextName, freitextNiveau);
     setFreitextName("");
-    setFreitextNiveau("GK");
+    setFreitextNiveau("grund");
   }
 
   function finish() {
@@ -201,8 +201,8 @@ export default function OnboardingPage() {
               onChange={(e) => setFreitextNiveau(e.target.value as Niveau)}
               className="rounded-xl border border-border bg-surface-2 px-2 py-2 text-sm outline-none focus:border-brand"
             >
-              <option value="GK">GK</option>
-              <option value="LK">LK</option>
+              <option value="grund">GK</option>
+              <option value="erhoeht">LK</option>
             </select>
             <button
               onClick={freitextHinzufuegen}
@@ -224,7 +224,7 @@ export default function OnboardingPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        const newNiveau = f.niveau === "GK" ? "LK" : "GK";
+                        const newNiveau = f.niveau === "grund" ? "erhoeht" : "grund";
                         setFaecher((prev) =>
                           prev.map((x) =>
                             x.id === f.id ? { ...x, niveau: newNiveau } : x,
@@ -235,12 +235,12 @@ export default function OnboardingPage() {
                         });
                       }}
                       className={`rounded px-2 py-0.5 text-xs font-bold transition-colors ${
-                        f.niveau === "LK"
+                        f.niveau === "erhoeht"
                           ? "bg-indigo-500/20 text-indigo-300"
                           : "bg-surface-3 text-text-mute"
                       }`}
                     >
-                      {f.niveau}
+                      {f.niveau === "erhoeht" ? "LK" : "GK"}
                     </button>
                     <button
                       onClick={() => removeFach(f.id)}
@@ -323,7 +323,7 @@ export default function OnboardingPage() {
                 <span className="text-text-mute">Fächer: </span>
                 <span className="font-semibold">
                   {faecher.length > 0
-                    ? faecher.map((f) => `${f.name} (${f.niveau})`).join(", ")
+                    ? faecher.map((f) => `${f.name} (${f.niveau === "erhoeht" ? "LK" : "GK"})`).join(", ")
                     : "Keine"}
                 </span>
               </div>

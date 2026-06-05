@@ -19,7 +19,7 @@ export type AddNoteResult = { ok: true; id: string } | { ok: false; error: strin
 export async function addFach(
   name: string,
   halbjahr: string,
-  niveau: "GK" | "LK" = "GK",
+  niveau: "grund" | "erhoeht" = "grund",
 ): Promise<AddFachResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Bitte einen Fachnamen eingeben." };
