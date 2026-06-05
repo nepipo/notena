@@ -19,6 +19,7 @@ export type AddNoteResult = { ok: true; id: string } | { ok: false; error: strin
 export async function addFach(
   name: string,
   halbjahr: string,
+  niveau: "GK" | "LK" = "GK",
 ): Promise<AddFachResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Bitte einen Fachnamen eingeben." };
@@ -27,7 +28,7 @@ export async function addFach(
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("schule_fach")
-      .insert({ user_id: userId, name: trimmed, halbjahr })
+      .insert({ user_id: userId, name: trimmed, halbjahr, niveau })
       .select("id")
       .single();
     if (error) return { ok: false, error: error.message };
@@ -198,6 +199,8 @@ export async function updatePraeferenzen(
 }
 
 export async function completeOnboarding(
+  name: string,
+  klasse: number,
   eingabeModus: "punkte" | "note",
 ): Promise<ActionResult> {
   try {
@@ -205,7 +208,12 @@ export async function completeOnboarding(
     const supabase = await createClient();
     const { error } = await supabase
       .from("nutzer_profil")
-      .update({ onboarding_abgeschlossen: true, eingabe_modus: eingabeModus })
+      .update({
+        name: name.trim(),
+        klasse,
+        eingabe_modus: eingabeModus,
+        onboarding_abgeschlossen: true,
+      })
       .eq("id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
