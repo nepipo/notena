@@ -50,6 +50,8 @@ export interface Fach {
   farbe?: string | null;
   /** 'grund' = GK, 'erhoeht' = LK. */
   niveau?: string;
+  /** Fach wird angezeigt, aber nicht in den Gesamtschnitt einberechnet. */
+  ausgeschlossen?: boolean;
 }
 
 /** Standard-Gewichtung: 50% Klausur, 50% mündlich. */

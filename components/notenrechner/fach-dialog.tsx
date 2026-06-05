@@ -10,10 +10,19 @@ import type { Fach } from "@/lib/grades/types";
 const PRESET_FARBEN = [
   "#1da1ff", // brand blau
   "#5b6eff", // indigo
-  "#5bff8a", // grün
-  "#f59e0b", // amber
-  "#ff3050", // rot
+  "#8b5cf6", // violet
+  "#a855f7", // lila
   "#e879f9", // pink
+  "#f43f5e", // rose
+  "#ff3050", // rot
+  "#f97316", // orange
+  "#f59e0b", // amber
+  "#eab308", // gelb
+  "#84cc16", // lime
+  "#22c55e", // grün
+  "#5bff8a", // mint
+  "#14b8a6", // teal
+  "#06b6d4", // cyan
 ];
 
 export function FachDialog({
@@ -32,6 +41,7 @@ export function FachDialog({
   const [klausurProzent, setKlausurProzent] = useState(
     Math.round((fach.gewichtung?.klausur ?? 0.5) * 100),
   );
+  const [ausgeschlossen, setAusgeschlossen] = useState(fach.ausgeschlossen ?? false);
   const [, startTransition] = useTransition();
 
   function save() {
@@ -41,6 +51,7 @@ export function FachDialog({
       niveau,
       farbe,
       fachGewicht,
+      ausgeschlossen,
       gewichtung: { klausur: kl / 100, muendlich: (100 - kl) / 100, sonstige: 0 },
     });
     onClose();
@@ -51,6 +62,7 @@ export function FachDialog({
         fach_gewicht: fachGewicht,
         gewicht_klausur: kl / 100,
         gewicht_muendlich: (100 - kl) / 100,
+        ausgeschlossen,
       });
       if (!res.ok) toast.error(`Konnte nicht gespeichert werden: ${res.error}`);
     });
@@ -123,10 +135,10 @@ export function FachDialog({
             <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
               Farbe
             </div>
-            <div className="flex gap-2.5">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFarbe(null)}
-                className={`size-8 rounded-full border-2 bg-surface-3 transition-transform ${
+                className={`size-7 rounded-full border-2 bg-surface-3 transition-transform ${
                   farbe === null ? "scale-110 border-foreground" : "border-border"
                 }`}
                 title="Keine Farbe"
@@ -135,7 +147,7 @@ export function FachDialog({
                 <button
                   key={f}
                   onClick={() => setFarbe(f)}
-                  className={`size-8 rounded-full border-2 transition-transform ${
+                  className={`size-7 rounded-full border-2 transition-transform ${
                     farbe === f ? "scale-110 border-foreground" : "border-transparent"
                   }`}
                   style={{ background: f }}
@@ -143,6 +155,30 @@ export function FachDialog({
                 />
               ))}
             </div>
+          </div>
+
+          {/* Ausschließen */}
+          <div className="mt-4 flex items-center justify-between rounded-xl border border-border bg-surface-2 px-4 py-3">
+            <div>
+              <div className="font-sans text-sm font-semibold">Aus Schnitt ausschließen</div>
+              <div className="font-mono text-[11px] text-text-mute">
+                Fach wird angezeigt, zählt aber nicht im Gesamtschnitt
+              </div>
+            </div>
+            <button
+              onClick={() => setAusgeschlossen((v) => !v)}
+              className={`relative h-6 w-11 rounded-full border transition-colors ${
+                ausgeschlossen
+                  ? "border-brand bg-brand"
+                  : "border-border bg-surface-3"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${
+                  ausgeschlossen ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
           </div>
 
           <div className="mt-6 flex justify-end gap-2">

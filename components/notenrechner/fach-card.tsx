@@ -65,7 +65,7 @@ export function FachCard({
 
   return (
     <section
-      className="lift animate-fade-up rounded-3xl border border-border p-6"
+      className={`lift animate-fade-up rounded-3xl border border-border p-6 transition-opacity ${fach.ausgeschlossen ? "opacity-50" : ""}`}
       style={{
         background: "var(--card-grad)",
         animationDelay: `${0.1 + index * 0.07}s`,
@@ -82,9 +82,14 @@ export function FachCard({
               style={{ background: fach.farbe }}
             />
           )}
-          <h2 className="font-display text-xl font-extrabold tracking-[-0.02em]">
+          <h2 className={`font-display text-xl font-extrabold tracking-[-0.02em] ${fach.ausgeschlossen ? "line-through decoration-text-mute" : ""}`}>
             {fach.name}
           </h2>
+          {fach.ausgeschlossen && (
+            <span className="rounded-md bg-surface-3 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] text-text-mute">
+              Kein Schnitt
+            </span>
+          )}
           {fach.niveau && (
             <span
               className={`rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] ${

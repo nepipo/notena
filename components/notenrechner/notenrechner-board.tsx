@@ -52,7 +52,9 @@ export function NotenrechnerBoard({
   const [ansicht, setAnsicht] = useState<"halbjahr" | "jahr">("halbjahr");
   const [, startTransition] = useTransition();
 
-  const gesamt = gesamtSchnittGerundet(faecher);
+  const aktiveFaecher = faecher.filter((f) => !f.ausgeschlossen);
+  const ausgeschlossenCount = faecher.length - aktiveFaecher.length;
+  const gesamt = gesamtSchnittGerundet(aktiveFaecher);
   const gesamtFarbe = schnittFarbe(gesamt);
   const dialogFach = faecher.find((f) => f.id === dialogFachId) ?? null;
 
@@ -203,7 +205,12 @@ export function NotenrechnerBoard({
           </div>
           {gesamt !== null && (
             <div className="mt-2 font-mono text-sm text-text-dim">
-              Note {punkteZuNote(gesamt)} · {faecher.length} Fächer
+              Note {punkteZuNote(gesamt)} · {aktiveFaecher.length} Fächer
+              {ausgeschlossenCount > 0 && (
+                <span className="ml-2 text-text-mute">
+                  ({ausgeschlossenCount} ausgeschlossen)
+                </span>
+              )}
             </div>
           )}
         </div>

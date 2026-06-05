@@ -15,6 +15,7 @@ export interface FachRow {
   gewicht_klausur: number;
   gewicht_muendlich: number;
   gewicht_sonstige: number;
+  ausgeschlossen: boolean;
   created_at: string;
 }
 
@@ -75,6 +76,7 @@ export function assembleFaecher(
     fachGewicht: f.fach_gewicht,
     farbe: f.farbe,
     niveau: f.niveau,
+    ausgeschlossen: f.ausgeschlossen,
   }));
 }
 

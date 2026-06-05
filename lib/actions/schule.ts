@@ -113,6 +113,7 @@ export async function updateFach(
     gewicht_klausur?: number;
     gewicht_muendlich?: number;
     fach_gewicht?: number;
+    ausgeschlossen?: boolean;
   },
 ): Promise<ActionResult> {
   try {
