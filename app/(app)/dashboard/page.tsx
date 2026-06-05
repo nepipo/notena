@@ -88,11 +88,6 @@ export default async function DashboardPage() {
         <BriefingKarte />
       </Suspense>
 
-      {/* KI-Coach */}
-      <div className="mt-4">
-        <CoachChat />
-      </div>
-
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {/* Gesamtschnitt */}
         <section
@@ -165,6 +160,11 @@ export default async function DashboardPage() {
             </Link>
           );
         })}
+      </div>
+
+      {/* KI-Coach — ganz unten */}
+      <div className="mt-4">
+        <CoachChat />
       </div>
     </main>
   );

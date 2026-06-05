@@ -138,11 +138,15 @@ export async function holeBriefing(): Promise<string> {
 
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 256,
-    system: `Du bist ein knapper, motivierender Schul-Coach. Schreibe ein tägliches Briefing für einen Oberstufen-Schüler (Klasse 11, Deutschland).
-Ton: direkt, energetisch, wie ein guter Freund der auch Leistung fordert. Keine Emojis. Kein Bullshit.
-Format: 3–5 Sätze. Erwähne konkret was heute ansteht und gib einen klaren Fokus-Tip. Auf Deutsch.`,
-    messages: [{ role: "user", content: `Meine heutigen Daten:\n${kontext}` }],
+    max_tokens: 200,
+    system: `Du schreibst das tägliche Briefing für einen 17-jährigen Gymnasiasten in der 11. Klasse.
+
+Ton: wie ein älterer Freund der dir direkt sagt was Sache ist — kein Coach-Speak, keine Motivations-Floskeln. Natürlich, knapp, menschlich.
+Stil: normale Sätze, kein Aufzählungs-Bullshit. Keine Emojis. Keine Phrasen wie "Fokus liegt auf" oder "es gilt".
+Inhalt: nur was wirklich aus den Daten hervorgeht — nichts erfinden oder aufbauschen. Wenn nichts ansteht, sag das entspannt.
+Länge: 2–3 Sätze, maximal.
+Sprache: Deutsch, du-Form.`,
+    messages: [{ role: "user", content: kontext }],
   });
 
   const text = msg.content[0].type === "text" ? msg.content[0].text : "Guten Start heute.";
