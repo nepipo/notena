@@ -27,14 +27,13 @@ function fmt(n: number | null): string {
 
 let probeCounter = 0;
 
-function SchnittBalken({ wert, max = 15 }: { wert: number | null; max?: number }) {
-  const pct = wert === null ? 0 : (wert / max) * 100;
-  const farbe = schnittFarbe(wert);
+function SchnittBalken({ wert }: { wert: number | null }) {
+  const pct = wert === null ? 0 : (wert / 15) * 100;
   return (
     <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-3">
       <div
         className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-        style={{ width: `${pct}%`, background: farbe }}
+        style={{ width: `${pct}%`, background: schnittFarbe(wert) }}
       />
     </div>
   );
@@ -62,7 +61,6 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
   const [probeKat, setProbeKat] = useState<Kategorie>("klausur");
   const [ziel, setZiel] = useState("");
   const [zielKat, setZielKat] = useState<Kategorie>("klausur");
-  const [tab, setTab] = useState<"probe" | "ziel">("probe");
 
   const fach = faecher.find((f) => f.id === fachId) ?? null;
 
@@ -73,26 +71,18 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
 
   const gesamtVorher = gesamtSchnittGerundet(faecher);
   const faecherMitProben = fach
-    ? faecher.map((f) =>
-        f.id === fachId
-          ? { ...f, noten: [...f.noten, ...proben] }
-          : f,
-      )
+    ? faecher.map((f) => (f.id === fachId ? { ...f, noten: [...f.noten, ...proben] } : f))
     : faecher;
   const gesamtNachher = gesamtSchnittGerundet(faecherMitProben);
 
-  function addProbe() {
-    const p = Number(probePunkte);
-    if (Number.isNaN(p) || probePunkte === "") return;
+  function addProbe(p?: number) {
+    const punkte = p ?? Number(probePunkte);
+    if (Number.isNaN(punkte) || probePunkte === "" && p === undefined) return;
     setProben((prev) => [
       ...prev,
-      { id: `probe-${probeCounter++}`, punkte: Math.min(15, Math.max(0, p)), kategorie: probeKat },
+      { id: `probe-${probeCounter++}`, punkte: Math.min(15, Math.max(0, punkte)), kategorie: probeKat },
     ]);
-    setProbePunkte("");
-  }
-
-  function clearProben() {
-    setProben([]);
+    if (p === undefined) setProbePunkte("");
   }
 
   const zielZahl = Number(ziel);
@@ -133,9 +123,10 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
             Gesamtschnitt-Impact
           </div>
           <div className="flex flex-wrap items-end gap-4 sm:gap-8">
-            {/* Vorher */}
             <div>
-              <div className="mb-1 font-mono text-[10px] text-text-mute uppercase tracking-widest">Jetzt</div>
+              <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-mute">
+                Jetzt
+              </div>
               <div
                 className="font-display text-5xl font-extrabold leading-none tracking-tight sm:text-6xl"
                 style={{ color: schnittFarbe(gesamtVorher) }}
@@ -149,14 +140,12 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
               )}
             </div>
 
-            {/* Pfeil */}
             {proben.length > 0 && (
               <>
                 <div className="text-2xl text-text-mute">→</div>
-                {/* Nachher */}
                 <div>
-                  <div className="mb-1 font-mono text-[10px] text-text-mute uppercase tracking-widest">
-                    Mit Probe-Noten
+                  <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-mute">
+                    Hochgerechnet
                   </div>
                   <div
                     className="font-display text-5xl font-extrabold leading-none tracking-tight sm:text-6xl"
@@ -177,7 +166,6 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
             )}
           </div>
 
-          {/* Balken */}
           <div className="mt-5 space-y-1.5">
             <SchnittBalken wert={gesamtVorher} />
             {proben.length > 0 && <SchnittBalken wert={gesamtNachher} />}
@@ -211,14 +199,13 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 }`}
               >
                 {f.farbe ? (
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ background: f.farbe }}
-                  />
+                  <span className="size-2.5 shrink-0 rounded-full" style={{ background: f.farbe }} />
                 ) : (
                   <span className="size-2.5 shrink-0 rounded-full bg-surface-3" />
                 )}
-                <span className={`flex-1 font-sans text-sm font-semibold ${istAktiv ? "text-brand" : "text-foreground"}`}>
+                <span
+                  className={`flex-1 font-sans text-sm font-semibold ${istAktiv ? "text-brand" : "text-foreground"}`}
+                >
                   {f.name}
                 </span>
                 {f.niveau === "erhoeht" && (
@@ -238,7 +225,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
         {/* Panel */}
         {fach && (
           <div className="animate-fade-up space-y-4">
-            {/* Fach-Schnitt Hero */}
+            {/* Fach-Schnitt Vergleich */}
             <div
               className="rounded-[24px] border p-5"
               style={{
@@ -252,14 +239,9 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 <div>
                   <div className="flex items-center gap-2">
                     {fach.farbe && (
-                      <span
-                        className="size-3 rounded-full"
-                        style={{ background: fach.farbe }}
-                      />
+                      <span className="size-3 rounded-full" style={{ background: fach.farbe }} />
                     )}
-                    <span className="font-display text-2xl font-extrabold">
-                      {fach.name}
-                    </span>
+                    <span className="font-display text-2xl font-extrabold">{fach.name}</span>
                     {fach.niveau && (
                       <span
                         className={`rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] ${
@@ -300,7 +282,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 </div>
                 {proben.length > 0 && (
                   <button
-                    onClick={clearProben}
+                    onClick={() => setProben([])}
                     className="rounded-lg border border-border bg-surface-2 px-3 py-1.5 font-mono text-xs text-text-mute transition-colors hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
                   >
                     Reset
@@ -308,10 +290,9 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 )}
               </div>
 
-              {/* Balken-Vergleich */}
               <div className="mt-4 space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-16 font-mono text-[10px] text-text-mute">Jetzt</span>
+                  <span className="w-16 font-mono text-[10px] text-text-mute">Aktuell</span>
                   <SchnittBalken wert={istSchnittFach} />
                   <span
                     className="w-8 text-right font-mono text-xs font-bold tabular-nums"
@@ -322,7 +303,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 </div>
                 {proben.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="w-16 font-mono text-[10px] text-text-mute">Probe</span>
+                    <span className="w-16 font-mono text-[10px] text-text-mute">Fiktiv</span>
                     <SchnittBalken wert={mitProbenFach} />
                     <span
                       className="w-8 text-right font-mono text-xs font-bold tabular-nums"
@@ -335,55 +316,135 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-1 rounded-xl border border-border bg-surface-2 p-1">
-              {(["probe", "ziel"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`flex-1 rounded-lg px-4 py-2 font-sans text-sm font-semibold transition-colors ${
-                    tab === t ? "bg-brand text-black" : "text-text-dim hover:bg-surface-3"
-                  }`}
-                >
-                  {t === "probe" ? "🧪 Probe-Noten" : "🎯 Was brauche ich?"}
-                </button>
-              ))}
+            {/* Block 1: Was wenn ich X schreibe? */}
+            <div
+              className="rounded-[24px] border border-border p-5"
+              style={{ background: "var(--card-grad)" }}
+            >
+              <div className="mb-4">
+                <div className="font-display text-base font-extrabold">
+                  Was wäre, wenn ich X schreibe?
+                </div>
+                <div className="mt-0.5 font-mono text-xs text-text-mute">
+                  Tipp eine fiktive Note ein — der Schnitt oben aktualisiert sich sofort.
+                </div>
+              </div>
+
+              {proben.length > 0 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {proben.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setProben((prev) => prev.filter((x) => x.id !== p.id))}
+                      title="Entfernen"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-brand/50 bg-brand/10 px-3 py-1.5 font-mono text-sm text-brand transition-colors hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <span className="font-bold">{p.punkte}</span>
+                      <span className="opacity-60">
+                        {KATEGORIEN.find((k) => k.wert === p.kategorie)?.kurz ?? "?"}
+                      </span>
+                      <span className="text-xs">×</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {KATEGORIEN.map((k) => (
+                  <button
+                    key={k.wert}
+                    onClick={() => setProbeKat(k.wert)}
+                    className={`rounded-xl px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                      probeKat === k.wert
+                        ? "bg-brand text-black"
+                        : "bg-surface-2 text-text-dim hover:bg-surface-3"
+                    }`}
+                  >
+                    {k.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {[0, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => addProbe(p)}
+                      className="min-w-[2.5rem] rounded-xl border border-border bg-surface-2 px-2 py-1.5 font-mono text-sm font-bold transition-colors hover:border-brand/40 hover:bg-brand/10"
+                      style={{ color: schnittFarbe(p) }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={15}
+                    value={probePunkte}
+                    onChange={(e) => setProbePunkte(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addProbe()}
+                    placeholder="Andere Punktzahl (0–15)"
+                    className="h-10 flex-1 bg-surface-2 font-mono"
+                  />
+                  <Button onClick={() => addProbe()} className="h-10 font-display font-bold">
+                    Eintragen
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            {/* Tab: Probe-Noten */}
-            {tab === "probe" && (
-              <div
-                className="rounded-[24px] border border-border p-5"
-                style={{ background: "var(--card-grad)" }}
-              >
-                {/* Vorhandene Proben */}
-                {proben.length > 0 && (
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {proben.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setProben((prev) => prev.filter((x) => x.id !== p.id))}
-                        title="Probe entfernen"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-brand/50 bg-brand/10 px-3 py-1.5 font-mono text-sm text-brand transition-colors hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <span className="font-bold">{p.punkte}</span>
-                        <span className="opacity-60">
-                          {KATEGORIEN.find((k) => k.wert === p.kategorie)?.kurz ?? "?"}
-                        </span>
-                        <span className="text-xs">×</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {/* Block 2: Was muss ich schreiben? */}
+            <div
+              className="rounded-[24px] border border-border p-5"
+              style={{ background: "var(--card-grad)" }}
+            >
+              <div className="mb-4">
+                <div className="font-display text-base font-extrabold">
+                  Was muss ich schreiben, um X zu erreichen?
+                </div>
+                <div className="mt-0.5 font-mono text-xs text-text-mute">
+                  Zielschnitt wählen — ich rechne aus, welche Punkte du mindestens brauchst.
+                </div>
+              </div>
 
-                {/* Kategorie */}
-                <div className="mb-3 flex flex-wrap gap-1.5">
-                  {KATEGORIEN.map((k) => (
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {[5, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((z) => (
+                  <button
+                    key={z}
+                    onClick={() => setZiel(String(z))}
+                    className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${
+                      ziel === String(z)
+                        ? "border-brand bg-brand/15 text-brand"
+                        : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"
+                    }`}
+                    style={{ color: ziel === String(z) ? undefined : schnittFarbe(z) }}
+                  >
+                    {z}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="number"
+                  min={0}
+                  max={15}
+                  value={ziel}
+                  onChange={(e) => setZiel(e.target.value)}
+                  placeholder="Zielschnitt (0–15)"
+                  className="h-10 w-36 bg-surface-2 font-mono"
+                />
+                <span className="font-mono text-sm text-text-dim">in</span>
+                <div className="flex overflow-hidden rounded-xl border border-border">
+                  {KATEGORIEN.slice(0, 3).map((k) => (
                     <button
                       key={k.wert}
-                      onClick={() => setProbeKat(k.wert)}
-                      className={`rounded-xl px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
-                        probeKat === k.wert
+                      onClick={() => setZielKat(k.wert)}
+                      className={`px-3 py-2 font-mono text-xs font-semibold transition-colors ${
+                        zielKat === k.wert
                           ? "bg-brand text-black"
                           : "bg-surface-2 text-text-dim hover:bg-surface-3"
                       }`}
@@ -392,156 +453,60 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                     </button>
                   ))}
                 </div>
+              </div>
 
-                {/* Punkte-Eingabe + Schnellwahl */}
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {[0, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => {
-                          setProben((prev) => [
-                            ...prev,
-                            { id: `probe-${probeCounter++}`, punkte: p, kategorie: probeKat },
-                          ]);
+              {ergebnis !== null && (
+                <div className="mt-5">
+                  {ergebnis === "erreicht" ? (
+                    <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                      <span className="text-2xl">🎉</span>
+                      <div>
+                        <div className="font-display font-bold text-emerald-400">
+                          Ziel schon erreicht!
+                        </div>
+                        <div className="font-mono text-xs text-text-dim">
+                          Dein Schnitt liegt bereits bei oder über {ziel}.
+                        </div>
+                      </div>
+                    </div>
+                  ) : ergebnis === "unmoeglich" ? (
+                    <div className="flex items-center gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+                      <span className="text-2xl">💀</span>
+                      <div>
+                        <div className="font-display font-bold text-red-400">
+                          Mit einer Note nicht erreichbar
+                        </div>
+                        <div className="font-mono text-xs text-text-dim">
+                          Selbst mit 15 Punkten würdest du {ziel} nicht erreichen. Du brauchst
+                          mehrere starke Noten.
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4">
+                      <div
+                        className="flex size-14 shrink-0 items-center justify-center rounded-2xl font-display text-3xl font-extrabold"
+                        style={{
+                          background: `color-mix(in srgb, ${schnittFarbe(ergebnis)} 20%, transparent)`,
+                          color: schnittFarbe(ergebnis),
                         }}
-                        className="min-w-[2.5rem] rounded-xl border border-border bg-surface-2 px-2 py-1.5 font-mono text-sm font-bold transition-colors hover:border-brand/40 hover:bg-brand/10 hover:text-brand"
-                        style={{ color: schnittFarbe(p) }}
                       >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={15}
-                      value={probePunkte}
-                      onChange={(e) => setProbePunkte(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addProbe()}
-                      placeholder="Eigener Wert (0–15)"
-                      className="h-10 flex-1 bg-surface-2 font-mono"
-                    />
-                    <Button onClick={addProbe} className="h-10 font-display font-bold">
-                      + Probe
-                    </Button>
-                  </div>
-                </div>
-
-                {proben.length === 0 && (
-                  <p className="mt-3 font-mono text-xs text-text-mute">
-                    Wähle eine Note aus den Schnellwahl-Buttons oder gib einen eigenen Wert ein.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Tab: Was brauche ich? */}
-            {tab === "ziel" && (
-              <div
-                className="rounded-[24px] border border-border p-5"
-                style={{ background: "var(--card-grad)" }}
-              >
-                <p className="mb-4 font-mono text-xs text-text-dim">
-                  Gib deinen Ziel-Schnitt ein — ich rechne aus, welche Punktzahl du in der nächsten Note brauchst.
-                </p>
-
-                {/* Ziel-Schnitt Schnellwahl */}
-                <div className="mb-3 flex flex-wrap gap-1.5">
-                  {[5, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((z) => (
-                    <button
-                      key={z}
-                      onClick={() => setZiel(String(z))}
-                      className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${
-                        ziel === String(z)
-                          ? "border-brand bg-brand/15 text-brand"
-                          : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"
-                      }`}
-                      style={{ color: ziel === String(z) ? undefined : schnittFarbe(z) }}
-                    >
-                      {z}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <Input
-                    type="number"
-                    min={0}
-                    max={15}
-                    value={ziel}
-                    onChange={(e) => setZiel(e.target.value)}
-                    placeholder="Ziel-Schnitt"
-                    className="h-10 w-32 bg-surface-2 font-mono"
-                  />
-                  <span className="font-mono text-sm text-text-dim">in</span>
-                  <div className="flex overflow-hidden rounded-xl border border-border">
-                    {KATEGORIEN.slice(0, 3).map((k) => (
-                      <button
-                        key={k.wert}
-                        onClick={() => setZielKat(k.wert)}
-                        className={`px-3 py-2 font-mono text-xs font-semibold transition-colors ${
-                          zielKat === k.wert
-                            ? "bg-brand text-black"
-                            : "bg-surface-2 text-text-dim hover:bg-surface-3"
-                        }`}
-                      >
-                        {k.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {ergebnis !== null && (
-                  <div className="mt-5">
-                    {ergebnis === "erreicht" ? (
-                      <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                        <span className="text-2xl">🎉</span>
-                        <div>
-                          <div className="font-display font-bold text-emerald-400">Ziel schon erreicht!</div>
-                          <div className="font-mono text-xs text-text-dim">Dein Schnitt liegt bereits bei oder über {ziel}.</div>
+                        {ergebnis}
+                      </div>
+                      <div>
+                        <div className="font-display font-bold">
+                          Mindestens{" "}
+                          <span style={{ color: schnittFarbe(ergebnis) }}>{ergebnis} Punkte</span>
+                        </div>
+                        <div className="font-mono text-xs text-text-dim">
+                          Note {punkteZuNote(ergebnis)} — dann erreichst du Schnitt {ziel}.
                         </div>
                       </div>
-                    ) : ergebnis === "unmoeglich" ? (
-                      <div className="flex items-center gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
-                        <span className="text-2xl">💀</span>
-                        <div>
-                          <div className="font-display font-bold text-red-400">Mit einer Note nicht erreichbar</div>
-                          <div className="font-mono text-xs text-text-dim">
-                            Selbst mit 15 Punkten würdest du {ziel} nicht erreichen. Du brauchst mehrere starke Noten.
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4">
-                        <div
-                          className="flex size-14 shrink-0 items-center justify-center rounded-2xl font-display text-3xl font-extrabold"
-                          style={{
-                            background: `color-mix(in srgb, ${schnittFarbe(ergebnis)} 20%, transparent)`,
-                            color: schnittFarbe(ergebnis),
-                          }}
-                        >
-                          {ergebnis}
-                        </div>
-                        <div>
-                          <div className="font-display font-bold">
-                            Mindestens{" "}
-                            <span style={{ color: schnittFarbe(ergebnis) }}>
-                              {ergebnis} Punkte
-                            </span>
-                          </div>
-                          <div className="font-mono text-xs text-text-dim">
-                            Das entspricht Note {punkteZuNote(ergebnis)} — dann erreichst du {ziel}.
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
