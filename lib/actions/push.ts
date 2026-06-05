@@ -3,11 +3,12 @@
 import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
 
-webpush.setVapidDetails(
-  "mailto:ne.polonius@gmail.com",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
+function initWebPush() {
+  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!pub || !priv) throw new Error("VAPID-Keys fehlen — in Vercel unter NEXT_PUBLIC_VAPID_PUBLIC_KEY und VAPID_PRIVATE_KEY setzen.");
+  webpush.setVapidDetails("mailto:ne.polonius@gmail.com", pub, priv);
+}
 
 export type PushPayload = {
   title: string;
@@ -19,6 +20,7 @@ export async function sendPushZuUser(
   userId: string,
   payload: PushPayload,
 ): Promise<void> {
+  initWebPush();
   const supabase = await createClient();
   const { data: subs } = await supabase
     .from("push_subscription")
@@ -56,6 +58,7 @@ export async function sendPushZuUser(
 
 export async function testPushAnMich(): Promise<{ ok: boolean; error?: string }> {
   try {
+    initWebPush();
     const supabase = await createClient();
     const { data: auth } = await supabase.auth.getClaims();
     if (!auth?.claims?.sub) return { ok: false, error: "Nicht eingeloggt" };
