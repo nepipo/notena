@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { completeOnboarding, addFach } from "@/lib/actions/schule";
+import { completeOnboarding, addFach, updateFach } from "@/lib/actions/schule";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 
 type Modus = "punkte" | "note";
@@ -223,15 +223,17 @@ export default function OnboardingPage() {
                   <span className="text-sm">{f.name}</span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() =>
+                      onClick={() => {
+                        const newNiveau = f.niveau === "GK" ? "LK" : "GK";
                         setFaecher((prev) =>
                           prev.map((x) =>
-                            x.id === f.id
-                              ? { ...x, niveau: x.niveau === "GK" ? "LK" : "GK" }
-                              : x,
+                            x.id === f.id ? { ...x, niveau: newNiveau } : x,
                           ),
-                        )
-                      }
+                        );
+                        startTransition(async () => {
+                          await updateFach(f.id, { niveau: newNiveau });
+                        });
+                      }}
                       className={`rounded px-2 py-0.5 text-xs font-bold transition-colors ${
                         f.niveau === "LK"
                           ? "bg-indigo-500/20 text-indigo-300"
