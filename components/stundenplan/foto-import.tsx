@@ -15,6 +15,8 @@ import type { FachRow } from "@/lib/grades/db";
 
 const TAGE = ["Mo", "Di", "Mi", "Do", "Fr"] as const;
 
+type GlobalWoche = "standard" | "A" | "B" | "gemischt";
+
 async function komprimiereBild(
   file: File,
 ): Promise<{ base64: string; mimeType: string }> {
@@ -44,12 +46,48 @@ async function komprimiereBild(
   });
 }
 
+function WocheTypPills({
+  value,
+  onChange,
+}: {
+  value: "A" | "B" | null;
+  onChange: (v: "A" | "B" | null) => void;
+}) {
+  const opts: Array<{ label: string; val: "A" | "B" | null }> = [
+    { label: "—", val: null },
+    { label: "A", val: "A" },
+    { label: "B", val: "B" },
+  ];
+  return (
+    <div className="flex shrink-0 gap-0.5 rounded-lg p-0.5" style={{ background: "var(--surface-1)" }}>
+      {opts.map((o) => {
+        const aktiv = value === o.val;
+        return (
+          <button
+            key={String(o.val)}
+            onClick={() => onChange(o.val)}
+            className="h-6 min-w-[22px] rounded-md px-1.5 font-mono text-[10px] font-bold transition-colors"
+            style={
+              aktiv
+                ? { background: "var(--brand)", color: "#000" }
+                : { color: "var(--text-mute)" }
+            }
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function FotoImport({ faecher }: { faecher: FachRow[] }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [parsing, startParsing] = useTransition();
   const [importing, startImporting] = useTransition();
   const [stunden, setStunden] = useState<ParsedStunde[] | null>(null);
+  const [globalWoche, setGlobalWoche] = useState<GlobalWoche>("standard");
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, 2);
@@ -74,33 +112,32 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
           toast.warning("Ein Foto konnte nicht ausgelesen werden, das andere wurde importiert.");
         }
 
-        const alleStunden = ergebnisse
-          .filter((r) => r.ok)
-          .flatMap((r, fotoIndex) =>
-            (r as { ok: true; stunden: ParsedStunde[] }).stunden.map((s) => ({
-              ...s,
-              tempId: `f${fotoIndex}_${s.tempId}`,
-            })),
-          );
+        const erfolge = ergebnisse.filter((r) => r.ok) as Array<{
+          ok: true; stunden: ParsedStunde[]; neueFachNamen: string[]; hatAbWochen: boolean;
+        }>;
 
-        const alleNeueFaecher = [
-          ...new Set(
-            ergebnisse
-              .filter((r) => r.ok)
-              .flatMap((r) => (r as { ok: true; neueFachNamen: string[] }).neueFachNamen),
-          ),
-        ];
+        const alleStunden = erfolge.flatMap((r, fotoIndex) =>
+          r.stunden.map((s) => ({ ...s, tempId: `f${fotoIndex}_${s.tempId}` })),
+        );
 
         if (alleStunden.length === 0) {
           toast.error("Keine Stunden erkannt. Versuch's mit einem klareren Foto.");
           return;
         }
 
+        // Wenn Claude A/B erkannt hat, auf "gemischt" stellen damit per-Stunde sichtbar wird
+        const hatAbWochen = erfolge.some((r) => r.hatAbWochen);
+        setGlobalWoche(hatAbWochen ? "gemischt" : "standard");
         setStunden(alleStunden);
+
+        const alleNeueFaecher = [...new Set(erfolge.flatMap((r) => r.neueFachNamen))];
         if (alleNeueFaecher.length > 0) {
           toast.info(
             `${alleNeueFaecher.length} neue${alleNeueFaecher.length > 1 ? " Fächer" : "s Fach"} werden angelegt: ${alleNeueFaecher.join(", ")}`,
           );
+        }
+        if (hatAbWochen) {
+          toast.info("A/B-Wochen erkannt — prüf die Zuordnung kurz.");
         }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Fehler beim Verarbeiten der Bilder.");
@@ -118,12 +155,27 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
     setStunden((prev) => prev?.filter((s) => s.tempId !== tempId) ?? null);
   }
 
+  function handleGlobalWocheChange(woche: GlobalWoche) {
+    setGlobalWoche(woche);
+    if (woche === "gemischt") return; // per-Stunde bleibt wie's ist
+    const typ = woche === "A" ? "A" : woche === "B" ? "B" : null;
+    setStunden((prev) => prev?.map((s) => ({ ...s, wocheTyp: typ })) ?? null);
+  }
+
+  function stundenMitWoche(): ParsedStunde[] {
+    if (!stunden) return [];
+    if (globalWoche === "gemischt") return stunden;
+    const typ = globalWoche === "A" ? "A" : globalWoche === "B" ? "B" : null;
+    return stunden.map((s) => ({ ...s, wocheTyp: typ }));
+  }
+
   function handleImport() {
-    if (!stunden?.length) return;
+    const final = stundenMitWoche();
+    if (!final.length) return;
     startImporting(async () => {
-      const result = await importStunden(stunden);
+      const result = await importStunden(final);
       if (!result.ok) { toast.error(result.error); return; }
-      toast.success(`${stunden.length} Stunden eingetragen.`);
+      toast.success(`${final.length} Stunden eingetragen.`);
       setStunden(null);
       router.refresh();
     });
@@ -182,6 +234,46 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
               </button>
             </div>
 
+            {/* A/B-Wochen Toggle */}
+            <div
+              className="shrink-0 border-b border-border px-5 py-3"
+              style={{ background: "color-mix(in srgb, var(--surface-2) 60%, transparent)" }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
+                  Woche
+                </span>
+                <div className="flex gap-1">
+                  {(
+                    [
+                      { val: "standard", label: "Standard" },
+                      { val: "A", label: "A-Woche" },
+                      { val: "B", label: "B-Woche" },
+                      { val: "gemischt", label: "Gemischt (A+B)" },
+                    ] as const
+                  ).map((o) => (
+                    <button
+                      key={o.val}
+                      onClick={() => handleGlobalWocheChange(o.val)}
+                      className="rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold transition-colors"
+                      style={
+                        globalWoche === o.val
+                          ? { background: "var(--brand)", color: "#000" }
+                          : { background: "var(--surface-2)", color: "var(--text-mute)" }
+                      }
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {globalWoche === "gemischt" && (
+                <p className="mt-1.5 font-mono text-[10px] text-text-mute">
+                  Jede Stunde einzeln zuweisen (—&nbsp;=&nbsp;beide Wochen)
+                </p>
+              )}
+            </div>
+
             {/* Stunden-Liste */}
             <div className="flex-1 overflow-y-auto px-4 py-3">
               <div className="space-y-2">
@@ -191,12 +283,12 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
                     className="rounded-2xl border border-border p-3 space-y-2"
                     style={{ background: "var(--surface-2)" }}
                   >
-                    {/* Zeile 1: Tag + Zeit + Delete */}
+                    {/* Zeile 1: Tag + Zeit + (A/B wenn gemischt) + Delete */}
                     <div className="flex items-center gap-2">
                       <select
                         value={s.wochentag}
                         onChange={(e) => updateStunde(s.tempId, { wochentag: Number(e.target.value) })}
-                        className="h-8 rounded-lg border border-border bg-surface-1 px-2 font-mono text-xs text-foreground w-[60px] shrink-0"
+                        className="h-8 w-[60px] shrink-0 rounded-lg border border-border bg-surface-1 px-2 font-mono text-xs text-foreground"
                       >
                         {TAGE.map((t, i) => (
                           <option key={t} value={i + 1}>{t}</option>
@@ -206,15 +298,21 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
                         type="time"
                         value={s.zeitStart}
                         onChange={(e) => updateStunde(s.tempId, { zeitStart: e.target.value })}
-                        className="h-8 rounded-lg border border-border bg-surface-1 px-2 font-mono text-xs text-foreground w-[90px] shrink-0"
+                        className="h-8 w-[90px] shrink-0 rounded-lg border border-border bg-surface-1 px-2 font-mono text-xs text-foreground"
                       />
-                      <span className="font-mono text-xs text-text-mute shrink-0">–</span>
+                      <span className="shrink-0 font-mono text-xs text-text-mute">–</span>
                       <input
                         type="time"
                         value={s.zeitEnd}
                         onChange={(e) => updateStunde(s.tempId, { zeitEnd: e.target.value })}
-                        className="h-8 rounded-lg border border-border bg-surface-1 px-2 font-mono text-xs text-foreground w-[90px] shrink-0"
+                        className="h-8 w-[90px] shrink-0 rounded-lg border border-border bg-surface-1 px-2 font-mono text-xs text-foreground"
                       />
+                      {globalWoche === "gemischt" && (
+                        <WocheTypPills
+                          value={s.wocheTyp}
+                          onChange={(v) => updateStunde(s.tempId, { wocheTyp: v })}
+                        />
+                      )}
                       <div className="flex-1" />
                       <button
                         onClick={() => removeStunde(s.tempId)}

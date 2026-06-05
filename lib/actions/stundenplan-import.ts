@@ -22,10 +22,11 @@ export interface ParsedStunde {
   isNew: boolean;
   lehrer: string;
   raum: string;
+  wocheTyp: "A" | "B" | null;
 }
 
 export type ParseResult =
-  | { ok: true; stunden: ParsedStunde[]; neueFachNamen: string[] }
+  | { ok: true; stunden: ParsedStunde[]; neueFachNamen: string[]; hatAbWochen: boolean }
   | { ok: false; error: string };
 
 export async function parseStundenplanFoto(
@@ -48,9 +49,10 @@ Regeln:
 - fachName: Genau wie im Bild (oder erkennbares Vollwort wenn abgekürzt), versuche auf bekannte Fächer zu matchen
 - lehrer: Kürzel/Name falls sichtbar, sonst ""
 - raum: Raum falls sichtbar, sonst ""
+- wocheTyp: Falls der Stundenplan A- und B-Wochen unterscheidet (z.B. Spalten "A"/"B", Beschriftungen "A-Woche"/"B-Woche"): setze "A" oder "B". Sonst null.
 
 Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
-[{"wochentag":1,"zeitStart":"08:00","zeitEnd":"09:30","fachName":"Mathematik","lehrer":"","raum":""}]`;
+[{"wochentag":1,"zeitStart":"08:00","zeitEnd":"09:30","fachName":"Mathematik","lehrer":"","raum":"","wocheTyp":null}]`;
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
@@ -86,6 +88,7 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
       fachName: string;
       lehrer: string;
       raum: string;
+      wocheTyp?: "A" | "B" | null;
     }>;
 
     if (!Array.isArray(raw) || raw.length === 0) {
@@ -102,6 +105,7 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
         const matchedId = fachMap.get(normalisiert) ?? null;
         const isNew = !matchedId && !!s.fachName.trim();
         if (isNew) neueFachNamen.add(s.fachName.trim());
+        const wocheTyp = s.wocheTyp === "A" || s.wocheTyp === "B" ? s.wocheTyp : null;
         return {
           tempId: `t${i}`,
           wochentag: s.wochentag,
@@ -112,10 +116,13 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
           isNew,
           lehrer: s.lehrer ?? "",
           raum: s.raum ?? "",
+          wocheTyp,
         };
       });
 
-    return { ok: true, stunden, neueFachNamen: Array.from(neueFachNamen) };
+    const hatAbWochen = stunden.some((s) => s.wocheTyp !== null);
+
+    return { ok: true, stunden, neueFachNamen: Array.from(neueFachNamen), hatAbWochen };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unbekannter Fehler." };
   }
@@ -163,7 +170,7 @@ export async function importStunden(
       zeit_end: s.zeitEnd + ":00",
       raum: s.raum.trim() || null,
       lehrer: s.lehrer.trim() || null,
-      woche_typ: null,
+      woche_typ: s.wocheTyp,
     }));
 
     const { error } = await supabase.from("stundenplan_stunde").insert(insert);
