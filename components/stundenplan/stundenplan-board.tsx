@@ -10,6 +10,7 @@ import { addStunde, removeStunde, updateStunde } from "@/lib/actions/stundenplan
 import { hexToRgba, fmtZeit, FACH_FALLBACK_FARBE } from "@/lib/stundenplan/types";
 import type { StundeRow, HausaufgabeRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
+import { FotoImport } from "@/components/stundenplan/foto-import";
 
 // ── Zeit-Raster ───────────────────────────────────────────────────────────────
 const START_H = 7;
@@ -281,15 +282,18 @@ export function StundenplanBoard({
               : `${stunden.length} Stunde${stunden.length !== 1 ? "n" : ""} · Klick zum Bearbeiten`}
           </p>
         </div>
-        <Button
-          onClick={() => { setShowAddForm((v) => !v); setEditingStunde(null); }}
-          size="sm"
-          className="gap-1.5 font-display font-bold"
-          style={showAddForm ? { background: "var(--surface-2)", color: "var(--foreground)" } : undefined}
-        >
-          <Plus className={`size-4 transition-transform ${showAddForm ? "rotate-45" : ""}`} />
-          Stunde
-        </Button>
+        <div className="flex items-center gap-2">
+          <FotoImport faecher={faecher} />
+          <Button
+            onClick={() => { setShowAddForm((v) => !v); setEditingStunde(null); }}
+            size="sm"
+            className="gap-1.5 font-display font-bold"
+            style={showAddForm ? { background: "var(--surface-2)", color: "var(--foreground)" } : undefined}
+          >
+            <Plus className={`size-4 transition-transform ${showAddForm ? "rotate-45" : ""}`} />
+            Stunde
+          </Button>
+        </div>
       </div>
 
       {/* ── Wochen-Navigation ───────────────────────────────────────────── */}
