@@ -36,7 +36,7 @@ export function KlausurListe({
       return;
     }
     start(async () => {
-      const res = await addKlausur(titel, new Date(datum).toISOString(), fachId || undefined);
+      const res = await addKlausur(titel, datum + "T12:00:00.000Z", fachId || undefined);
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
       setTitel(""); setDatum(""); setFachId("");
       router.refresh();

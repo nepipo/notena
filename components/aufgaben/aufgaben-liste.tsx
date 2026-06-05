@@ -106,8 +106,7 @@ export function AufgabenListe({
     if (tab === "hausaufgaben" && item.typ !== "ha") return false;
     if (tab === "klausuren" && item.typ !== "klausur") return false;
     if (aktiverFach !== "alle") {
-      const fachId = item.typ === "ha" ? item.data.fach_id : item.data.fach_id;
-      if (fachId !== aktiverFach) return false;
+      if (item.data.fach_id !== aktiverFach) return false;
     }
     return true;
   });
@@ -138,7 +137,7 @@ export function AufgabenListe({
   function addK() {
     if (!kTitel.trim() || !kDatum) { toast.error("Titel und Datum fehlen."); return; }
     start(async () => {
-      const res = await addKlausur(kTitel, new Date(kDatum).toISOString(), kFachId || undefined);
+      const res = await addKlausur(kTitel, kDatum + "T12:00:00.000Z", kFachId || undefined);
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
       setKTitel(""); setKDatum(""); setKFachId("");
       setShowForm(false);

@@ -60,11 +60,13 @@ function zeitZuMinuten(t: string): number {
   return h * 60 + m;
 }
 
-/** Tage bis zu einem Datum (negativ = vergangen). */
+/** Tage bis zu einem Datum (negativ = vergangen). Nutzt lokale Datumsvergleiche. */
 export function tageBis(datumIso: string): number {
-  return Math.ceil(
-    (new Date(datumIso).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
+  const [y, m, d] = datumIso.slice(0, 10).split("-").map(Number);
+  const ziel = new Date(y, m - 1, d);
+  const heute = new Date();
+  const heut = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate());
+  return Math.round((ziel.getTime() - heut.getTime()) / 86400000);
 }
 
 /** Hex-Farbe (#rrggbb) → "rgba(r,g,b,alpha)"-String. */

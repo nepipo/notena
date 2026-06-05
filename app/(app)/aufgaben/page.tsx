@@ -18,9 +18,14 @@ export default async function AufgabenPage() {
   const hausaufgaben = (hausaufgabeRows ?? []) as HausaufgabeRow[];
 
   const offeneHA = hausaufgaben.filter((h) => !h.erledigt).length;
-  const naechsteKlausur = klausuren.find((k) => new Date(k.datum) > new Date());
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const naechsteKlausur = klausuren.find((k) => k.datum.slice(0, 10) >= todayStr);
   const tageBisKlausur = naechsteKlausur
-    ? Math.ceil((new Date(naechsteKlausur.datum).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ? Math.round(
+        (new Date(naechsteKlausur.datum.slice(0, 10) + "T00:00:00.000Z").getTime() -
+          new Date(todayStr + "T00:00:00.000Z").getTime()) /
+          86400000,
+      )
     : null;
 
   return (

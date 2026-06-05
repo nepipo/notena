@@ -50,10 +50,11 @@ export default async function NotenPage() {
     : { data: [] as NoteRow[] };
 
   // Upcoming Klausuren (für Countdown-Badge)
+  const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
   const { data: klausurRows } = await supabase
     .from("schule_klausur")
     .select("*")
-    .gte("datum", new Date().toISOString())
+    .gte("datum", todayUtc)
     .order("datum", { ascending: true })
     .limit(20);
 

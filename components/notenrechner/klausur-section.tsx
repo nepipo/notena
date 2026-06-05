@@ -10,8 +10,11 @@ import type { Fach } from "@/lib/grades/types";
 import type { KlausurRow } from "@/lib/grades/db";
 
 function tageBis(datumIso: string): number {
-  const diff = new Date(datumIso).getTime() - Date.now();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const [y, m, d] = datumIso.slice(0, 10).split("-").map(Number);
+  const ziel = new Date(y, m - 1, d);
+  const heute = new Date();
+  const heut = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate());
+  return Math.round((ziel.getTime() - heut.getTime()) / 86400000);
 }
 
 function fmtDatum(iso: string): string {
@@ -45,7 +48,7 @@ export function KlausurSection({
     startTransition(async () => {
       const res = await addKlausur(
         titel,
-        new Date(datum).toISOString(),
+        datum + "T12:00:00.000Z",
         fachId || undefined,
       );
       if (!res.ok) {

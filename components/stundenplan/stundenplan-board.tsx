@@ -57,8 +57,7 @@ function fmtTagDatum(iso: string): string {
 }
 
 function toLocalIso(datum: string): string {
-  const d = new Date(datum);
-  return isoVonDate(d);
+  return datum.slice(0, 10);
 }
 
 // ── Typen ─────────────────────────────────────────────────────────────────────
