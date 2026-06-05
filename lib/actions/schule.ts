@@ -199,9 +199,9 @@ export async function updatePraeferenzen(
 }
 
 export async function completeOnboarding(
-  name: string,
-  klasse: number,
   eingabeModus: "punkte" | "note",
+  name?: string,
+  klasse?: number | null,
 ): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
@@ -209,8 +209,8 @@ export async function completeOnboarding(
     const { error } = await supabase
       .from("nutzer_profil")
       .update({
-        name: name.trim(),
-        klasse,
+        ...(name !== undefined ? { name: name.trim() || null } : {}),
+        ...(klasse !== undefined ? { klasse } : {}),
         eingabe_modus: eingabeModus,
         onboarding_abgeschlossen: true,
       })

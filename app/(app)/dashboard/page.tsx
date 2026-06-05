@@ -12,7 +12,8 @@ import {
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
-import { Calculator, Sparkles, CalendarDays } from "lucide-react";
+import { fmtZeit, type StundeRow } from "@/lib/stundenplan/types";
+import { ArrowRight } from "lucide-react";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -29,11 +30,11 @@ function tageBis(iso: string): number {
   return Math.round((zielt.getTime() - heut.getTime()) / 86400000);
 }
 
-const SCHNELLZUGRIFF = [
-  { href: "/noten", label: "Notenrechner", icon: Calculator },
-  { href: "/what-if", label: "What-If", icon: Sparkles },
-  { href: "/stundenplan", label: "Stundenplan", icon: CalendarDays },
-];
+// ISO-Wochentag 1=Mo…5=Fr, 0/6=WE
+function heutigerWochentag(): number {
+  const d = new Date().getDay();
+  return d === 0 ? 7 : d;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -65,6 +66,12 @@ export default async function DashboardPage() {
     .order("datum", { ascending: true })
     .limit(1);
 
+  const { data: stundeRows } = await supabase
+    .from("stundenplan_stunde")
+    .select("*")
+    .eq("wochentag", heutigerWochentag())
+    .order("zeit_start");
+
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],
     (noteRows ?? []) as NoteRow[],
@@ -72,6 +79,8 @@ export default async function DashboardPage() {
   const gesamt = gesamtSchnittGerundet(faecher);
   const fachName = new Map(faecher.map((f) => [f.id, f.name]));
   const naechste = ((klausurRows ?? []) as KlausurRow[])[0] ?? null;
+  const heutigeStunden = (stundeRows ?? []) as StundeRow[];
+  const gesamtNoten = faecher.reduce((s, f) => s + f.noten.length, 0);
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
@@ -143,23 +152,89 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      {/* Schnellzugriff */}
-
+      {/* Schnellzugriff — Stat-Karten */}
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
-        {SCHNELLZUGRIFF.map((s, i) => {
-          const Icon = s.icon;
-          return (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="lift animate-fade-up flex items-center gap-3 rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
-              style={{ background: "var(--card-grad)", animationDelay: `${0.15 + i * 0.05}s` }}
+        {/* Notenrechner */}
+        <Link
+          href="/noten"
+          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
+        >
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
+            Notenrechner
+          </div>
+          <div className="mt-2 flex items-baseline gap-1">
+            <span
+              className="font-display text-4xl font-extrabold leading-none"
+              style={{ color: schnittFarbe(gesamt) }}
             >
-              <Icon className="size-5 text-brand" />
-              <span className="font-display font-bold">{s.label}</span>
-            </Link>
-          );
-        })}
+              {fmt(gesamt)}
+            </span>
+            {gesamt !== null && (
+              <span className="font-mono text-sm text-text-mute">/15</span>
+            )}
+          </div>
+          <div className="mt-1 font-mono text-xs text-text-dim">
+            {faecher.length > 0
+              ? `Note ${punkteZuNote(gesamt!)} · ${faecher.length} Fächer`
+              : "Noch keine Fächer"}
+          </div>
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+        </Link>
+
+        {/* What-If */}
+        <Link
+          href="/what-if"
+          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          style={{ background: "var(--card-grad)", animationDelay: "0.2s" }}
+        >
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
+            What-If
+          </div>
+          <div className="mt-2 font-display text-2xl font-extrabold leading-tight">
+            Schnitt<br />simulieren
+          </div>
+          <div className="mt-1 font-mono text-xs text-text-dim">
+            {gesamtNoten > 0
+              ? `${gesamtNoten} Noten · fiktive Note eintragen`
+              : "Noten eintragen & durchrechnen"}
+          </div>
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+        </Link>
+
+        {/* Stundenplan */}
+        <Link
+          href="/stundenplan"
+          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
+        >
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
+            Stundenplan
+          </div>
+          {heutigeStunden.length > 0 ? (
+            <>
+              <div className="mt-2 font-display text-xl font-extrabold leading-tight">
+                {heutigeStunden[0].fach_id
+                  ? (fachName.get(heutigeStunden[0].fach_id) ?? "Stunde")
+                  : "Stunde"}
+              </div>
+              <div className="mt-1 font-mono text-xs text-text-dim">
+                {fmtZeit(heutigeStunden[0].zeit_start)} – {fmtZeit(heutigeStunden[0].zeit_end)}
+                {heutigeStunden.length > 1 && ` · +${heutigeStunden.length - 1} weitere`}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mt-2 font-display text-xl font-extrabold leading-tight text-text-dim">
+                Heute frei
+              </div>
+              <div className="mt-1 font-mono text-xs text-text-mute">
+                Kein Unterricht eingetragen
+              </div>
+            </>
+          )}
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+        </Link>
       </div>
 
       {/* KI-Coach — ganz unten */}
