@@ -145,7 +145,7 @@ export function NotenrechnerBoard({
   return (
     <>
       {/* Ansicht-Tabs */}
-      <div className="animate-fade-up mb-4 inline-flex gap-1 rounded-xl border border-border bg-surface-2 p-1">
+      <div className="animate-fade-up mb-6 flex gap-1 rounded-2xl border border-border bg-surface-2 p-1.5">
         {([
           ["halbjahr", "Halbjahr"],
           ["jahr", "Ganzes Jahr"],
@@ -153,9 +153,9 @@ export function NotenrechnerBoard({
           <button
             key={wert}
             onClick={() => setAnsicht(wert)}
-            className={`rounded-lg px-4 py-1.5 font-sans text-sm font-semibold transition-colors ${
+            className={`flex-1 rounded-xl px-5 py-2.5 font-display text-sm font-bold transition-colors ${
               ansicht === wert
-                ? "bg-brand text-black"
+                ? "bg-brand text-black shadow-sm"
                 : "text-text-dim hover:bg-surface-3"
             }`}
           >

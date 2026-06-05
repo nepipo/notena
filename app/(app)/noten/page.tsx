@@ -110,13 +110,13 @@ export default async function NotenPage() {
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
       <header className="animate-fade-up mb-8">
         <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
-          <span className="inline-block size-1.5 rounded-full bg-success" />
+          <span className="inline-block size-1.5 rounded-full bg-brand" />
           Notenrechner
         </div>
-        <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">
+        <h1 className="font-display text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
           Deine Noten.
         </h1>
-        <p className="mt-2 text-sm text-text-dim">Halbjahr {halbjahr}</p>
+        <p className="mt-2 font-mono text-sm text-text-dim">Halbjahr {halbjahr}</p>
       </header>
 
       <NotenrechnerBoard
