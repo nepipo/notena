@@ -1,17 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
 import { PushToggle } from "@/components/push-toggle";
+import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung";
+import type { FachRow } from "@/lib/grades/db";
 
 // Auth-Check macht app/(app)/layout.tsx zentral.
 export default async function EinstellungenPage() {
   const supabase = await createClient();
 
-  const { data: profil } = await supabase
-    .from("nutzer_profil")
-    .select("eingabe_modus, notensystem")
-    .single();
+  const [{ data: profil }, { data: fachRows }] = await Promise.all([
+    supabase.from("nutzer_profil").select("eingabe_modus, notensystem").single(),
+    supabase.from("schule_fach").select("*").order("name"),
+  ]);
 
   const eingabeModus = profil?.eingabe_modus ?? "punkte";
+  const faecher = (fachRows ?? []) as FachRow[];
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[600px] px-5 py-10 sm:px-8">
@@ -90,6 +93,22 @@ export default async function EinstellungenPage() {
         <p className="mt-3 font-mono text-[11px] text-text-mute">
           Funktioniert als PWA (Homescreen-App) und im Browser. Benötigt einmalige Browser-Erlaubnis.
         </p>
+      </section>
+
+      {/* Fächer */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.2s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Fächer
+        </div>
+        <p className="mt-1 text-sm text-text-dim">
+          Fächer umbenennen oder löschen. Beim Löschen werden alle Noten des Fachs mitgelöscht.
+        </p>
+        <div className="mt-4">
+          <FaecherVerwaltung faecher={faecher} />
+        </div>
       </section>
     </main>
   );

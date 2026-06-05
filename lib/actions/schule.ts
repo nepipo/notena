@@ -52,6 +52,8 @@ export async function removeFach(fachId: string): Promise<ActionResult> {
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
+    revalidatePath("/stundenplan");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -109,6 +111,7 @@ export async function removeNote(noteId: string): Promise<ActionResult> {
 export async function updateFach(
   fachId: string,
   updates: {
+    name?: string;
     niveau?: string;
     farbe?: string | null;
     gewicht_klausur?: number;
@@ -127,6 +130,9 @@ export async function updateFach(
       .eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
+    revalidatePath("/stundenplan");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
