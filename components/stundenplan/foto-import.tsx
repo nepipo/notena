@@ -52,23 +52,58 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
   const [stunden, setStunden] = useState<ParsedStunde[] | null>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []).slice(0, 2);
+    if (files.length === 0) return;
     e.target.value = "";
 
     startParsing(async () => {
       try {
-        const { base64, mimeType } = await komprimiereBild(file);
-        const result = await parseStundenplanFoto(base64, mimeType, faecher);
-        if (!result.ok) { toast.error(result.error); return; }
-        setStunden(result.stunden);
-        if (result.neueFachNamen.length > 0) {
+        const ergebnisse = await Promise.all(
+          files.map(async (file) => {
+            const { base64, mimeType } = await komprimiereBild(file);
+            return parseStundenplanFoto(base64, mimeType, faecher);
+          }),
+        );
+
+        const fehler = ergebnisse.filter((r) => !r.ok);
+        if (fehler.length === ergebnisse.length) {
+          toast.error((fehler[0] as { ok: false; error: string }).error);
+          return;
+        }
+        if (fehler.length > 0) {
+          toast.warning("Ein Foto konnte nicht ausgelesen werden, das andere wurde importiert.");
+        }
+
+        const alleStunden = ergebnisse
+          .filter((r) => r.ok)
+          .flatMap((r, fotoIndex) =>
+            (r as { ok: true; stunden: ParsedStunde[] }).stunden.map((s) => ({
+              ...s,
+              tempId: `f${fotoIndex}_${s.tempId}`,
+            })),
+          );
+
+        const alleNeueFaecher = [
+          ...new Set(
+            ergebnisse
+              .filter((r) => r.ok)
+              .flatMap((r) => (r as { ok: true; neueFachNamen: string[] }).neueFachNamen),
+          ),
+        ];
+
+        if (alleStunden.length === 0) {
+          toast.error("Keine Stunden erkannt. Versuch's mit einem klareren Foto.");
+          return;
+        }
+
+        setStunden(alleStunden);
+        if (alleNeueFaecher.length > 0) {
           toast.info(
-            `${result.neueFachNamen.length} neue${result.neueFachNamen.length > 1 ? " Fächer" : "s Fach"} werden angelegt: ${result.neueFachNamen.join(", ")}`,
+            `${alleNeueFaecher.length} neue${alleNeueFaecher.length > 1 ? " Fächer" : "s Fach"} werden angelegt: ${alleNeueFaecher.join(", ")}`,
           );
         }
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Fehler beim Verarbeiten des Bildes.");
+        toast.error(e instanceof Error ? e.message : "Fehler beim Verarbeiten der Bilder.");
       }
     });
   }
@@ -100,6 +135,7 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
         ref={inputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleFileChange}
       />
@@ -110,7 +146,7 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
         onClick={() => inputRef.current?.click()}
         disabled={parsing}
         className="gap-1.5 font-display font-bold"
-        title="Stundenplan-Foto importieren"
+        title="Bis zu 2 Stundenplan-Fotos importieren"
       >
         {parsing
           ? <Loader2 className="size-4 animate-spin" />
