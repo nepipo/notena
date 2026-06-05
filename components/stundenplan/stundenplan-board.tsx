@@ -7,6 +7,7 @@ import { Plus, X, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addStunde, removeStunde, updateStunde } from "@/lib/actions/stundenplan";
+import { updateFach } from "@/lib/actions/schule";
 import { hexToRgba, fmtZeit, FACH_FALLBACK_FARBE } from "@/lib/stundenplan/types";
 import type { StundeRow, HausaufgabeRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
@@ -163,6 +164,7 @@ export function StundenplanBoard({
   const [editingStunde, setEditingStunde] = useState<StundeAngereichert | null>(null);
   const [addWerte, setAddWerte] = useState<FormWerte>(FORM_LEER);
   const [editWerte, setEditWerte] = useState<FormWerte>(FORM_LEER);
+  const [editFachName, setEditFachName] = useState<string>("");
   const [pending, start] = useTransition();
   const router = useRouter();
 
@@ -230,6 +232,12 @@ export function StundenplanBoard({
   function submitEdit() {
     if (!editingStunde || !validiereZeiten(editWerte)) return;
     start(async () => {
+      const neuerName = editFachName.trim();
+      const alterName = editingStunde.fach?.name ?? "";
+      if (editWerte.fachId && neuerName && neuerName !== alterName) {
+        const renameRes = await updateFach(editWerte.fachId, { name: neuerName });
+        if (!renameRes.ok) { toast.error(`Fach umbenennen: ${renameRes.error}`); return; }
+      }
       const res = await updateStunde(editingStunde.id, {
         fachId: editWerte.fachId || null,
         wochentag: editWerte.wochentag,
@@ -259,6 +267,7 @@ export function StundenplanBoard({
   function openEdit(s: StundeAngereichert) {
     setShowAddForm(false);
     setEditingStunde(s);
+    setEditFachName(s.fach?.name ?? "");
     setEditWerte({
       wochentag: s.wochentag,
       zeitStart: s.zeit_start.slice(0, 5),
@@ -453,7 +462,7 @@ export function StundenplanBoard({
                 key={i}
                 className="pointer-events-none absolute inset-y-0"
                 style={{
-                  left: `calc(52px + ${(i / 5) * 100}%)`,
+                  left: `calc(52px + (100% - 52px) * ${i / 5})`,
                   width: "1px",
                   background: "color-mix(in srgb, var(--border) 40%, transparent)",
                 }}
@@ -465,8 +474,8 @@ export function StundenplanBoard({
               <div
                 className="pointer-events-none absolute inset-y-0"
                 style={{
-                  left: `calc(52px + ${(heuteIndex / 5) * 100}%)`,
-                  width: `${(1 / 5) * 100}%`,
+                  left: `calc(52px + (100% - 52px) * ${heuteIndex / 5})`,
+                  width: `calc((100% - 52px) / 5)`,
                   background: "color-mix(in srgb, var(--brand) 4%, transparent)",
                 }}
               />
@@ -491,7 +500,7 @@ export function StundenplanBoard({
                   className="absolute h-2 w-2 rounded-full"
                   style={{
                     background: "#ff3050",
-                    left: `calc(52px + ${(heuteIndex / 5) * 100}%)`,
+                    left: `calc(52px + (100% - 52px) * ${heuteIndex / 5})`,
                     transform: "translate(-50%, -50%)",
                     boxShadow: "0 0 8px #ff3050",
                   }}
@@ -514,8 +523,8 @@ export function StundenplanBoard({
                     style={{
                       top: `${top}%`,
                       height: `${height}%`,
-                      left: `calc(52px + ${(tagIndex / 5) * 100}% + 3px)`,
-                      width: `calc(${(1 / 5) * 100}% - 6px)`,
+                      left: `calc(52px + (100% - 52px) * ${tagIndex / 5} + 3px)`,
+                      width: `calc((100% - 52px) / 5 - 6px)`,
                     }}
                   >
                     <div
@@ -592,8 +601,27 @@ export function StundenplanBoard({
             <StundeFormFelder
               werte={editWerte}
               faecher={faecher}
-              onChange={(v) => setEditWerte((p) => ({ ...p, ...v }))}
+              onChange={(v) => {
+                setEditWerte((p) => ({ ...p, ...v }));
+                if (v.fachId !== undefined) {
+                  const f = faecher.find((f) => f.id === v.fachId);
+                  setEditFachName(f?.name ?? "");
+                }
+              }}
             />
+            {editWerte.fachId && (
+              <div className="mt-3 space-y-1">
+                <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
+                  Fach umbenennen
+                </label>
+                <Input
+                  value={editFachName}
+                  onChange={(e) => setEditFachName(e.target.value)}
+                  placeholder="Fachname"
+                  className="h-9 bg-surface-2 font-display text-sm font-bold"
+                />
+              </div>
+            )}
             <div className="mt-4 flex items-center gap-2">
               <Button onClick={submitEdit} disabled={pending} className="font-display font-bold">
                 Speichern

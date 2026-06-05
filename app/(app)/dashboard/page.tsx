@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { BriefingKarte } from "@/components/dashboard/briefing-karte";
 import { CoachChat } from "@/components/dashboard/coach-chat";
+import { GrussText } from "@/components/dashboard/gruss-text";
 import {
   assembleFaecher,
   type FachRow,
@@ -43,7 +44,7 @@ export default async function DashboardPage() {
 
   const { data: profil } = await supabase
     .from("nutzer_profil")
-    .select("aktuelles_halbjahr")
+    .select("aktuelles_halbjahr, name")
     .eq("id", userId)
     .single();
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
@@ -89,7 +90,9 @@ export default async function DashboardPage() {
           <span className="inline-block size-1.5 rounded-full bg-success" />
           Übersicht · {halbjahr}
         </div>
-        <h1 className="text-3xl font-extrabold leading-none sm:text-4xl md:text-5xl">Dein Cockpit.</h1>
+        <h1 className="text-3xl font-extrabold leading-none sm:text-4xl md:text-5xl">
+          <GrussText name={profil?.name ?? null} />
+        </h1>
       </header>
 
       {/* Briefing */}
@@ -154,33 +157,21 @@ export default async function DashboardPage() {
 
       {/* Schnellzugriff — Stat-Karten */}
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
-        {/* Notenrechner */}
-        <Link
-          href="/noten"
-          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+        {/* Aufgaben */}
+        <div
+          className="lift animate-fade-up relative overflow-hidden rounded-3xl border border-border p-5"
           style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
-            Notenrechner
+            Aufgaben
           </div>
-          <div className="mt-2 flex items-baseline gap-1">
-            <span
-              className="font-display text-4xl font-extrabold leading-none"
-              style={{ color: schnittFarbe(gesamt) }}
-            >
-              {fmt(gesamt)}
-            </span>
-            {gesamt !== null && (
-              <span className="font-mono text-sm text-text-mute">/15</span>
-            )}
+          <div className="mt-2 font-display text-2xl font-extrabold leading-tight text-text-dim">
+            Keine offen
           </div>
-          <div className="mt-1 font-mono text-xs text-text-dim">
-            {faecher.length > 0
-              ? `Note ${punkteZuNote(gesamt!)} · ${faecher.length} Fächer`
-              : "Noch keine Fächer"}
+          <div className="mt-1 font-mono text-xs text-text-mute">
+            Aufgaben-Feature kommt bald
           </div>
-          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-        </Link>
+        </div>
 
         {/* What-If */}
         <Link

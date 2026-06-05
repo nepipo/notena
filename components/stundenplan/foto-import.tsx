@@ -146,9 +146,17 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
   }
 
   function updateStunde(tempId: string, updates: Partial<ParsedStunde>) {
-    setStunden((prev) =>
-      prev?.map((s) => (s.tempId === tempId ? { ...s, ...updates } : s)) ?? null,
-    );
+    setStunden((prev) => {
+      if (!prev) return null;
+      if ("fachName" in updates && updates.fachName !== undefined) {
+        const current = prev.find((s) => s.tempId === tempId);
+        const oldName = current?.fachName;
+        return prev.map((s) =>
+          s.fachName === oldName ? { ...s, fachName: updates.fachName! } : s,
+        );
+      }
+      return prev.map((s) => (s.tempId === tempId ? { ...s, ...updates } : s));
+    });
   }
 
   function removeStunde(tempId: string) {

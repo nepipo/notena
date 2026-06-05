@@ -2,14 +2,14 @@
 
 *Diese Datei wird in jeden Claude-Code-Chat dieses Projekts geladen. Sie definiert die Marschrichtung.*
 
-**Stand:** 02.06.2026
+**Stand:** 05.06.2026
 **Arbeitstitel:** Project X (finaler Name kommt vor Launch)
 
 ### Fortschritt
 - **Phase 0 (Setup):** ✅ Next.js 16 + TS + Tailwind v4, GitHub (`nepipo/project-x`), Vercel Auto-Deploy, Supabase Frankfurt (`rxmcexzlwocgfocyligd`), Theme (Azurblau/Indigo, Fonts, shadcn/ui), Showcase-Startseite.
 - **Phase 1 (Auth):** ✅ Supabase Auth — Email/Passwort-Login + Signup, geschütztes Dashboard, Proxy (Next.js 16 `proxy.ts`) mit `getClaims()`. Google-OAuth im Code vorbereitet (Provider-Config offen). Apple bewusst später (€99/Jahr).
 - **DB-Schema:** ✅ Angewendet auf Supabase (`0001_initial_schema`). 4 Tabellen mit RLS: `nutzer_profil`, `schule_fach`, `schule_note`, `schule_klausur`. Auto-Profil-Trigger `on_auth_user_created`. TS-Types in `lib/supabase/database.types.ts`. Hardening (`0002_harden_handle_new_user`): RPC-Zugriff auf den Trigger-Helper entzogen.
-- **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo).
+- **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo) · **Onboarding-Flow** (erster Login → Profil-Daten erfassen, siehe §10).
 - **Live:** https://project-x-seven-tawny.vercel.app
 
 ---
@@ -139,6 +139,42 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 - **Vercel:** Neues Projekt `project-x` in der existierenden Vercel-Org (`lebens-automatismus-projects`)
 - **Supabase:** Neues Projekt `project-x` im existierenden Supabase-Account (komplett getrennte DB, eigene Auth)
 - **Briefing-Docs:** Liegen auf `~/Desktop/project-x/` — werden im Repo als `docs/` referenziert aber nicht direkt verschoben (Plan-Ordner ≠ Bau-Ordner)
+
+## 10. Onboarding-Flow (First-Login)
+
+**Trigger:** Direkt nach dem ersten erfolgreichen Login — erkennbar am Flag `onboarding_completed = false` in `nutzer_profil`.
+
+**Ablauf:**
+1. User loggt sich ein → Middleware prüft `onboarding_completed`
+2. Wenn `false` → Redirect zu `/onboarding`
+3. Multi-Step-Form (2–3 Screens, kein langer Scroll) → Daten werden in `nutzer_profil` gespeichert
+4. Am Ende: `onboarding_completed = true` setzen → Redirect zu `/dashboard`
+
+**Felder die wir erfassen (alle in Einstellungen änderbar):**
+- `vorname` — Pflicht (wird überall in der App genutzt)
+- `nachname` — Optional
+- `geburtsdatum` — Optional (für Alters-Insights)
+- `klasse` — Pflicht, Dropdown: 11 / 12 / 13
+- `bundesland` — Pflicht, Dropdown (relevant für Notensystem + zukünftige Inhalte)
+- `schule_name` — Optional, Freitext
+- `schulform` — Optional, Dropdown: Gymnasium / Gesamtschule / Berufsschule / Andere
+
+**Design-Vorgaben:**
+- Gleicher Dark-Mode-Look wie der Rest der App
+- Kein Wall-of-Text, kurze Einleitung ("Damit die App zu dir passt, brauchen wir kurz ein paar Infos.")
+- Progress-Indicator (z.B. "Schritt 1 von 2")
+- Skip-Option nur für optionale Felder, nicht für Pflichtfelder
+- Keine nervigen Animationen die den Flow verlangsamen
+
+**DB-Mapping:**
+- Alle Felder gehen in die existierende `nutzer_profil` Tabelle (ggf. Migration nötig um fehlende Spalten hinzuzufügen)
+- `onboarding_completed` Boolean-Spalte muss noch per Migration ergänzt werden (default `false`)
+
+**Einstellungen:**
+- Route `/einstellungen/profil` — alle Onboarding-Felder dort nochmal editierbar
+- Kein separater Onboarding-Re-Run, einfach direkt im Formular ändern
+
+---
 
 ## 9. Wie wir starten
 
