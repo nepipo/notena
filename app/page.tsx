@@ -145,6 +145,17 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* Footer */}
+      <div className="anim mt-10 flex items-center gap-5 font-mono text-[11px] text-text-mute" style={{ animationDelay: "540ms" }}>
+        <Link href="/impressum" className="hover:text-text-dim transition-colors">
+          Impressum
+        </Link>
+        <span className="text-border">·</span>
+        <Link href="/datenschutz" className="hover:text-text-dim transition-colors">
+          Datenschutz
+        </Link>
+      </div>
+
     </main>
   );
 }

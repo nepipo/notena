@@ -41,6 +41,16 @@ export function AuthShell({
         {footer && (
           <div className="mt-6 text-center text-sm text-text-dim">{footer}</div>
         )}
+
+        <div className="mt-8 flex items-center justify-center gap-5 font-mono text-[11px] text-text-mute">
+          <Link href="/impressum" className="hover:text-text-dim transition-colors">
+            Impressum
+          </Link>
+          <span className="text-border">·</span>
+          <Link href="/datenschutz" className="hover:text-text-dim transition-colors">
+            Datenschutz
+          </Link>
+        </div>
       </div>
     </main>
   );
