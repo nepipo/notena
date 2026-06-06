@@ -3,20 +3,35 @@
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Pencil, Trash2, Check, X } from "lucide-react";
-import { removeFach, updateFach } from "@/lib/actions/schule";
+import { Pencil, Trash2, Check, X, Plus } from "lucide-react";
+import { removeFach, updateFach, addFach } from "@/lib/actions/schule";
 import type { FachRow } from "@/lib/grades/db";
 
-export function FaecherVerwaltung({ faecher }: { faecher: FachRow[] }) {
+type Niveau = "grund" | "erhoeht";
+
+export function FaecherVerwaltung({
+  faecher,
+  halbjahr,
+}: {
+  faecher: FachRow[];
+  halbjahr: string;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // Fach hinzufügen
+  const [neuerName, setNeuerName] = useState("");
+  const [neuesNiveau, setNeuesNiveau] = useState<Niveau>("grund");
+  const [showAddForm, setShowAddForm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const addInputRef = useRef<HTMLInputElement>(null);
 
   function startEdit(f: FachRow) {
     setConfirmDeleteId(null);
+    setShowAddForm(false);
     setEditingId(f.id);
     setEditName(f.name);
     setTimeout(() => inputRef.current?.select(), 30);
@@ -39,6 +54,15 @@ export function FaecherVerwaltung({ faecher }: { faecher: FachRow[] }) {
     });
   }
 
+  function toggleNiveau(f: FachRow) {
+    const newNiveau: Niveau = f.niveau === "grund" ? "erhoeht" : "grund";
+    start(async () => {
+      const res = await updateFach(f.id, { niveau: newNiveau });
+      if (!res.ok) { toast.error(res.error); return; }
+      router.refresh();
+    });
+  }
+
   function submitDelete(fachId: string) {
     start(async () => {
       const res = await removeFach(fachId);
@@ -49,16 +73,28 @@ export function FaecherVerwaltung({ faecher }: { faecher: FachRow[] }) {
     });
   }
 
-  if (faecher.length === 0) {
-    return (
-      <p className="font-mono text-sm text-text-mute">
-        Noch keine Fächer angelegt.
-      </p>
-    );
+  function submitAdd() {
+    const trimmed = neuerName.trim();
+    if (!trimmed) return;
+    start(async () => {
+      const res = await addFach(trimmed, halbjahr, neuesNiveau);
+      if (!res.ok) { toast.error(res.error); return; }
+      toast.success(`${trimmed} hinzugefügt.`);
+      setNeuerName("");
+      setNeuesNiveau("grund");
+      setShowAddForm(false);
+      router.refresh();
+    });
   }
 
   return (
     <div className="space-y-2">
+      {faecher.length === 0 && !showAddForm && (
+        <p className="font-mono text-sm text-text-mute">
+          Noch keine Fächer angelegt.
+        </p>
+      )}
+
       {faecher.map((f) => {
         const isEditing = editingId === f.id;
         const isConfirming = confirmDeleteId === f.id;
@@ -70,12 +106,8 @@ export function FaecherVerwaltung({ faecher }: { faecher: FachRow[] }) {
             style={{ background: "var(--surface-2)" }}
           >
             {isEditing ? (
-              /* Umbenennen */
               <div className="flex items-center gap-2">
-                <div
-                  className="size-3 shrink-0 rounded-full"
-                  style={{ background: f.farbe ?? "#1da1ff" }}
-                />
+                <div className="size-3 shrink-0 rounded-full" style={{ background: f.farbe ?? "#1da1ff" }} />
                 <input
                   ref={inputRef}
                   value={editName}
@@ -87,75 +119,52 @@ export function FaecherVerwaltung({ faecher }: { faecher: FachRow[] }) {
                   className="flex-1 rounded-lg border border-border bg-surface-1 px-3 py-1.5 font-display text-sm font-bold text-foreground outline-none focus:border-brand"
                   autoFocus
                 />
-                <button
-                  onClick={() => submitRename(f.id)}
-                  disabled={pending}
-                  className="flex size-7 items-center justify-center rounded-lg transition-colors hover:text-brand disabled:opacity-40"
-                  title="Speichern"
-                >
+                <button onClick={() => submitRename(f.id)} disabled={pending} className="flex size-7 items-center justify-center rounded-lg transition-colors hover:text-brand disabled:opacity-40" title="Speichern">
                   <Check className="size-4" />
                 </button>
-                <button
-                  onClick={cancelEdit}
-                  className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground"
-                  title="Abbrechen"
-                >
+                <button onClick={cancelEdit} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground" title="Abbrechen">
                   <X className="size-4" />
                 </button>
               </div>
             ) : isConfirming ? (
-              /* Löschen bestätigen */
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div
-                    className="size-3 shrink-0 rounded-full"
-                    style={{ background: f.farbe ?? "#1da1ff" }}
-                  />
+                  <div className="size-3 shrink-0 rounded-full" style={{ background: f.farbe ?? "#1da1ff" }} />
                   <span className="font-display text-sm font-bold">{f.name}</span>
                 </div>
                 <p className="font-mono text-[11px] text-amber-400">
-                  Alle Noten für dieses Fach werden mitgelöscht. Stunden bleiben erhalten, verlieren aber die Fach-Zuordnung.
+                  Alle Noten für dieses Fach werden mitgelöscht.
                 </p>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => submitDelete(f.id)}
-                    disabled={pending}
-                    className="rounded-lg bg-red-500/20 px-3 py-1.5 font-mono text-[11px] font-bold text-red-400 transition-colors hover:bg-red-500/30 disabled:opacity-40"
-                  >
+                  <button onClick={() => submitDelete(f.id)} disabled={pending} className="rounded-lg bg-red-500/20 px-3 py-1.5 font-mono text-[11px] font-bold text-red-400 transition-colors hover:bg-red-500/30 disabled:opacity-40">
                     {pending ? "Wird gelöscht…" : "Ja, löschen"}
                   </button>
-                  <button
-                    onClick={() => setConfirmDeleteId(null)}
-                    disabled={pending}
-                    className="font-mono text-[11px] text-text-mute transition-colors hover:text-foreground"
-                  >
+                  <button onClick={() => setConfirmDeleteId(null)} disabled={pending} className="font-mono text-[11px] text-text-mute transition-colors hover:text-foreground">
                     Abbrechen
                   </button>
                 </div>
               </div>
             ) : (
-              /* Normal */
               <div className="flex items-center gap-3">
-                <div
-                  className="size-3 shrink-0 rounded-full"
-                  style={{ background: f.farbe ?? "#1da1ff" }}
-                />
+                <div className="size-3 shrink-0 rounded-full" style={{ background: f.farbe ?? "#1da1ff" }} />
                 <span className="flex-1 font-display text-sm font-bold">{f.name}</span>
-                <span className="font-mono text-[10px] text-text-mute">
-                  {f.niveau === "erhoeht" ? "erhöht" : "Grund"}
-                </span>
+                {/* GK/LK Toggle */}
                 <button
-                  onClick={() => startEdit(f)}
-                  className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground"
-                  title="Umbenennen"
+                  onClick={() => toggleNiveau(f)}
+                  disabled={pending}
+                  className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold transition-colors disabled:opacity-50 ${
+                    f.niveau === "erhoeht"
+                      ? "bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30"
+                      : "bg-surface-3 text-text-mute hover:bg-surface-3 hover:text-foreground"
+                  }`}
+                  title="GK/LK wechseln"
                 >
+                  {f.niveau === "erhoeht" ? "LK" : "GK"}
+                </button>
+                <button onClick={() => startEdit(f)} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground" title="Umbenennen">
                   <Pencil className="size-3.5" />
                 </button>
-                <button
-                  onClick={() => { setEditingId(null); setConfirmDeleteId(f.id); }}
-                  className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-red-400"
-                  title="Löschen"
-                >
+                <button onClick={() => { setEditingId(null); setConfirmDeleteId(f.id); }} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-red-400" title="Löschen">
                   <Trash2 className="size-3.5" />
                 </button>
               </div>
@@ -163,6 +172,57 @@ export function FaecherVerwaltung({ faecher }: { faecher: FachRow[] }) {
           </div>
         );
       })}
+
+      {/* Fach hinzufügen */}
+      {showAddForm ? (
+        <div className="rounded-2xl border border-brand/30 bg-brand/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <input
+              ref={addInputRef}
+              value={neuerName}
+              onChange={(e) => setNeuerName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submitAdd();
+                if (e.key === "Escape") { setShowAddForm(false); setNeuerName(""); }
+              }}
+              placeholder="Fachname…"
+              autoFocus
+              className="flex-1 rounded-lg border border-border bg-surface-1 px-3 py-1.5 font-display text-sm font-bold outline-none focus:border-brand"
+            />
+            <select
+              value={neuesNiveau}
+              onChange={(e) => setNeuesNiveau(e.target.value as Niveau)}
+              className="rounded-lg border border-border bg-surface-2 px-2 py-1.5 font-mono text-xs outline-none focus:border-brand"
+            >
+              <option value="grund">GK</option>
+              <option value="erhoeht">LK</option>
+            </select>
+            <button
+              onClick={submitAdd}
+              disabled={!neuerName.trim() || pending}
+              className="flex size-7 items-center justify-center rounded-lg text-brand transition-colors hover:bg-brand/10 disabled:opacity-40"
+              title="Hinzufügen"
+            >
+              <Check className="size-4" />
+            </button>
+            <button
+              onClick={() => { setShowAddForm(false); setNeuerName(""); }}
+              className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground"
+              title="Abbrechen"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => { setShowAddForm(true); setTimeout(() => addInputRef.current?.focus(), 30); }}
+          className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3 text-sm text-text-mute transition-colors hover:border-brand/40 hover:text-brand"
+        >
+          <Plus className="size-4" />
+          Fach hinzufügen
+        </button>
+      )}
     </div>
   );
 }

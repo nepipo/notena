@@ -34,6 +34,7 @@ export async function addFach(
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
+    revalidatePath("/einstellungen");
     return { ok: true, id: data.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
@@ -209,6 +210,7 @@ export async function completeOnboarding(
   name: string,
   klasse: number | null,
   eingabeModus: "punkte" | "note",
+  bundesland?: string | null,
 ): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
@@ -219,6 +221,7 @@ export async function completeOnboarding(
         name: name.trim() || null,
         klasse,
         eingabe_modus: eingabeModus,
+        bundesland: bundesland ?? null,
         onboarding_abgeschlossen: true,
       })
       .eq("id", userId);
@@ -240,6 +243,8 @@ export async function setHalbjahr(hj: string): Promise<ActionResult> {
       .eq("id", userId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };

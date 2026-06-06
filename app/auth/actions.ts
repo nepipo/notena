@@ -146,6 +146,27 @@ export async function signOut() {
   redirect("/login");
 }
 
+export async function changePassword(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < 8) {
+    return { error: "Das Passwort muss mindestens 8 Zeichen haben." };
+  }
+  if (password !== confirm) {
+    return { error: "Die Passwörter stimmen nicht überein." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) return { error: "Passwort konnte nicht geändert werden." };
+  return { success: "Passwort erfolgreich geändert." };
+}
+
 export async function deleteAccount(): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();

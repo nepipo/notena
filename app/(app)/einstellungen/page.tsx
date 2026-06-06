@@ -1,13 +1,17 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
 import { PushToggle } from "@/components/push-toggle";
 import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung";
 import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
-import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
+import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
+import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
+import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 import type { GewichtungConfig } from "@/lib/grades/types";
+import { signOut } from "@/app/auth/actions";
+import { Button } from "@/components/ui/button";
 
-// Auth-Check macht app/(app)/layout.tsx zentral.
 export default async function EinstellungenPage() {
   const supabase = await createClient();
 
@@ -31,10 +35,32 @@ export default async function EinstellungenPage() {
         <h1 className="text-4xl font-extrabold leading-none">Einstellungen.</h1>
       </header>
 
-      {/* Eingabe-Modus */}
+      {/* ── SCHULE ────────────────────────────────────────── */}
       <section
         className="animate-fade-up rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.05s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Schule
+        </div>
+
+        {/* Halbjahr wechseln */}
+        <div className="mt-4">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-sm font-semibold">Aktuelles Halbjahr</p>
+            <span className="font-mono text-xs text-brand">{halbjahrLabel(halbjahr)}</span>
+          </div>
+          <p className="mb-3 text-xs text-text-mute">
+            Wechsle das Halbjahr um vergangene Noten einzusehen oder das neue anzufangen.
+          </p>
+          <HalbjahrWechsler current={halbjahr} />
+        </div>
+      </section>
+
+      {/* ── EINGABE-MODUS ─────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
           Eingabe-Modus
@@ -59,29 +85,9 @@ export default async function EinstellungenPage() {
             </form>
           ))}
         </div>
-        <p className="mt-3 font-mono text-[11px] text-text-mute">
-          Aktuell:{" "}
-          <strong>{eingabeModus === "punkte" ? "Punkte (0–15)" : "Noten"}</strong>
-        </p>
       </section>
 
-      {/* Notensystem */}
-      <section
-        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
-        style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
-      >
-        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
-          Notensystem
-        </div>
-        <p className="mt-1 text-sm text-text-dim">
-          Deutschland — Oberstufe (0–15 Punkte)
-        </p>
-        <p className="mt-2 font-mono text-[11px] text-text-mute">
-          Weitere Systeme (Schweiz, Österreich, IB) folgen in einer späteren Version.
-        </p>
-      </section>
-
-      {/* Push-Benachrichtigungen */}
+      {/* ── BENACHRICHTIGUNGEN ────────────────────────────── */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
@@ -90,17 +96,17 @@ export default async function EinstellungenPage() {
           Benachrichtigungen
         </div>
         <p className="mt-1 text-sm text-text-dim">
-          Push-Alerts für Klausuren und Hausaufgaben — direkt aufs Handy.
+          Push-Alerts für Klausuren — direkt aufs Handy.
         </p>
         <div className="mt-4">
           <PushToggle />
         </div>
         <p className="mt-3 font-mono text-[11px] text-text-mute">
-          Funktioniert als PWA (Homescreen-App) und im Browser. Benötigt einmalige Browser-Erlaubnis.
+          Funktioniert als PWA (Homescreen-App) und im Browser. Einmalige Browser-Erlaubnis nötig.
         </p>
       </section>
 
-      {/* Standard-Gewichtung */}
+      {/* ── STANDARD-GEWICHTUNG ───────────────────────────── */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.2s" }}
@@ -117,21 +123,78 @@ export default async function EinstellungenPage() {
         />
       </section>
 
-      {/* Fächer */}
+      {/* ── FÄCHER ────────────────────────────────────────── */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
-          Fächer
+          Fächer · {halbjahrLabel(halbjahr)}
         </div>
-        <p className="mt-1 text-sm text-text-dim">
-          Fächer umbenennen oder löschen. Beim Löschen werden alle Noten des Fachs mitgelöscht.
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Hinzufügen, umbenennen, GK/LK wechseln oder löschen.
         </p>
-        <div className="mt-4">
-          <FaecherVerwaltung faecher={faecher} />
+        <FaecherVerwaltung faecher={faecher} halbjahr={halbjahr} />
+      </section>
+
+      {/* ── PASSWORT ──────────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.3s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Passwort ändern
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Neues Passwort setzen — mindestens 8 Zeichen.
+        </p>
+        <PasswortAendern />
+      </section>
+
+      {/* ── ACCOUNT ───────────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.35s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Account
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Profil-Details (Name, Klasse, Schule) änderst du unter{" "}
+          <Link href="/profil" className="text-brand hover:underline">
+            Profil
+          </Link>
+          .
+        </p>
+        <form action={signOut}>
+          <Button
+            type="submit"
+            variant="outline"
+            className="border-border bg-surface-2 hover:bg-surface-3"
+          >
+            Abmelden
+          </Button>
+        </form>
+      </section>
+
+      {/* ── RECHTLICHES ───────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-5"
+        style={{ background: "var(--card-grad)", animationDelay: "0.4s" }}
+      >
+        <div className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Rechtliches
+        </div>
+        <div className="flex flex-wrap gap-4 font-mono text-sm text-text-dim">
+          <Link href="/datenschutz" className="transition-colors hover:text-brand">
+            Datenschutzerklärung
+          </Link>
+          <Link href="/impressum" className="transition-colors hover:text-brand">
+            Impressum
+          </Link>
         </div>
       </section>
+
     </main>
   );
 }

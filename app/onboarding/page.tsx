@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { completeOnboarding, addFach, updateFach } from "@/lib/actions/schule";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
+import { BUNDESLAND_LABEL, type Bundesland } from "@/lib/ferien/ferien-data";
 
 type Modus = "punkte" | "note";
 type Niveau = "grund" | "erhoeht";

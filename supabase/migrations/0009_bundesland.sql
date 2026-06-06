@@ -1,0 +1,1 @@
+ALTER TABLE nutzer_profil ADD COLUMN IF NOT EXISTS bundesland VARCHAR(2);
