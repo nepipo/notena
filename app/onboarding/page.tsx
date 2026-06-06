@@ -29,6 +29,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [klasse, setKlasse] = useState<11 | 12 | 13 | null>(null);
+  const [bundesland, setBundesland] = useState<Bundesland | "">("");
   const [eingabeModus, setEingabeModus] = useState<Modus>("punkte");
   const [faecher, setFaecher] = useState<FachEintrag[]>([]);
   const [freitextName, setFreitextName] = useState("");
@@ -80,7 +81,7 @@ export default function OnboardingPage() {
   function finish() {
     if (!klasse) return;
     startFinishTransition(async () => {
-      const res = await completeOnboarding(name, klasse, eingabeModus);
+      const res = await completeOnboarding(name, klasse, eingabeModus, bundesland || null);
       if (!res.ok) {
         toast.error(`Fehler: ${res.error}`);
         return;
@@ -169,6 +170,29 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="mt-6">
+            <p className="mb-3 text-sm text-text-dim">Bundesland?</p>
+            <select
+              value={bundesland}
+              onChange={(e) => setBundesland(e.target.value as Bundesland | "")}
+              className="w-full rounded-2xl border border-border bg-surface-2 px-4 py-3.5 text-base outline-none transition-colors focus:border-brand focus:bg-surface-3"
+            >
+              <option value="">Kein Bundesland auswählen</option>
+              {(Object.entries(BUNDESLAND_LABEL) as [Bundesland, string][]).map(
+                ([code, label]) => (
+                  <option key={code} value={code}>
+                    {label}
+                  </option>
+                ),
+              )}
+            </select>
+            {!bundesland && (
+              <p className="mt-1.5 font-mono text-[11px] text-text-mute">
+                Optional — wird für den Ferien-Countdown gebraucht.
+              </p>
+            )}
           </div>
 
           <button
@@ -366,6 +390,12 @@ export default function OnboardingPage() {
                 <span className="text-text-mute">Klasse</span>
                 <span className="font-semibold">{klasse}</span>
               </div>
+              {bundesland && (
+                <div className="flex gap-2">
+                  <span className="text-text-mute">Bundesland</span>
+                  <span className="font-semibold">{BUNDESLAND_LABEL[bundesland as Bundesland]}</span>
+                </div>
+              )}
               <div className="flex gap-2">
                 <span className="shrink-0 text-text-mute">Fächer</span>
                 <span className="font-semibold">

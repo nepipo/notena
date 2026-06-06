@@ -91,6 +91,38 @@ export async function addNote(
   }
 }
 
+export async function updateNote(
+  noteId: string,
+  punkte: number,
+  kategorie: Kategorie,
+  bezeichnung?: string,
+  gewicht?: number,
+): Promise<ActionResult> {
+  if (!Number.isFinite(punkte) || punkte < 0 || punkte > 15) {
+    return { ok: false, error: "Punkte müssen zwischen 0 und 15 liegen." };
+  }
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("schule_note")
+      .update({
+        punkte: Math.round(punkte),
+        kategorie,
+        bezeichnung: bezeichnung?.trim() || null,
+        gewicht: gewicht ?? 1,
+      })
+      .eq("id", noteId)
+      .eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    revalidatePath("/noten");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
 export async function removeNote(noteId: string): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
@@ -300,6 +332,23 @@ export async function neuesHalbjahr(
   }
 }
 
+export async function setBriefingAktiv(aktiv: boolean): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ briefing_aktiv: aktiv })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    revalidatePath("/einstellungen");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
 export async function saveDefaultGewichtung(
   config: GewichtungConfig,
 ): Promise<ActionResult> {
@@ -361,6 +410,23 @@ export async function updateProfil(
     if (error) return { ok: false, error: error.message };
     revalidatePath("/profil");
     revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function saveBundesland(bundesland: string | null): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ bundesland: bundesland || null })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };

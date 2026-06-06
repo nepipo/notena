@@ -6,6 +6,7 @@ import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung
 import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
 import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
 import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
+import { BundeslandSelector } from "@/components/einstellungen/bundesland-selector";
 import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 import type { GewichtungConfig } from "@/lib/grades/types";
@@ -16,13 +17,14 @@ export default async function EinstellungenPage() {
   const supabase = await createClient();
 
   const [{ data: profil }, { data: fachRows }] = await Promise.all([
-    supabase.from("nutzer_profil").select("eingabe_modus, notensystem, aktuelles_halbjahr, default_gewichtung").single(),
+    supabase.from("nutzer_profil").select("eingabe_modus, notensystem, aktuelles_halbjahr, default_gewichtung, bundesland").single(),
     supabase.from("schule_fach").select("*").order("name"),
   ]);
 
   const eingabeModus = profil?.eingabe_modus ?? "punkte";
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
+  const bundesland = (profil?.bundesland as string | null) ?? null;
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -54,6 +56,16 @@ export default async function EinstellungenPage() {
             Wechsle das Halbjahr um vergangene Noten einzusehen oder das neue anzufangen.
           </p>
           <HalbjahrWechsler current={halbjahr} />
+        </div>
+
+        <div className="mt-5 border-t border-border/50 pt-5">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-sm font-semibold">Bundesland</p>
+          </div>
+          <p className="mb-3 text-xs text-text-mute">
+            Wird für den Ferien-Countdown auf dem Dashboard verwendet.
+          </p>
+          <BundeslandSelector initialValue={bundesland} />
         </div>
       </section>
 

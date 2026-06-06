@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { BriefingKarte } from "@/components/dashboard/briefing-karte";
 import { CoachChat } from "@/components/dashboard/coach-chat";
 import { GrussText } from "@/components/dashboard/gruss-text";
+import { FerienCountdown } from "@/components/dashboard/ferien-countdown";
 import {
   assembleFaecher,
   type FachRow,
@@ -14,7 +15,7 @@ import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { fmtZeit, type StundeRow } from "@/lib/stundenplan/types";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ClipboardList } from "lucide-react";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -72,6 +73,11 @@ export default async function DashboardPage() {
     .select("*")
     .eq("wochentag", heutigerWochentag())
     .order("zeit_start");
+
+  const { count: offeneHA } = await supabase
+    .from("hausaufgabe")
+    .select("*", { count: "exact", head: true })
+    .eq("erledigt", false);
 
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],
@@ -156,22 +162,24 @@ export default async function DashboardPage() {
       </div>
 
       {/* Schnellzugriff — Stat-Karten */}
-      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Aufgaben */}
-        <div
-          className="lift animate-fade-up relative overflow-hidden rounded-3xl border border-border p-5"
+        <Link
+          href="/aufgaben"
+          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
             Aufgaben
           </div>
-          <div className="mt-2 font-display text-2xl font-extrabold leading-tight text-text-dim">
-            Keine offen
+          <div className={`mt-2 font-display text-2xl font-extrabold leading-tight ${(offeneHA ?? 0) > 0 ? "" : "text-text-dim"}`}>
+            {(offeneHA ?? 0) > 0 ? `${offeneHA} offen` : "Alles erledigt"}
           </div>
-          <div className="mt-1 font-mono text-xs text-text-mute">
-            Aufgaben-Feature kommt bald
+          <div className="mt-1 font-mono text-xs text-text-dim">
+            {naechste ? `Klausur in ${tageBis(naechste.datum)} Tagen` : "Keine Klausur geplant"}
           </div>
-        </div>
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+        </Link>
 
         {/* What-If */}
         <Link
@@ -226,6 +234,11 @@ export default async function DashboardPage() {
           )}
           <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
+
+        {/* Ferien-Countdown */}
+        <Suspense fallback={<FerienSkeleton />}>
+          <FerienCountdown />
+        </Suspense>
       </div>
 
       {/* KI-Coach — ganz unten */}
@@ -233,6 +246,19 @@ export default async function DashboardPage() {
         <CoachChat />
       </div>
     </main>
+  );
+}
+
+function FerienSkeleton() {
+  return (
+    <div
+      className="animate-pulse rounded-3xl border border-border p-5"
+      style={{ background: "var(--card-grad)" }}
+    >
+      <div className="h-2 w-16 rounded bg-surface-2" />
+      <div className="mt-3 h-8 w-20 rounded bg-surface-2" />
+      <div className="mt-2 h-2.5 w-28 rounded bg-surface-2" />
+    </div>
   );
 }
 
