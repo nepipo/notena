@@ -298,7 +298,7 @@ export default async function Home() {
               Jetzt kostenlos starten →
             </Button>
             <span className="font-mono text-[11px] text-text-mute">
-              Kein Passwort vergessen — Login per Magic Link möglich
+              Kein Abo, keine Kreditkarte — einfach loslegen
             </span>
           </div>
         </div>
