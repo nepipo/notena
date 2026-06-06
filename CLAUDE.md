@@ -176,6 +176,126 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 
 ---
 
+## 11. Einstellungen — Roadmap & Todo-Liste
+
+*Referenz: beste Apps (Notion, Todoist, Duolingo, Spotify, Apple Health) + Schul-Apps (iDoceo, myHomework, Additio, Stundenplan+). Stand: 06.06.2026*
+
+### Legende
+- 🔴 Vor Beta — Blocker oder DSGVO-Pflicht
+- 🟡 v1.0 — kommt bald nach Beta-Launch
+- ⚪ Später — nice to have, kein Blocker
+
+---
+
+### A · Profil & Konto
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🔴 | **Passwort ändern** in /einstellungen (oder /profil) | Supabase `updateUser({ password })` — aktuell nur per "Passwort vergessen"-Flow möglich |
+| 🔴 | **Abmelden** auch in /einstellungen sichtbar | Aktuell nur in /profil versteckt — viele User suchen es in Settings |
+| 🟡 | E-Mail ändern | Supabase `updateUser({ email })` + Bestätigungs-Mail |
+| 🟡 | Profilbild / Avatar-Farbe | Initialen-Avatar mit wählbarer Farbe — kein Upload nötig |
+| ⚪ | Verbundene Konten (Google) | Wenn Google-OAuth konfiguriert ist |
+
+---
+
+### B · Schule
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🔴 | **Halbjahr wechseln** | Schüler brauchen das 2× pro Jahr — aktuell nicht in Settings möglich. Dropdown: 11/1, 11/2, 12/1, 12/2, 13/1, 13/2 |
+| 🟡 | Bundesland | Dropdown (16 Bundesländer) — relevant für Ferien, Notensystem-Varianten |
+| 🟡 | Abiturjahr | Countdown "noch X Tage bis Abi" im Dashboard |
+| 🟡 | Schulform | Gymnasium / Gesamtschule / Berufsschule — beeinflusst zukünftig Feature-Sichtbarkeit |
+| ⚪ | Notensystem | Schweiz (1–6 umgekehrt), Österreich, IB — nach Beta |
+
+---
+
+### C · Fächer
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🔴 | **Fach hinzufügen** direkt in Einstellungen | Aktuell nur in /noten möglich — Settings ist der natürliche Ort |
+| 🔴 | **GK/LK (Niveau) pro Fach ändern** | Nach Onboarding nicht mehr änderbar — Bug |
+| 🟡 | Fach-Farbe wählen | Color-Picker oder Preset-Palette (6–8 Farben) — aktuell alle Fächer gleiche Default-Farbe |
+| 🟡 | Reihenfolge ändern | Drag & Drop oder Up/Down-Pfeile — beeinflusst Sortierung in Noten + Dashboard |
+| ⚪ | Fach archivieren | Statt löschen: ausblenden aber Noten behalten |
+
+---
+
+### D · Benachrichtigungen
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🟡 | **Klausur-Erinnerung konfigurieren** | X Tage vorher (1 / 3 / 7 Tage) — aktuell keine Konfiguration möglich |
+| 🟡 | Briefing-Uhrzeit | Wann kommt das tägliche KI-Briefing (z. B. 7:00 Uhr) |
+| 🟡 | Tägliche Lern-Erinnerung | Optional: "Hast du heute schon Noten eingetragen?" |
+| ⚪ | Stille Stunden | Keine Notifications zwischen X und Y Uhr |
+
+---
+
+### E · Darstellung
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🟡 | **Theme-Toggle** (Dark / Light / System) | Aktuell hardcoded Dark — viele Schüler nutzen Light Mode |
+| 🟡 | Dezimalstellen im Schnitt | 1 oder 2 Nachkommastellen (z. B. 12,3 vs 12,34) |
+| ⚪ | Akzentfarbe wählen | Azurblau, Indigo, Grün, Rot etc. — wie in Mockup v4 |
+| ⚪ | Kompakt-Ansicht | Weniger Padding, mehr Fächer auf einen Blick |
+
+---
+
+### F · Daten & Privatsphäre
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🔴 | **Datenschutz + Impressum verlinken** in Einstellungen | DSGVO-Pflicht — User muss die Seiten von der App aus erreichen können |
+| 🟡 | **Daten exportieren** (CSV / JSON) | DSGVO Art. 20 — Recht auf Datenportabilität. Export: Fächer + Noten + Klausuren |
+| 🟡 | Daten-Übersicht | "Diese Daten speichern wir von dir" — Transparenz erhöht Vertrauen |
+| ⚪ | Alle Daten löschen (ohne Account löschen) | Noten/Fächer reset, Account bleibt |
+
+---
+
+### G · KI & Briefing
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🟡 | **Briefing ein/ausschalten** | Manche User wollen kein KI-Briefing |
+| 🟡 | Briefing-Länge | Kurz (3 Sätze) / Mittel / Lang |
+| 🟡 | Briefing-Fokus | Noten / Klausuren / Beides / Alles inkl. Hausaufgaben |
+| ⚪ | Coach-Kontext | Persistenter Kontext für den KI-Coach ("Mein Ziel ist Mathe LK 13 Punkte") |
+
+---
+
+### H · Über die App
+
+| Prio | Feature | Notiz |
+|------|---------|-------|
+| 🟡 | App-Version anzeigen | Hilft beim Debugging bei Beta-Usern ("Was für eine Version hast du?") |
+| 🟡 | Changelog / "Was ist neu?" | Nach jedem größeren Update — hält User informiert |
+| 🟡 | Feedback-Button-Link | Direkt zum Feedback-Dialog (den wir gebaut haben) |
+| ⚪ | App-Store-Bewertung | Wenn iOS/Android App live |
+
+---
+
+### Zusammenfassung: Was zuerst?
+
+**Nächste Session (Blocker für gute Beta-UX):**
+1. Halbjahr wechseln (B)
+2. GK/LK pro Fach ändern (C)
+3. Fach hinzufügen in Settings (C)
+4. Passwort ändern (A)
+5. Datenschutz/Impressum Links in Settings (F)
+
+**Danach (v1.0-Features):**
+6. Theme-Toggle
+7. Daten exportieren
+8. Briefing ein/ausschalten
+9. Fach-Farbe
+10. Klausur-Erinnerung konfigurieren
+
+---
+
 ## 9. Wie wir starten
 
 1. Neuen GitHub-Repo erstellen: `gh repo create nepipo/project-x --private`
