@@ -1,12 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-/**
- * Supabase-Client für Client-Komponenten (läuft im Browser).
- * Nutzt den öffentlichen Publishable-/Anon-Key (Schutz via RLS).
- */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "Supabase-Konfiguration fehlt. Bitte NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local setzen.",
+    );
+  }
+  return createBrowserClient(url, key);
 }

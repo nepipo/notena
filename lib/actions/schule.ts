@@ -253,6 +253,7 @@ export interface NeuesFachInput {
   gewicht_klausur: number;
   gewicht_muendlich: number;
   fach_gewicht: number;
+  gewichtung_config?: GewichtungConfig | null;
 }
 
 export async function neuesHalbjahr(
@@ -273,6 +274,7 @@ export async function neuesHalbjahr(
         gewicht_klausur: f.gewicht_klausur,
         gewicht_muendlich: f.gewicht_muendlich,
         fach_gewicht: f.fach_gewicht,
+        gewichtung_config: f.gewichtung_config ?? null,
         halbjahr: neuesHj,
       }));
       const { error } = await supabase.from("schule_fach").insert(rows);

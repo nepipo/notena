@@ -13,7 +13,11 @@ import type { Fach, Kategorie, Note } from "@/lib/grades/types";
 
 const KATEGORIEN: { wert: Kategorie; label: string }[] = [
   { wert: "klausur", label: "Klausur" },
+  { wert: "test", label: "Test" },
   { wert: "muendlich", label: "Mündlich" },
+  { wert: "referat", label: "Referat" },
+  { wert: "hausaufgabe", label: "HA" },
+  { wert: "sonstige", label: "Sonst." },
 ];
 
 function fmt(n: number | null): string {

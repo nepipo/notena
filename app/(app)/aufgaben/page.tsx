@@ -52,7 +52,7 @@ export default async function AufgabenPage() {
           {tageBisKlausur !== null && tageBisKlausur <= 7 ? (
             <>
               <span className="text-destructive font-semibold">
-                {naechsteKlausur!.titel} in {tageBisKlausur === 0 ? "heute" : `${tageBisKlausur} Tag${tageBisKlausur === 1 ? "" : "en"}`}
+                {naechsteKlausur?.titel} in {tageBisKlausur === 0 ? "heute" : `${tageBisKlausur} Tag${tageBisKlausur === 1 ? "" : "en"}`}
               </span>
               {offeneHA > 0 && ` · ${offeneHA} HA offen`}
             </>

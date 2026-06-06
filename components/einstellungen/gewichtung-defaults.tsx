@@ -71,7 +71,7 @@ export function GewichtungDefaults({
   }
 
   const s = summe(config);
-  const summeOk = Math.abs(s - 1) < 0.005 || s === 0;
+  const summeOk = config.klausurDynamisch || Math.abs(s - 1) < 0.005 || s === 0;
 
   return (
     <div className="space-y-3">
@@ -79,9 +79,11 @@ export function GewichtungDefaults({
         <span className="font-mono text-[11px] text-text-mute">
           Kategorien ohne Noten werden automatisch ignoriert.
         </span>
-        <span className={`font-mono text-[11px] font-bold ${summeOk ? "text-success" : "text-amber-400"}`}>
-          Σ {Math.round(s * 100)}%
-        </span>
+        {!config.klausurDynamisch && (
+          <span className={`font-mono text-[11px] font-bold ${summeOk ? "text-success" : "text-amber-400"}`}>
+            Σ {Math.round(s * 100)}%
+          </span>
+        )}
       </div>
 
       <div className="space-y-2 rounded-2xl border border-border bg-surface-2 p-4">

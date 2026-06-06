@@ -84,7 +84,8 @@ export function FachDialog({
   }
 
   const summe = summeKategorien(config);
-  const summeOk = Math.abs(summe - 1) < 0.005 || summe === 0;
+  // Im dynamischen Modus ist der Klausur-Anteil nicht fix → Summencheck irrelevant
+  const summeOk = config.klausurDynamisch || Math.abs(summe - 1) < 0.005 || summe === 0;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -126,13 +127,15 @@ export function FachDialog({
               <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
                 Gewichtung
               </div>
-              <span
-                className={`font-mono text-[11px] font-bold ${
-                  summeOk ? "text-success" : "text-amber-400"
-                }`}
-              >
-                Σ {Math.round(summe * 100)}%
-              </span>
+              {!config.klausurDynamisch && (
+                <span
+                  className={`font-mono text-[11px] font-bold ${
+                    summeOk ? "text-success" : "text-amber-400"
+                  }`}
+                >
+                  Σ {Math.round(summe * 100)}%
+                </span>
+              )}
             </div>
             <p className="mb-3 font-mono text-[11px] text-text-mute">
               Summe sollte 100% ergeben. Kategorien ohne Noten werden automatisch ignoriert.
@@ -217,7 +220,7 @@ export function FachDialog({
                     />
                   </div>
                   <div className="mt-1.5 rounded-lg bg-brand/10 px-3 py-2 font-mono text-[11px] text-brand">
-                    1 Klausur → {Math.round(config.klausurPro * 100)}% · {config.klausurMax} Klausuren → {Math.min(config.klausurMax, config.klausurMax) * Math.round(config.klausurPro * 100)}%
+                    1 Klausur → {Math.round(config.klausurPro * 100)}% · {config.klausurMax} Klausuren → {config.klausurMax * Math.round(config.klausurPro * 100)}%
                   </div>
                 </div>
               )}
