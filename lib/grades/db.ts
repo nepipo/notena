@@ -2,7 +2,8 @@
  * Mapping zwischen Supabase-Rows und den reinen calc.ts-Typen.
  * Reine Funktionen, keine DB-Aufrufe — dadurch testbar.
  */
-import type { Fach, Kategorie, Note } from "./types";
+import type { Fach, GewichtungConfig, Kategorie, Note } from "./types";
+import { DEFAULT_GEWICHTUNG_CONFIG } from "./types";
 
 export interface FachRow {
   id: string;
@@ -12,9 +13,12 @@ export interface FachRow {
   niveau: string;
   halbjahr: string | null;
   fach_gewicht: number;
+  // Legacy-Spalten (bleiben erhalten für Backward-Compat)
   gewicht_klausur: number;
   gewicht_muendlich: number;
   gewicht_sonstige: number;
+  // Neue vollständige Config (nullable — alt Rows haben null)
+  gewichtung_config: GewichtungConfig | null;
   ausgeschlossen: boolean;
   created_at: string;
 }
@@ -53,11 +57,20 @@ function mapNote(row: NoteRow): Note {
   };
 }
 
-/** Gruppiert Noten nach Fach und baut die calc-Fach-Objekte. */
-export function assembleFaecher(
-  fachRows: FachRow[],
-  noteRows: NoteRow[],
-): Fach[] {
+function mapGewichtungConfig(row: FachRow): GewichtungConfig {
+  if (row.gewichtung_config) {
+    return { ...DEFAULT_GEWICHTUNG_CONFIG, ...row.gewichtung_config };
+  }
+  // Alte Rows: aus Legacy-Spalten rekonstruieren
+  return {
+    ...DEFAULT_GEWICHTUNG_CONFIG,
+    klausur: row.gewicht_klausur,
+    muendlich: row.gewicht_muendlich,
+    sonstige: row.gewicht_sonstige,
+  };
+}
+
+export function assembleFaecher(fachRows: FachRow[], noteRows: NoteRow[]): Fach[] {
   const notenProFach = new Map<string, Note[]>();
   for (const n of noteRows) {
     const list = notenProFach.get(n.fach_id) ?? [];
@@ -68,11 +81,7 @@ export function assembleFaecher(
     id: f.id,
     name: f.name,
     noten: notenProFach.get(f.id) ?? [],
-    gewichtung: {
-      klausur: f.gewicht_klausur,
-      muendlich: f.gewicht_muendlich,
-      sonstige: f.gewicht_sonstige,
-    },
+    gewichtungConfig: mapGewichtungConfig(f),
     fachGewicht: f.fach_gewicht,
     farbe: f.farbe,
     niveau: f.niveau,
@@ -80,13 +89,7 @@ export function assembleFaecher(
   }));
 }
 
-/**
- * Baut eine Map fach_id → nächste Klausur.
- * Pro Fach wird nur die zeitlich erste Klausur gemerkt (Rows kommen sortiert an).
- */
-export function assembleKlausuren(
-  rows: KlausurRow[],
-): Map<string, KlausurRow> {
+export function assembleKlausuren(rows: KlausurRow[]): Map<string, KlausurRow> {
   const map = new Map<string, KlausurRow>();
   for (const k of rows) {
     if (k.fach_id && !map.has(k.fach_id)) {

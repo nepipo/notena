@@ -3,10 +3,6 @@
  * Reine Typen — keine Logik, kein React, keine DB.
  */
 
-/**
- * Kategorie einer Leistung.
- * Gruppen: klausur = schriftlich, alle anderen = mündlich.
- */
 export type Kategorie =
   | "klausur"
   | "muendlich"
@@ -15,48 +11,64 @@ export type Kategorie =
   | "hausaufgabe"
   | "sonstige";
 
-/** Eine einzelne Note/Leistung. */
 export interface Note {
   id?: string;
-  /** Punktwert 0–15 (15 = sehr gut+, 0 = ungenügend). */
   punkte: number;
   kategorie: Kategorie;
-  /** ISO-Datum, optional (für Sortierung/Verlauf). */
   datum?: string;
-  /** Einzelgewicht innerhalb der Gruppe (z.B. 2 für doppelt zählende Klausur). Default 1. */
+  /** Einzelgewicht innerhalb der Kategorie (z.B. 2 für doppelt zählende Klausur). Default 1. */
   gewicht?: number;
-  /** Freitext-Bezeichnung (z.B. "1. Klausur", "Referat Klimawandel"). */
   bezeichnung?: string;
 }
 
-/** Gewichtung der zwei Gruppen für den Fach-Schnitt (wird normalisiert). */
-export interface Kategoriegewichtung {
+/**
+ * Vollständige Gewichtungskonfiguration eines Fachs.
+ * Alle 6 Kategorien haben eigene Anteile (0–1).
+ * Kategorien ohne Noten werden ignoriert und die verbleibenden renormalisiert.
+ */
+export interface GewichtungConfig {
   klausur: number;
+  test: number;
   muendlich: number;
-  /** @deprecated Nicht mehr verwendet. Alle Nicht-Klausur-Kategorien zählen zur muendlich-Gruppe. */
+  referat: number;
+  hausaufgabe: number;
   sonstige: number;
+  /** Wenn true: jede Klausur zählt klausurPro, max klausurMax Klausuren. */
+  klausurDynamisch: boolean;
+  /** Anteil pro Klausur im dynamischen Modus (z.B. 0.2 = 20%). */
+  klausurPro: number;
+  /** Maximale Anzahl Klausuren die zählen (cap für dynamischen Modus). */
+  klausurMax: number;
 }
+
+export const DEFAULT_GEWICHTUNG_CONFIG: GewichtungConfig = {
+  klausur: 0.5,
+  test: 0,
+  muendlich: 0.5,
+  referat: 0,
+  hausaufgabe: 0,
+  sonstige: 0,
+  klausurDynamisch: false,
+  klausurPro: 0.2,
+  klausurMax: 2,
+};
 
 /** Ein Fach mit seinen Noten und seiner Gewichtungs-Konfiguration. */
 export interface Fach {
   id: string;
   name: string;
   noten: Note[];
-  /** Kategoriegewichtung; fehlende Werte fallen auf den Default (50/50). */
-  gewichtung?: Partial<Kategoriegewichtung>;
+  gewichtungConfig?: GewichtungConfig;
   /** Gewicht des Fachs im Gesamtschnitt (LK = 2, GK = 1). Default 1. */
   fachGewicht?: number;
-  /** Hex-Farbe für UI-Akzent. */
   farbe?: string | null;
-  /** 'grund' = GK, 'erhoeht' = LK. */
   niveau?: string;
-  /** Fach wird angezeigt, aber nicht in den Gesamtschnitt einberechnet. */
   ausgeschlossen?: boolean;
 }
 
-/** Standard-Gewichtung: 50% Klausur, 50% mündlich. */
-export const DEFAULT_GEWICHTUNG: Kategoriegewichtung = {
-  klausur: 0.5,
-  muendlich: 0.5,
-  sonstige: 0,
-};
+/** @deprecated Nur noch für Backward-Compat. Benutze GewichtungConfig. */
+export interface Kategoriegewichtung {
+  klausur: number;
+  muendlich: number;
+  sonstige: number;
+}

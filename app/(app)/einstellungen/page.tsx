@@ -2,18 +2,23 @@ import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
 import { PushToggle } from "@/components/push-toggle";
 import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung";
+import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
+import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
+import type { GewichtungConfig } from "@/lib/grades/types";
 
 // Auth-Check macht app/(app)/layout.tsx zentral.
 export default async function EinstellungenPage() {
   const supabase = await createClient();
 
   const [{ data: profil }, { data: fachRows }] = await Promise.all([
-    supabase.from("nutzer_profil").select("eingabe_modus, notensystem").single(),
+    supabase.from("nutzer_profil").select("eingabe_modus, notensystem, aktuelles_halbjahr, default_gewichtung").single(),
     supabase.from("schule_fach").select("*").order("name"),
   ]);
 
   const eingabeModus = profil?.eingabe_modus ?? "punkte";
+  const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+  const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -95,10 +100,27 @@ export default async function EinstellungenPage() {
         </p>
       </section>
 
-      {/* Fächer */}
+      {/* Standard-Gewichtung */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.2s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Standard-Gewichtung
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Vorlage für neue Fächer — oder auf alle bestehenden anwenden.
+        </p>
+        <GewichtungDefaults
+          initialConfig={defaultGewichtung}
+          aktuellesHalbjahr={halbjahr}
+        />
+      </section>
+
+      {/* Fächer */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
           Fächer

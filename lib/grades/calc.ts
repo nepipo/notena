@@ -1,38 +1,30 @@
 /**
  * Notenrechner-Kernlogik (0–15-Punkte-System, deutsche Oberstufe).
- *
- * Reine Funktionen, vollständig ohne Seiteneffekte — leicht testbar.
- * Regeln:
- *  - Alle Kategorien außer 'klausur' zählen zur muendlich-Gruppe.
- *  - Innerhalb einer Gruppe: gewichteter Durchschnitt (Note.gewicht).
- *  - Fach-Schnitt: gewichtete Kombination der zwei Gruppen. Gruppen OHNE Noten
- *    werden ignoriert und die Gewichte der verbleibenden renormalisiert.
- *  - Gesamt-Schnitt: über die Fächer, gewichtet mit fachGewicht.
+ * Reine Funktionen, vollständig ohne Seiteneffekte.
  */
 
 import {
   type Fach,
   type Kategorie,
-  type Kategoriegewichtung,
+  type GewichtungConfig,
   type Note,
-  DEFAULT_GEWICHTUNG,
+  DEFAULT_GEWICHTUNG_CONFIG,
 } from "./types";
 
-/** Begrenzt einen Punktwert auf den gültigen Bereich 0–15. */
+const ALLE_KATEGORIEN: Kategorie[] = [
+  "klausur", "test", "muendlich", "referat", "hausaufgabe", "sonstige",
+];
+
 export function clampPunkte(punkte: number): number {
   if (Number.isNaN(punkte)) return 0;
   return Math.min(15, Math.max(0, punkte));
 }
 
-/** Rundet einen Wert auf n Dezimalstellen (Standard: 1). */
 export function runde(wert: number, dezimal = 1): number {
   const f = 10 ** dezimal;
   return Math.round(wert * f) / f;
 }
 
-/**
- * Wandelt Punkte (0–15) in die klassische Notendarstellung um (z.B. 13 → "1−").
- */
 export function punkteZuNote(punkte: number): string {
   const p = Math.round(clampPunkte(punkte));
   if (p === 0) return "6";
@@ -42,150 +34,118 @@ export function punkteZuNote(punkte: number): string {
   return `${grundnote}${tendenz}`;
 }
 
-/**
- * Ordnet eine Kategorie einer der zwei Gruppen zu.
- * Nur 'klausur' ist schriftlich — alles andere ist mündlich.
- */
+/** Ordnet eine Kategorie einer Gruppe zu (für die K/M-Anzeige). */
 export function kategorieZurGruppe(k: Kategorie): "klausur" | "muendlich" {
   return k === "klausur" ? "klausur" : "muendlich";
 }
 
-/**
- * Gewichteter Durchschnitt der Noten EINER exakten Kategorie.
- * Wird für Detailansichten verwendet; fachSchnitt nutzt Gruppen.
- * @returns Schnitt (0–15) oder null, wenn keine Noten in der Kategorie.
- */
-export function kategorieSchnitt(
-  noten: Note[],
-  kategorie: Kategorie,
-): number | null {
+/** Gewichteter Schnitt einer einzelnen Kategorie. Für Detailansichten. */
+export function kategorieSchnitt(noten: Note[], kategorie: Kategorie): number | null {
   const relevant = noten.filter((n) => n.kategorie === kategorie);
   if (relevant.length === 0) return null;
-
   let summe = 0;
-  let gewichtSumme = 0;
+  let gewSum = 0;
   for (const n of relevant) {
     const g = n.gewicht ?? 1;
     summe += clampPunkte(n.punkte) * g;
-    gewichtSumme += g;
+    gewSum += g;
   }
-  if (gewichtSumme === 0) return null;
-  return summe / gewichtSumme;
+  return gewSum > 0 ? summe / gewSum : null;
 }
 
-/** Führt die konfigurierte Gewichtung mit dem Default zusammen. */
-function aufloesenGewichtung(
-  gewichtung?: Partial<Kategoriegewichtung>,
-): Kategoriegewichtung {
-  return { ...DEFAULT_GEWICHTUNG, ...gewichtung };
+function resolveConfig(config?: GewichtungConfig): GewichtungConfig {
+  return config ? { ...DEFAULT_GEWICHTUNG_CONFIG, ...config } : DEFAULT_GEWICHTUNG_CONFIG;
 }
 
 /**
- * Schnitt eines Fachs über zwei Gruppen (klausur / muendlich).
- * Alle Noten werden per kategorieZurGruppe einer Gruppe zugeordnet.
- * Gruppen ohne Noten werden ignoriert, die übrigen Gewichte renormalisiert.
+ * Fach-Schnitt mit vollständiger Gewichtungskonfiguration.
+ * - Jede Kategorie hat ein eigenes Gewicht.
+ * - Kategorien ohne Noten werden ignoriert und die Gewichte renormalisiert.
+ * - Klausur-Dynamik: wenn klausurDynamisch, wächst das Klausur-Gewicht mit
+ *   jeder Klausur (klausurPro × Anzahl, gedeckelt bei klausurMax).
  */
-export function fachSchnitt(
-  noten: Note[],
-  gewichtung?: Partial<Kategoriegewichtung>,
-): number | null {
-  const g = aufloesenGewichtung(gewichtung);
-  const gruppen = ["klausur", "muendlich"] as const;
-
+export function fachSchnitt(noten: Note[], config?: GewichtungConfig): number | null {
+  const c = resolveConfig(config);
   let summe = 0;
-  let gewichtSumme = 0;
+  let gewSum = 0;
 
-  for (const gruppe of gruppen) {
-    const gruppenNoten = noten.filter(
-      (n) => kategorieZurGruppe(n.kategorie) === gruppe,
-    );
-    if (gruppenNoten.length === 0) continue;
+  for (const kat of ALLE_KATEGORIEN) {
+    const katNoten = noten.filter((n) => n.kategorie === kat);
+    if (katNoten.length === 0) continue;
 
-    let gruppeSumme = 0;
-    let gruppeGewicht = 0;
-    for (const n of gruppenNoten) {
-      const gew = n.gewicht ?? 1;
-      gruppeSumme += clampPunkte(n.punkte) * gew;
-      gruppeGewicht += gew;
+    let katSumme = 0;
+    let katGew = 0;
+    for (const n of katNoten) {
+      const g = n.gewicht ?? 1;
+      katSumme += clampPunkte(n.punkte) * g;
+      katGew += g;
     }
-    if (gruppeGewicht === 0) continue;
+    if (katGew === 0) continue;
 
-    const gruppenSchnitt = gruppeSumme / gruppeGewicht;
-    const katGewicht = g[gruppe];
-    if (katGewicht <= 0) continue;
+    const katSchnitt = katSumme / katGew;
 
-    summe += gruppenSchnitt * katGewicht;
-    gewichtSumme += katGewicht;
+    let effGew: number;
+    if (kat === "klausur" && c.klausurDynamisch) {
+      effGew = Math.min(katNoten.length, c.klausurMax) * c.klausurPro;
+    } else {
+      effGew = c[kat as keyof Pick<GewichtungConfig, Kategorie>] as number;
+    }
+
+    if (effGew <= 0) continue;
+    summe += katSchnitt * effGew;
+    gewSum += effGew;
   }
 
-  if (gewichtSumme === 0) return null;
-  return summe / gewichtSumme;
+  return gewSum > 0 ? summe / gewSum : null;
 }
 
-/** Wie `fachSchnitt`, aber gerundet auf 1 Dezimalstelle (für die Anzeige). */
-export function fachSchnittGerundet(
-  noten: Note[],
-  gewichtung?: Partial<Kategoriegewichtung>,
-): number | null {
-  const s = fachSchnitt(noten, gewichtung);
+export function fachSchnittGerundet(noten: Note[], config?: GewichtungConfig): number | null {
+  const s = fachSchnitt(noten, config);
   return s === null ? null : runde(s);
 }
 
-/**
- * Gesamt-Schnitt über mehrere Fächer, gewichtet mit fachGewicht.
- * Fächer ohne Noten werden ignoriert.
- */
 export function gesamtSchnitt(faecher: Fach[]): number | null {
   let summe = 0;
-  let gewichtSumme = 0;
+  let gewSum = 0;
   for (const fach of faecher) {
-    const schnitt = fachSchnitt(fach.noten, fach.gewichtung);
+    if (fach.ausgeschlossen) continue;
+    const schnitt = fachSchnitt(fach.noten, fach.gewichtungConfig);
     if (schnitt === null) continue;
     const fg = fach.fachGewicht ?? 1;
     if (fg <= 0) continue;
     summe += schnitt * fg;
-    gewichtSumme += fg;
+    gewSum += fg;
   }
-  if (gewichtSumme === 0) return null;
-  return summe / gewichtSumme;
+  return gewSum > 0 ? summe / gewSum : null;
 }
 
-/** Gesamt-Schnitt gerundet auf 1 Dezimalstelle. */
 export function gesamtSchnittGerundet(faecher: Fach[]): number | null {
   const s = gesamtSchnitt(faecher);
   return s === null ? null : runde(s);
 }
 
-/**
- * „Was-wäre-wenn": Fach-Schnitt, wenn eine hypothetische Note hinzukäme.
- */
 export function wasWaereWenn(
   noten: Note[],
   hypothese: Note,
-  gewichtung?: Partial<Kategoriegewichtung>,
+  config?: GewichtungConfig,
 ): number | null {
-  return fachSchnitt([...noten, hypothese], gewichtung);
+  return fachSchnitt([...noten, hypothese], config);
 }
 
-/**
- * Zielnoten-Rechner: kleinste Punktzahl (0–15) für eine zusätzliche Note
- * (gegebene Kategorie + Gewicht), damit der gerundete Fach-Schnitt das Ziel erreicht.
- * @returns Punktzahl 0–15, "erreicht" (Ziel schon erfüllt) oder "unmoeglich" (auch 15 reicht nicht).
- */
 export function benoetigtePunkte(
   noten: Note[],
-  gewichtung: Partial<Kategoriegewichtung> | undefined,
+  config: GewichtungConfig | undefined,
   kategorie: Kategorie,
   gewicht: number,
   ziel: number,
 ): number | "erreicht" | "unmoeglich" {
-  const aktuell = fachSchnitt(noten, gewichtung);
+  const aktuell = fachSchnitt(noten, config);
   if (aktuell !== null && runde(aktuell) >= ziel) return "erreicht";
 
   for (let p = 0; p <= 15; p++) {
     const mitProbe = fachSchnitt(
       [...noten, { punkte: p, kategorie, gewicht }],
-      gewichtung,
+      config,
     );
     if (mitProbe !== null && runde(mitProbe) >= ziel) return p;
   }

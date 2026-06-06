@@ -35,10 +35,10 @@ export function WasWaereWennPanel({ fach }: { fach: Fach }) {
   const [ziel, setZiel] = useState("");
   const [zielKat, setZielKat] = useState<Kategorie>("klausur");
 
-  const istSchnitt = fachSchnittGerundet(fach.noten, fach.gewichtung);
+  const istSchnitt = fachSchnittGerundet(fach.noten, fach.gewichtungConfig);
   const mitProben = fachSchnittGerundet(
     [...fach.noten, ...proben],
-    fach.gewichtung,
+    fach.gewichtungConfig,
   );
 
   function addProbe() {
@@ -59,7 +59,7 @@ export function WasWaereWennPanel({ fach }: { fach: Fach }) {
   const zielZahl = Number(ziel);
   const zielGueltig = ziel !== "" && !Number.isNaN(zielZahl) && zielZahl >= 0 && zielZahl <= 15;
   const ergebnis = zielGueltig
-    ? benoetigtePunkte(fach.noten, fach.gewichtung, zielKat, 1, zielZahl)
+    ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl)
     : null;
 
   return (

@@ -43,8 +43,8 @@ export function berechneJahresUebersicht(
   const zeilen: JahresFachZeile[] = namen.map((name) => {
     const f1 = byName1.get(name);
     const f2 = byName2.get(name);
-    const hj1 = f1 ? fachSchnittGerundet(f1.noten, f1.gewichtung) : null;
-    const hj2 = f2 ? fachSchnittGerundet(f2.noten, f2.gewichtung) : null;
+    const hj1 = f1 ? fachSchnittGerundet(f1.noten, f1.gewichtungConfig) : null;
+    const hj2 = f2 ? fachSchnittGerundet(f2.noten, f2.gewichtungConfig) : null;
     // Anzeige-Metadaten bevorzugt aus dem aktuelleren (hj2) Fach.
     const meta = f2 ?? f1;
     return {

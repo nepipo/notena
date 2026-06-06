@@ -64,9 +64,9 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
 
   const fach = faecher.find((f) => f.id === fachId) ?? null;
 
-  const istSchnittFach = fach ? fachSchnittGerundet(fach.noten, fach.gewichtung) : null;
+  const istSchnittFach = fach ? fachSchnittGerundet(fach.noten, fach.gewichtungConfig) : null;
   const mitProbenFach = fach
-    ? fachSchnittGerundet([...fach.noten, ...proben], fach.gewichtung)
+    ? fachSchnittGerundet([...fach.noten, ...proben], fach.gewichtungConfig)
     : null;
 
   const gesamtVorher = gesamtSchnittGerundet(faecher);
@@ -89,7 +89,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
   const zielGueltig = ziel !== "" && !Number.isNaN(zielZahl) && zielZahl >= 0 && zielZahl <= 15;
   const ergebnis =
     zielGueltig && fach
-      ? benoetigtePunkte(fach.noten, fach.gewichtung, zielKat, 1, zielZahl)
+      ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl)
       : null;
 
   if (faecher.length === 0) {
@@ -181,7 +181,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
             Fach wählen
           </div>
           {faecher.map((f) => {
-            const schnitt = fachSchnittGerundet(f.noten, f.gewichtung);
+            const schnitt = fachSchnittGerundet(f.noten, f.gewichtungConfig);
             const istAktiv = f.id === fachId;
             return (
               <button

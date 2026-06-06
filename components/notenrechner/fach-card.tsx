@@ -227,7 +227,7 @@ export function FachCard({
 }) {
   const [wwwOffen, setWwwOffen] = useState(false);
   const [verlaufOffen, setVerlaufOffen] = useState(false);
-  const schnitt = fachSchnittGerundet(fach.noten, fach.gewichtung);
+  const schnitt = fachSchnittGerundet(fach.noten, fach.gewichtungConfig);
   const farbe = schnittFarbe(schnitt);
   const tage = naechsteKlausur ? tageBis(naechsteKlausur.datum) : null;
 

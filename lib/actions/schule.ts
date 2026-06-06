@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Kategorie } from "@/lib/grades/types";
+import type { GewichtungConfig, Kategorie } from "@/lib/grades/types";
 
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
@@ -118,6 +118,7 @@ export async function updateFach(
     gewicht_muendlich?: number;
     fach_gewicht?: number;
     ausgeschlossen?: boolean;
+    gewichtung_config?: GewichtungConfig | null;
   },
 ): Promise<ActionResult> {
   try {
@@ -286,6 +287,45 @@ export async function neuesHalbjahr(
 
     revalidatePath("/dashboard");
     revalidatePath("/noten");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function saveDefaultGewichtung(
+  config: GewichtungConfig,
+): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ default_gewichtung: config })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/einstellungen");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function applyGewichtungAufAlleFaecher(
+  config: GewichtungConfig,
+  halbjahr: string,
+): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("schule_fach")
+      .update({ gewichtung_config: config })
+      .eq("user_id", userId)
+      .eq("halbjahr", halbjahr);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/noten");
+    revalidatePath("/dashboard");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };

@@ -41,7 +41,7 @@ export function NeuesHalbjahrDialog({
   const [auswahl, setAuswahl] = useState<FachAuswahl[]>(
     aktuelleFaecher.map((f) => ({
       uebernehmen: true,
-      klausurProzent: Math.round((f.gewichtung?.klausur ?? 0.5) * 100),
+      klausurProzent: Math.round((f.gewichtungConfig?.klausur ?? 0.5) * 100),
       fach: f,
     })),
   );

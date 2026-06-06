@@ -80,7 +80,7 @@ export default async function NotenPage() {
   );
   const vorherSchnitte: Record<string, number> = {};
   for (const vf of vorFaecher) {
-    const s = fachSchnittGerundet(vf.noten, vf.gewichtung);
+    const s = fachSchnittGerundet(vf.noten, vf.gewichtungConfig);
     if (s !== null) vorherSchnitte[vf.name] = s;
   }
 
