@@ -40,6 +40,7 @@ export async function sendPushZuUser(
         );
       } catch (err: unknown) {
         const status = (err as { statusCode?: number })?.statusCode;
+        console.error("[push] sendNotification error", status, (err as Error)?.message);
         if (status === 410 || status === 404) {
           abgelaufeneEndpoints.push(sub.endpoint);
         }
@@ -62,6 +63,13 @@ export async function testPushAnMich(): Promise<{ ok: boolean; error?: string }>
     const supabase = await createClient();
     const { data: auth } = await supabase.auth.getClaims();
     if (!auth?.claims?.sub) return { ok: false, error: "Nicht eingeloggt" };
+
+    const { data: subs } = await supabase
+      .from("push_subscription")
+      .select("endpoint")
+      .eq("user_id", auth.claims.sub);
+
+    if (!subs?.length) return { ok: false, error: "Keine Subscription gefunden — Push in Einstellungen erst aktivieren." };
 
     await sendPushZuUser(auth.claims.sub, {
       title: "Project X ✓",
