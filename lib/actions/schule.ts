@@ -432,3 +432,20 @@ export async function saveBundesland(bundesland: string | null): Promise<ActionR
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }
 }
+
+export async function setKlausurErinnerungTage(
+  tage: number[],
+): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ klausur_erinnerung_tage: tage })
+      .eq("id", userId);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
