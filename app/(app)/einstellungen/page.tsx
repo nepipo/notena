@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
 import { PushToggle } from "@/components/push-toggle";
+import { KlausurErinnerungConfig } from "@/components/einstellungen/klausur-erinnerung-config";
 import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung";
 import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
 import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
@@ -22,7 +23,7 @@ export default async function EinstellungenPage() {
   const theme = (cookieStore.get("project-x-theme")?.value ?? "dark") as Theme;
 
   const [{ data: profil }, { data: fachRows }] = await Promise.all([
-    supabase.from("nutzer_profil").select("eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv").single(),
+    supabase.from("nutzer_profil").select("eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage").single(),
     supabase.from("schule_fach").select("*").order("name"),
   ]);
 
@@ -30,6 +31,7 @@ export default async function EinstellungenPage() {
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
   const briefingAktiv = profil?.briefing_aktiv !== false;
+  const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -132,6 +134,7 @@ export default async function EinstellungenPage() {
         <p className="mt-3 font-mono text-[11px] text-text-mute">
           Funktioniert als PWA (Homescreen-App) und im Browser. Einmalige Browser-Erlaubnis nötig.
         </p>
+        <KlausurErinnerungConfig initial={klausurErinnerungTage} />
       </section>
 
       {/* ── STANDARD-GEWICHTUNG ───────────────────────────── */}
