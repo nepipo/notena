@@ -9,6 +9,18 @@ import type { FachRow } from "@/lib/grades/db";
 
 type Niveau = "grund" | "erhoeht";
 
+const FARB_PALETTE = [
+  "#1da1ff", // Azurblau (Brand)
+  "#6366f1", // Indigo
+  "#a855f7", // Purple
+  "#ec4899", // Pink
+  "#ef4444", // Red
+  "#f97316", // Orange
+  "#eab308", // Yellow
+  "#22c55e", // Green
+  "#14b8a6", // Teal
+];
+
 export function FaecherVerwaltung({
   faecher,
   halbjahr,
@@ -21,6 +33,7 @@ export function FaecherVerwaltung({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [colorPickerId, setColorPickerId] = useState<string | null>(null);
 
   // Fach hinzufügen
   const [neuerName, setNeuerName] = useState("");
@@ -29,8 +42,18 @@ export function FaecherVerwaltung({
   const inputRef = useRef<HTMLInputElement>(null);
   const addInputRef = useRef<HTMLInputElement>(null);
 
+  function pickColor(fachId: string, farbe: string) {
+    start(async () => {
+      const res = await updateFach(fachId, { farbe });
+      if (!res.ok) { toast.error(res.error); return; }
+      setColorPickerId(null);
+      router.refresh();
+    });
+  }
+
   function startEdit(f: FachRow) {
     setConfirmDeleteId(null);
+    setColorPickerId(null);
     setShowAddForm(false);
     setEditingId(f.id);
     setEditName(f.name);
@@ -145,28 +168,58 @@ export function FaecherVerwaltung({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <div className="size-3 shrink-0 rounded-full" style={{ background: f.farbe ?? "#1da1ff" }} />
-                <span className="flex-1 font-display text-sm font-bold">{f.name}</span>
-                {/* GK/LK Toggle */}
-                <button
-                  onClick={() => toggleNiveau(f)}
-                  disabled={pending}
-                  className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold transition-colors disabled:opacity-50 ${
-                    f.niveau === "erhoeht"
-                      ? "bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30"
-                      : "bg-surface-3 text-text-mute hover:bg-surface-3 hover:text-foreground"
-                  }`}
-                  title="GK/LK wechseln"
-                >
-                  {f.niveau === "erhoeht" ? "LK" : "GK"}
-                </button>
-                <button onClick={() => startEdit(f)} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground" title="Umbenennen">
-                  <Pencil className="size-3.5" />
-                </button>
-                <button onClick={() => { setEditingId(null); setConfirmDeleteId(f.id); }} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-red-400" title="Löschen">
-                  <Trash2 className="size-3.5" />
-                </button>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  {/* Farbpunkt — klickbar */}
+                  <button
+                    onClick={() => setColorPickerId(colorPickerId === f.id ? null : f.id)}
+                    className="group relative shrink-0 rounded-full p-0.5 transition-all hover:ring-2 hover:ring-white/20"
+                    title="Farbe wählen"
+                    disabled={pending}
+                  >
+                    <div className="size-3 rounded-full" style={{ background: f.farbe ?? "#1da1ff" }} />
+                  </button>
+                  <span className="flex-1 font-display text-sm font-bold">{f.name}</span>
+                  {/* GK/LK Toggle */}
+                  <button
+                    onClick={() => toggleNiveau(f)}
+                    disabled={pending}
+                    className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold transition-colors disabled:opacity-50 ${
+                      f.niveau === "erhoeht"
+                        ? "bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30"
+                        : "bg-surface-3 text-text-mute hover:bg-surface-3 hover:text-foreground"
+                    }`}
+                    title="GK/LK wechseln"
+                  >
+                    {f.niveau === "erhoeht" ? "LK" : "GK"}
+                  </button>
+                  <button onClick={() => startEdit(f)} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-foreground" title="Umbenennen">
+                    <Pencil className="size-3.5" />
+                  </button>
+                  <button onClick={() => { setEditingId(null); setColorPickerId(null); setConfirmDeleteId(f.id); }} className="flex size-7 items-center justify-center rounded-lg text-text-mute transition-colors hover:text-red-400" title="Löschen">
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+
+                {/* Color Picker Popup */}
+                {colorPickerId === f.id && (
+                  <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface-1 p-3">
+                    {FARB_PALETTE.map((farbe) => (
+                      <button
+                        key={farbe}
+                        onClick={() => pickColor(f.id, farbe)}
+                        disabled={pending}
+                        className="size-6 rounded-full transition-transform hover:scale-110 disabled:opacity-50"
+                        style={{
+                          background: farbe,
+                          outline: (f.farbe ?? "#1da1ff") === farbe ? `2px solid ${farbe}` : "none",
+                          outlineOffset: "2px",
+                        }}
+                        title={farbe}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
