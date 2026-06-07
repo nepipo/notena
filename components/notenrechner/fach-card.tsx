@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Sparkles, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -209,6 +209,7 @@ export function FachCard({
   vorherSchnitt,
   onAddNote,
   onRemoveNote,
+  onUpdateNote,
   onOpenDialog,
 }: {
   fach: Fach;
@@ -223,10 +224,20 @@ export function FachCard({
     gewicht?: number,
   ) => void;
   onRemoveNote: (fachId: string, noteId: string) => void;
+  onUpdateNote: (
+    fachId: string,
+    noteId: string,
+    punkte: number,
+    kategorie: Kategorie,
+    bezeichnung?: string,
+    gewicht?: number,
+  ) => void;
   onOpenDialog: (fachId: string) => void;
 }) {
   const [wwwOffen, setWwwOffen] = useState(false);
   const [verlaufOffen, setVerlaufOffen] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const schnitt = fachSchnittGerundet(fach.noten, fach.gewichtungConfig);
   const farbe = schnittFarbe(schnitt);
   const tage = naechsteKlausur ? tageBis(naechsteKlausur.datum) : null;
@@ -302,14 +313,14 @@ export function FachCard({
             title="What-If"
             className={`transition-colors ${wwwOffen ? "text-brand" : "text-text-mute hover:text-foreground"}`}
           >
-            🔮
+            <Sparkles className="size-4" />
           </button>
           <button
             onClick={() => onOpenDialog(fach.id)}
             title="Fach konfigurieren"
             className="text-text-mute transition-colors hover:text-foreground"
           >
-            ⚙
+            <Settings2 className="size-4" />
           </button>
         </div>
       </div>
@@ -335,27 +346,160 @@ export function FachCard({
         {fach.noten.length === 0 && (
           <span className="font-mono text-xs text-text-mute">Noch keine Noten</span>
         )}
-        {fach.noten.map((n) => (
-          <button
-            key={n.id}
-            onClick={() => onRemoveNote(fach.id, n.id!)}
-            title={`${n.bezeichnung ?? KAT_LABEL[n.kategorie]}${n.gewicht && n.gewicht !== 1 ? ` (×${n.gewicht})` : ""} — klick zum Löschen`}
-            className="group inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2.5 py-1 font-mono text-xs transition-colors hover:border-destructive/40 hover:bg-destructive/10"
-          >
-            <span className="font-semibold">{n.punkte}</span>
-            <span className="text-text-mute">{KAT_KUERZEL[n.kategorie]}</span>
-            {n.bezeichnung && (
-              <span className="text-text-mute">·{n.bezeichnung.slice(0, 8)}</span>
-            )}
-            <span className="text-text-mute group-hover:text-destructive">×</span>
-          </button>
-        ))}
+        {fach.noten.map((n) => {
+          if (editingNoteId === n.id) {
+            return (
+              <NoteEditForm
+                key={n.id}
+                note={n}
+                onSave={(p, k, bez, gew) => {
+                  onUpdateNote(fach.id, n.id!, p, k, bez, gew);
+                  setEditingNoteId(null);
+                }}
+                onCancel={() => setEditingNoteId(null)}
+              />
+            );
+          }
+          const isConfirming = confirmDeleteId === n.id;
+          return (
+            <span
+              key={n.id}
+              className={`inline-flex items-center gap-1 rounded-full border font-mono text-xs transition-colors ${
+                isConfirming
+                  ? "border-destructive/60 bg-destructive/15"
+                  : "border-border bg-surface-2"
+              }`}
+            >
+              <button
+                onClick={() => {
+                  setConfirmDeleteId(null);
+                  setEditingNoteId(n.id!);
+                }}
+                title={`${n.bezeichnung ?? KAT_LABEL[n.kategorie]} — klick zum Bearbeiten`}
+                className="inline-flex items-center gap-1 px-2.5 py-1 hover:text-brand"
+              >
+                <span className="font-semibold">{n.punkte}</span>
+                <span className="text-text-mute">{KAT_KUERZEL[n.kategorie]}</span>
+                {n.bezeichnung && (
+                  <span className="text-text-mute">·{n.bezeichnung.slice(0, 8)}</span>
+                )}
+              </button>
+              {isConfirming ? (
+                <>
+                  <button
+                    onClick={() => { onRemoveNote(fach.id, n.id!); setConfirmDeleteId(null); }}
+                    className="py-1 pr-1.5 font-semibold text-destructive hover:text-destructive"
+                    title="Löschen bestätigen"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="py-1 pr-2 text-text-mute hover:text-foreground"
+                    title="Abbrechen"
+                  >
+                    ✕
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteId(n.id!)}
+                  title="Löschen"
+                  className="py-1 pr-2 text-text-mute hover:text-destructive"
+                >
+                  ×
+                </button>
+              )}
+            </span>
+          );
+        })}
       </div>
 
       <AddNote onAdd={(p, k, bez, gew) => onAddNote(fach.id, p, k, bez, gew)} />
 
       {wwwOffen && <WasWaereWennPanel fach={fach} />}
     </section>
+  );
+}
+
+function NoteEditForm({
+  note,
+  onSave,
+  onCancel,
+}: {
+  note: Note;
+  onSave: (punkte: number, kategorie: Kategorie, bezeichnung?: string, gewicht?: number) => void;
+  onCancel: () => void;
+}) {
+  const [punkte, setPunkte] = useState(String(note.punkte));
+  const [kategorie, setKategorie] = useState<Kategorie>(note.kategorie);
+  const [bezeichnung, setBezeichnung] = useState(note.bezeichnung ?? "");
+  const [gewicht, setGewicht] = useState(String(note.gewicht ?? 1));
+
+  function submit() {
+    const p = Number(punkte);
+    if (Number.isNaN(p)) return;
+    const g = Number(gewicht);
+    onSave(
+      Math.min(15, Math.max(0, Math.round(p))),
+      kategorie,
+      bezeichnung.trim() || undefined,
+      Number.isFinite(g) && g > 0 ? g : 1,
+    );
+  }
+
+  return (
+    <div className="w-full rounded-2xl border border-brand/30 bg-surface-2 p-3 shadow-sm">
+      <div className="mb-2 flex flex-wrap gap-1">
+        {ALLE_KATEGORIEN.map((k) => (
+          <button
+            key={k}
+            onClick={() => setKategorie(k)}
+            className={`rounded-lg px-2 py-0.5 font-mono text-[10px] transition-colors ${
+              kategorie === k
+                ? "bg-brand font-semibold text-black"
+                : "bg-surface-3 text-text-dim hover:bg-surface-3"
+            }`}
+          >
+            {KAT_LABEL[k]}
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          min={0}
+          max={15}
+          value={punkte}
+          onChange={(e) => setPunkte(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onCancel(); }}
+          className="h-8 w-16 bg-surface-3 font-mono text-sm"
+          autoFocus
+        />
+        <Input
+          value={bezeichnung}
+          onChange={(e) => setBezeichnung(e.target.value)}
+          placeholder="Bezeichnung"
+          className="h-8 flex-1 bg-surface-3 font-mono text-xs"
+        />
+        <Input
+          type="number"
+          min={0.1}
+          step={0.5}
+          value={gewicht}
+          onChange={(e) => setGewicht(e.target.value)}
+          placeholder="×"
+          title="Gewicht"
+          className="h-8 w-14 bg-surface-3 font-mono text-xs"
+        />
+        <Button onClick={submit} size="sm" className="h-8 font-display font-bold text-xs px-3">
+          ✓
+        </Button>
+        <button onClick={onCancel} className="text-text-mute hover:text-foreground font-mono text-sm">
+          ✕
+        </button>
+      </div>
+    </div>
   );
 }
 

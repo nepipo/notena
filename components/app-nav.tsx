@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Calculator,
-  Sparkles,
   CalendarDays,
   ClipboardList,
   Settings,
@@ -21,7 +20,6 @@ interface Tab {
 const TABS: Tab[] = [
   { href: "/dashboard", label: "Übersicht", icon: LayoutDashboard },
   { href: "/noten", label: "Noten", icon: Calculator },
-  { href: "/what-if", label: "What-If", icon: Sparkles },
   { href: "/stundenplan", label: "Stundenplan", icon: CalendarDays },
   { href: "/aufgaben", label: "Aufgaben", icon: ClipboardList },
   { href: "/einstellungen", label: "Einstellungen", icon: Settings },

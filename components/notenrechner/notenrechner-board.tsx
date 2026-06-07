@@ -8,12 +8,13 @@ import { FachCard } from "./fach-card";
 import { FachDialog } from "./fach-dialog";
 import { HalbjahrSwitcher } from "./halbjahr-switcher";
 import { JahresTabelle } from "./jahres-tabelle";
-import { addFach, removeNote, addNote } from "@/lib/actions/schule";
+import { addFach, removeNote, addNote, updateNote } from "@/lib/actions/schule";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import type { Fach, Kategorie } from "@/lib/grades/types";
 import { assembleKlausuren, type KlausurRow } from "@/lib/grades/db";
 import type { JahresUebersicht } from "@/lib/grades/jahr";
+import { WasWaereWennSeite } from "@/components/was-waere-wenn-seite";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -49,7 +50,7 @@ export function NotenrechnerBoard({
   const klausuren = initialKlausuren;
   const [neuesFach, setNeuesFach] = useState("");
   const [dialogFachId, setDialogFachId] = useState<string | null>(null);
-  const [ansicht, setAnsicht] = useState<"halbjahr" | "jahr">("halbjahr");
+  const [ansicht, setAnsicht] = useState<"halbjahr" | "jahr" | "whatif">("halbjahr");
   const [, startTransition] = useTransition();
 
   const aktiveFaecher = faecher.filter((f) => !f.ausgeschlossen);
@@ -136,6 +137,36 @@ export function NotenrechnerBoard({
     });
   }
 
+  function handleUpdateNote(
+    fachId: string,
+    noteId: string,
+    punkte: number,
+    kategorie: Kategorie,
+    bezeichnung?: string,
+    gewicht?: number,
+  ) {
+    const snapshot = faecher;
+    setFaecher((prev) =>
+      prev.map((f) =>
+        f.id === fachId
+          ? {
+              ...f,
+              noten: f.noten.map((n) =>
+                n.id === noteId ? { ...n, punkte, kategorie, bezeichnung, gewicht } : n,
+              ),
+            }
+          : f,
+      ),
+    );
+    startTransition(async () => {
+      const res = await updateNote(noteId, punkte, kategorie, bezeichnung, gewicht);
+      if (!res.ok) {
+        setFaecher(snapshot);
+        toast.error(`Note konnte nicht bearbeitet werden: ${res.error}`);
+      }
+    });
+  }
+
   function handleUpdateFach(fachId: string, updates: Partial<Fach>) {
     setFaecher((prev) =>
       prev.map((f) => (f.id === fachId ? { ...f, ...updates } : f)),
@@ -149,6 +180,7 @@ export function NotenrechnerBoard({
         {([
           ["halbjahr", "Halbjahr"],
           ["jahr", "Ganzes Jahr"],
+          ["whatif", "What-If"],
         ] as const).map(([wert, label]) => (
           <button
             key={wert}
@@ -166,6 +198,8 @@ export function NotenrechnerBoard({
 
       {ansicht === "jahr" ? (
         <JahresTabelle uebersicht={jahresUebersicht} schuljahr={schuljahr} />
+      ) : ansicht === "whatif" ? (
+        <WasWaereWennSeite faecher={faecher} />
       ) : (
         <>
       {/* Halbjahr-Switcher */}
@@ -227,6 +261,7 @@ export function NotenrechnerBoard({
             vorherSchnitt={vorherSchnitte[fach.name] ?? null}
             onAddNote={handleAddNote}
             onRemoveNote={handleRemoveNote}
+            onUpdateNote={handleUpdateNote}
             onOpenDialog={(id) => setDialogFachId(id)}
           />
         ))}
