@@ -411,7 +411,7 @@ export function StundenplanBoard({
                       {kls.map((k) => (
                         <span
                           key={k.id}
-                          className="truncate rounded px-1 py-0.5 font-mono text-[8px] font-bold max-w-[60px]"
+                          className="truncate rounded px-1 py-0.5 font-mono text-[10px] font-bold max-w-[60px]"
                           style={{ background: "rgba(255,48,80,.18)", color: "#ff3050" }}
                           title={k.titel}
                         >
@@ -421,7 +421,7 @@ export function StundenplanBoard({
                       {has.map((h) => (
                         <span
                           key={h.id}
-                          className="truncate rounded px-1 py-0.5 font-mono text-[8px] font-bold max-w-[60px]"
+                          className="truncate rounded px-1 py-0.5 font-mono text-[10px] font-bold max-w-[60px]"
                           style={{ background: "rgba(251,191,36,.18)", color: "#f59e0b" }}
                           title={h.beschreibung}
                         >
@@ -488,7 +488,7 @@ export function StundenplanBoard({
                 style={{ top: `${jetztTopPct}%` }}
               >
                 <div className="w-[52px] flex-shrink-0 pr-1.5 text-right">
-                  <span className="font-mono text-[8px] font-bold" style={{ color: "#ff3050" }}>
+                  <span className="font-mono text-[10px] font-bold" style={{ color: "#ff3050" }}>
                     {String(Math.floor(jetztMin / 60)).padStart(2, "0")}:{String(jetztMin % 60).padStart(2, "0")}
                   </span>
                 </div>

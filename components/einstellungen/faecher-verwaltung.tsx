@@ -187,7 +187,7 @@ export function FaecherVerwaltung({
                   <button
                     onClick={() => toggleNiveau(f)}
                     disabled={pending}
-                    className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold transition-colors disabled:opacity-50 ${
+                    className={`rounded-lg px-2.5 py-2 font-mono text-[11px] font-bold transition-colors disabled:opacity-50 ${
                       f.niveau === "erhoeht"
                         ? "bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30"
                         : "bg-surface-3 text-text-mute hover:bg-surface-3 hover:text-foreground"

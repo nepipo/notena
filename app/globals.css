@@ -214,6 +214,10 @@
   button, a {
     touch-action: manipulation;
   }
+  /* Verhindert iOS Safari Auto-Zoom bei Input-Focus (font-size muss ≥ 16px sein) */
+  input, select, textarea {
+    font-size: max(1rem, 16px);
+  }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
