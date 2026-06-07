@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppNav } from "@/components/app-nav";
 import { FeedbackButton } from "@/components/feedback-button";
+import { PwaInstallBanner } from "@/components/pwa-install-banner";
 
 export default async function AppLayout({
   children,
@@ -31,6 +32,7 @@ export default async function AppLayout({
       <AppNav initiale={initiale} />
       <div className="pb-24 lg:pb-0">{children}</div>
       <FeedbackButton />
+      <PwaInstallBanner />
     </div>
   );
 }
