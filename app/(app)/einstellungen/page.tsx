@@ -9,11 +9,12 @@ import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaul
 import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
 import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
 import { ThemeToggle } from "@/components/einstellungen/theme-toggle";
+import { AccentPicker } from "@/components/einstellungen/accent-picker";
 import { BriefingToggle } from "@/components/einstellungen/briefing-toggle";
 import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 import type { GewichtungConfig } from "@/lib/grades/types";
-import type { Theme } from "@/lib/actions/theme";
+import type { Theme, AccentColor } from "@/lib/actions/theme";
 import { signOut } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +22,7 @@ export default async function EinstellungenPage() {
   const supabase = await createClient();
   const cookieStore = await cookies();
   const theme = (cookieStore.get("project-x-theme")?.value ?? "dark") as Theme;
+  const accent = (cookieStore.get("project-x-accent")?.value ?? "blue") as AccentColor;
 
   const [{ data: profil }, { data: fachRows }] = await Promise.all([
     supabase.from("nutzer_profil").select("eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage").single(),
@@ -52,8 +54,12 @@ export default async function EinstellungenPage() {
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
           Darstellung
         </div>
-        <p className="mt-1 mb-4 text-sm text-text-dim">Theme der App.</p>
+        <p className="mt-1 mb-4 text-sm text-text-dim">Theme und Akzentfarbe der App.</p>
         <ThemeToggle current={theme} />
+        <div className="mt-4">
+          <p className="mb-2 text-xs font-semibold text-text-dim">Akzentfarbe</p>
+          <AccentPicker current={accent} />
+        </div>
       </section>
 
       {/* ── SCHULE ────────────────────────────────────────── */}

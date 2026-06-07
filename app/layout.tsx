@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import "./globals.css";
 
 type Theme = "dark" | "light" | "system";
+type AccentColor = "blue" | "violet" | "pink" | "green" | "orange" | "red" | "teal" | "indigo";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -53,17 +54,19 @@ export default async function RootLayout({
 }>) {
   const store = await cookies();
   const theme = (store.get("project-x-theme")?.value ?? "dark") as Theme;
+  const accent = (store.get("project-x-accent")?.value ?? "blue") as AccentColor;
   // SSR: "system" → "dark" (Script korrigiert das sofort clientseitig)
   const ssrDark = theme !== "light";
 
   return (
     <html
       lang="de"
+      data-accent={accent}
       className={`${ssrDark ? "dark" : ""} ${bricolage.variable} ${onest.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>
-        {/* FOUC-Prävention: Theme vor erstem Paint setzen */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var c=document.cookie.match(/project-x-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="system"){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}if(t==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}})();` }} />
+        {/* FOUC-Prävention: Theme + Akzent vor erstem Paint setzen */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var c=document.cookie.match(/project-x-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="system"){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}if(t==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}var a=document.cookie.match(/project-x-accent=([^;]+)/);document.documentElement.setAttribute("data-accent",a?a[1]:"blue");})();` }} />
       </head>
       <body className="min-h-full">
         {children}

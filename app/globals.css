@@ -245,6 +245,116 @@
   }
 }
 
+/* ===================== AKZENT-FARBEN =====================
+   Werden via data-accent="X" auf <html> aktiviert.
+   Kommen nach .dark → gleiche Spezifität, spätere Regel gewinnt.
+   ========================================================= */
+
+[data-accent="violet"] {
+  --brand: #8b5cf6;
+  --brand-2: #a78bfa;
+  --brand-soft: #ddd6fe;
+  --brand-deep: #6d28d9;
+  --indigo: #7c3aed;
+  --ring: #8b5cf6;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --chart-1: #8b5cf6;
+  --chart-2: #a78bfa;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-ring: #8b5cf6;
+}
+
+[data-accent="pink"] {
+  --brand: #ec4899;
+  --brand-2: #f472b6;
+  --brand-soft: #fbcfe8;
+  --brand-deep: #be185d;
+  --indigo: #db2777;
+  --ring: #ec4899;
+  --primary: #ec4899;
+  --primary-foreground: #ffffff;
+  --chart-1: #ec4899;
+  --chart-2: #f472b6;
+  --sidebar-primary: #ec4899;
+  --sidebar-ring: #ec4899;
+}
+
+[data-accent="green"] {
+  --brand: #22c55e;
+  --brand-2: #4ade80;
+  --brand-soft: #bbf7d0;
+  --brand-deep: #15803d;
+  --indigo: #16a34a;
+  --ring: #22c55e;
+  --primary: #22c55e;
+  --primary-foreground: #000000;
+  --chart-1: #22c55e;
+  --chart-2: #4ade80;
+  --sidebar-primary: #22c55e;
+  --sidebar-ring: #22c55e;
+}
+
+[data-accent="orange"] {
+  --brand: #f97316;
+  --brand-2: #fb923c;
+  --brand-soft: #fed7aa;
+  --brand-deep: #c2410c;
+  --indigo: #ea580c;
+  --ring: #f97316;
+  --primary: #f97316;
+  --primary-foreground: #000000;
+  --chart-1: #f97316;
+  --chart-2: #fb923c;
+  --sidebar-primary: #f97316;
+  --sidebar-ring: #f97316;
+}
+
+[data-accent="red"] {
+  --brand: #ef4444;
+  --brand-2: #f87171;
+  --brand-soft: #fecaca;
+  --brand-deep: #b91c1c;
+  --indigo: #dc2626;
+  --ring: #ef4444;
+  --primary: #ef4444;
+  --primary-foreground: #ffffff;
+  --chart-1: #ef4444;
+  --chart-2: #f87171;
+  --sidebar-primary: #ef4444;
+  --sidebar-ring: #ef4444;
+}
+
+[data-accent="teal"] {
+  --brand: #14b8a6;
+  --brand-2: #2dd4bf;
+  --brand-soft: #99f6e4;
+  --brand-deep: #0f766e;
+  --indigo: #0d9488;
+  --ring: #14b8a6;
+  --primary: #14b8a6;
+  --primary-foreground: #000000;
+  --chart-1: #14b8a6;
+  --chart-2: #2dd4bf;
+  --sidebar-primary: #14b8a6;
+  --sidebar-ring: #14b8a6;
+}
+
+[data-accent="indigo"] {
+  --brand: #6366f1;
+  --brand-2: #818cf8;
+  --brand-soft: #c7d2fe;
+  --brand-deep: #4338ca;
+  --indigo: #4f46e5;
+  --ring: #6366f1;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --chart-1: #6366f1;
+  --chart-2: #818cf8;
+  --sidebar-primary: #6366f1;
+  --sidebar-ring: #6366f1;
+}
+
 /* ===================== ANIMATIONEN ===================== */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
