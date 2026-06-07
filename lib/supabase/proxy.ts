@@ -49,7 +49,9 @@ export async function updateSession(request: NextRequest) {
     path === "/manifest.webmanifest" ||
     path === "/icon" ||
     path === "/icon512" ||
-    path === "/apple-icon";
+    path === "/apple-icon" ||
+    // Cron-Routen: eigene CRON_SECRET-Authentifizierung
+    path.startsWith("/api/cron");
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
