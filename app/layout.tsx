@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Onest, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { cookies } from "next/headers";
 import "./globals.css";
+
+type Theme = "dark" | "light" | "system";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -43,19 +46,28 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const store = await cookies();
+  const theme = (store.get("project-x-theme")?.value ?? "dark") as Theme;
+  // SSR: "system" → "dark" (Script korrigiert das sofort clientseitig)
+  const ssrDark = theme !== "light";
+
   return (
     <html
       lang="de"
-      className={`dark ${bricolage.variable} ${onest.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${ssrDark ? "dark" : ""} ${bricolage.variable} ${onest.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* FOUC-Prävention: Theme vor erstem Paint setzen */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var c=document.cookie.match(/project-x-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="system"){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}if(t==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}})();` }} />
+      </head>
       <body className="min-h-full">
         {children}
-        <Toaster theme="dark" position="top-center" richColors />
+        <Toaster theme={theme === "light" ? "light" : "dark"} position="top-center" richColors />
       </body>
     </html>
   );

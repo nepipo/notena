@@ -78,7 +78,7 @@ Aktuelle Fachschnitte: ${notenStr}
 `.trim();
 }
 
-export async function holeBriefing(): Promise<string> {
+export async function holeBriefing(): Promise<string | null> {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   if (!auth?.claims?.sub) return "Nicht eingeloggt.";
@@ -99,9 +99,11 @@ export async function holeBriefing(): Promise<string> {
   // Userdaten laden
   const { data: profil } = await supabase
     .from("nutzer_profil")
-    .select("name, aktuelles_halbjahr")
+    .select("name, aktuelles_halbjahr, briefing_aktiv")
     .eq("id", userId)
     .single();
+
+  if (profil?.briefing_aktiv === false) return null;
 
   const name = profil?.name ?? "Schüler";
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();

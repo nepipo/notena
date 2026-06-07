@@ -12,6 +12,8 @@ function heuteDatum(): string {
 export async function BriefingKarte() {
   const text = await holeBriefing();
 
+  if (text === null) return null;
+
   return (
     <section
       className="animate-fade-up relative overflow-hidden rounded-[28px] border border-border p-6 sm:p-8"

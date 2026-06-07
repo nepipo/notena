@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
 import { PushToggle } from "@/components/push-toggle";
@@ -6,25 +7,29 @@ import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung
 import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
 import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
 import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
-import { BundeslandSelector } from "@/components/einstellungen/bundesland-selector";
+import { ThemeToggle } from "@/components/einstellungen/theme-toggle";
+import { BriefingToggle } from "@/components/einstellungen/briefing-toggle";
 import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 import type { GewichtungConfig } from "@/lib/grades/types";
+import type { Theme } from "@/lib/actions/theme";
 import { signOut } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 
 export default async function EinstellungenPage() {
   const supabase = await createClient();
+  const cookieStore = await cookies();
+  const theme = (cookieStore.get("project-x-theme")?.value ?? "dark") as Theme;
 
   const [{ data: profil }, { data: fachRows }] = await Promise.all([
-    supabase.from("nutzer_profil").select("eingabe_modus, notensystem, aktuelles_halbjahr, default_gewichtung, bundesland").single(),
+    supabase.from("nutzer_profil").select("eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv").single(),
     supabase.from("schule_fach").select("*").order("name"),
   ]);
 
   const eingabeModus = profil?.eingabe_modus ?? "punkte";
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
-  const bundesland = (profil?.bundesland as string | null) ?? null;
+  const briefingAktiv = profil?.briefing_aktiv !== false;
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -37,16 +42,26 @@ export default async function EinstellungenPage() {
         <h1 className="text-4xl font-extrabold leading-none">Einstellungen.</h1>
       </header>
 
-      {/* ── SCHULE ────────────────────────────────────────── */}
+      {/* ── DARSTELLUNG ───────────────────────────────────── */}
       <section
         className="animate-fade-up rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.02s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Darstellung
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">Theme der App.</p>
+        <ThemeToggle current={theme} />
+      </section>
+
+      {/* ── SCHULE ────────────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.05s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
           Schule
         </div>
-
-        {/* Halbjahr wechseln */}
         <div className="mt-4">
           <div className="mb-1 flex items-center justify-between">
             <p className="text-sm font-semibold">Aktuelles Halbjahr</p>
@@ -56,16 +71,6 @@ export default async function EinstellungenPage() {
             Wechsle das Halbjahr um vergangene Noten einzusehen oder das neue anzufangen.
           </p>
           <HalbjahrWechsler current={halbjahr} />
-        </div>
-
-        <div className="mt-5 border-t border-border/50 pt-5">
-          <div className="mb-1 flex items-center justify-between">
-            <p className="text-sm font-semibold">Bundesland</p>
-          </div>
-          <p className="mb-3 text-xs text-text-mute">
-            Wird für den Ferien-Countdown auf dem Dashboard verwendet.
-          </p>
-          <BundeslandSelector initialValue={bundesland} />
         </div>
       </section>
 
@@ -99,6 +104,17 @@ export default async function EinstellungenPage() {
         </div>
       </section>
 
+      {/* ── KI & BRIEFING ─────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.13s" }}
+      >
+        <div className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          KI & Briefing
+        </div>
+        <BriefingToggle initial={briefingAktiv} />
+      </section>
+
       {/* ── BENACHRICHTIGUNGEN ────────────────────────────── */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
@@ -129,10 +145,7 @@ export default async function EinstellungenPage() {
         <p className="mt-1 mb-4 text-sm text-text-dim">
           Vorlage für neue Fächer — oder auf alle bestehenden anwenden.
         </p>
-        <GewichtungDefaults
-          initialConfig={defaultGewichtung}
-          aktuellesHalbjahr={halbjahr}
-        />
+        <GewichtungDefaults initialConfig={defaultGewichtung} aktuellesHalbjahr={halbjahr} />
       </section>
 
       {/* ── FÄCHER ────────────────────────────────────────── */}
@@ -163,6 +176,29 @@ export default async function EinstellungenPage() {
         <PasswortAendern />
       </section>
 
+      {/* ── DATEN & PRIVATSPHÄRE ──────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.33s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Daten & Privatsphäre
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Deine Daten gehören dir — exportiere oder lösche sie jederzeit.
+        </p>
+        <a
+          href="/api/export"
+          download
+          className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-mono text-sm font-semibold text-foreground transition-colors hover:border-brand/40 hover:text-brand"
+        >
+          Daten exportieren (JSON)
+        </a>
+        <p className="mt-2 font-mono text-[11px] text-text-mute">
+          Enthält Fächer, Noten und Klausuren. DSGVO Art. 20.
+        </p>
+      </section>
+
       {/* ── ACCOUNT ───────────────────────────────────────── */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
@@ -173,17 +209,10 @@ export default async function EinstellungenPage() {
         </div>
         <p className="mt-1 mb-4 text-sm text-text-dim">
           Profil-Details (Name, Klasse, Schule) änderst du unter{" "}
-          <Link href="/profil" className="text-brand hover:underline">
-            Profil
-          </Link>
-          .
+          <Link href="/profil" className="text-brand hover:underline">Profil</Link>.
         </p>
         <form action={signOut}>
-          <Button
-            type="submit"
-            variant="outline"
-            className="border-border bg-surface-2 hover:bg-surface-3"
-          >
+          <Button type="submit" variant="outline" className="border-border bg-surface-2 hover:bg-surface-3">
             Abmelden
           </Button>
         </form>
@@ -198,15 +227,10 @@ export default async function EinstellungenPage() {
           Rechtliches
         </div>
         <div className="flex flex-wrap gap-4 font-mono text-sm text-text-dim">
-          <Link href="/datenschutz" className="transition-colors hover:text-brand">
-            Datenschutzerklärung
-          </Link>
-          <Link href="/impressum" className="transition-colors hover:text-brand">
-            Impressum
-          </Link>
+          <Link href="/datenschutz" className="transition-colors hover:text-brand">Datenschutzerklärung</Link>
+          <Link href="/impressum" className="transition-colors hover:text-brand">Impressum</Link>
         </div>
       </section>
-
     </main>
   );
 }
