@@ -51,7 +51,8 @@ export async function updateSession(request: NextRequest) {
     path === "/icon512" ||
     path === "/apple-icon" ||
     // Cron-Routen: eigene CRON_SECRET-Authentifizierung
-    path.startsWith("/api/cron");
+    path.startsWith("/api/cron") ||
+    path === "/offline";
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
