@@ -1,3 +1,64 @@
+const CACHE_NAME = "project-x-v1";
+const OFFLINE_URL = "/offline";
+
+// ── Install: /offline precachen ──────────────────────────────────────────
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_URL)),
+  );
+  self.skipWaiting();
+});
+
+// ── Activate: alte Caches löschen ────────────────────────────────────────
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)),
+        ),
+      ),
+  );
+  self.clients.claim();
+});
+
+// ── Fetch: Cache-Strategie ────────────────────────────────────────────────
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Nur same-origin requests behandeln
+  if (url.origin !== self.location.origin) return;
+
+  // /_next/static/: Cache-first (JS/CSS-Assets mit Hash-Namen)
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ??
+          fetch(request).then((res) => {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            return res;
+          }),
+      ),
+    );
+    return;
+  }
+
+  // Navigation (HTML-Seiten): Network-first, Fallback auf /offline
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(() =>
+        caches.match(OFFLINE_URL).then((r) => r ?? Response.error()),
+      ),
+    );
+    return;
+  }
+});
+
+// ── Push Notifications ────────────────────────────────────────────────────
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   let payload;
