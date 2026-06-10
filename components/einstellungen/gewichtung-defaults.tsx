@@ -114,7 +114,7 @@ export function GewichtungDefaults({
           </div>
           <button
             onClick={() => setConfig((p) => ({ ...p, klausurDynamisch: !p.klausurDynamisch }))}
-            className={`relative h-6 w-11 rounded-full border transition-colors ${
+            className={`relative h-6 w-11 overflow-hidden rounded-full border transition-colors ${
               config.klausurDynamisch ? "border-brand bg-brand" : "border-border bg-surface-3"
             }`}
           >

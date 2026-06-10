@@ -36,7 +36,7 @@ export function BriefingToggle({ initial }: { initial: boolean }) {
         onClick={toggle}
         disabled={isPending}
         aria-pressed={aktiv}
-        className={`relative h-6 w-11 shrink-0 rounded-full border-2 transition-colors duration-200 disabled:opacity-50 ${
+        className={`relative h-6 w-11 shrink-0 overflow-hidden rounded-full border-2 transition-colors duration-200 disabled:opacity-50 ${
           aktiv ? "border-brand bg-brand" : "border-border bg-surface-3"
         }`}
       >
