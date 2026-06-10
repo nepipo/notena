@@ -88,7 +88,11 @@ export async function updateHausaufgabe(
     const userId = await requireUserId();
     const supabase = await createClient();
     const patch: Record<string, unknown> = {};
-    if (updates.beschreibung !== undefined) patch.beschreibung = updates.beschreibung.trim();
+    if (updates.beschreibung !== undefined) {
+      const trimmed = updates.beschreibung.trim();
+      if (!trimmed) return { ok: false, error: "Beschreibung darf nicht leer sein." };
+      patch.beschreibung = trimmed;
+    }
     if (updates.faelligAm !== undefined) patch.faellig_am = updates.faelligAm;
     const { error } = await supabase
       .from("hausaufgabe")
