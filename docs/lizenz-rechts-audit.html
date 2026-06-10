@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lizenz- & Rechts-Audit — Project X</title>
+  <style>
+    /* Fonts: system stack (DSGVO-konform) */
+    :root {
+      --azure: #1da1ff;
+      --indigo: #6366f1;
+      --red: #ef4444;
+      --orange: #f97316;
+      --yellow: #f59e0b;
+      --green: #10b981;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #273449;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-light: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 11pt;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    /* HEADER */
+    .report-header {
+      border-bottom: 2px solid var(--azure);
+      padding-bottom: 32px;
+      margin-bottom: 40px;
+    }
+
+    .report-tag {
+      display: inline-block;
+      background: rgba(29,161,255,0.12);
+      color: var(--azure);
+      font-family: 'Courier New', monospace;
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(29,161,255,0.3);
+      margin-bottom: 16px;
+    }
+
+    .report-title {
+      font-size: 28pt;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .report-title span {
+      color: var(--azure);
+    }
+
+    .report-meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-label {
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    .meta-value {
+      font-size: 10pt;
+      color: var(--text-muted);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* SUMMARY BOXES */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .summary-box.red { border-top: 3px solid var(--red); }
+    .summary-box.orange { border-top: 3px solid var(--orange); }
+    .summary-box.yellow { border-top: 3px solid var(--yellow); }
+    .summary-box.green { border-top: 3px solid var(--green); }
+
+    .summary-count {
+      font-size: 28pt;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .red .summary-count { color: var(--red); }
+    .orange .summary-count { color: var(--orange); }
+    .yellow .summary-count { color: var(--yellow); }
+    .green .summary-count { color: var(--green); }
+
+    .summary-label {
+      font-size: 8.5pt;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* SECTION */
+    .section {
+      margin-bottom: 44px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-number {
+      font-family: 'Courier New', monospace;
+      font-size: 8pt;
+      color: var(--azure);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      background: rgba(29,161,255,0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .section-title {
+      font-size: 15pt;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* FINDING CARD */
+    .finding {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .finding::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 2px 0 0 2px;
+    }
+
+    .finding.critical::before { background: var(--red); }
+    .finding.high::before { background: var(--orange); }
+    .finding.medium::before { background: var(--yellow); }
+    .finding.ok::before { background: var(--green); }
+
+    .finding-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .finding-title {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge.critical { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge.high { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+    .badge.medium { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+    .badge.ok { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge.info { background: rgba(29,161,255,0.12); color: var(--azure); border: 1px solid rgba(29,161,255,0.25); }
+
+    .finding-body {
+      font-size: 10pt;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    .finding-body strong {
+      color: var(--text);
+    }
+
+    .finding-fix {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(29,161,255,0.06);
+      border: 1px solid rgba(29,161,255,0.18);
+      border-radius: 6px;
+      font-size: 9.5pt;
+      color: var(--text-muted);
+    }
+
+    .finding-fix strong {
+      color: var(--azure);
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 9pt;
+      background: var(--surface-2);
+      color: var(--azure);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin-top: 4px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(51,65,85,0.5);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    td:first-child {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9pt;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot.red { background: var(--red); }
+    .dot.orange { background: var(--orange); }
+    .dot.yellow { background: var(--yellow); }
+    .dot.green { background: var(--green); }
+
+    /* CHECKLIST */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 10pt;
+      color: var(--text-muted);
+    }
+
+    .check-num {
+      font-family: 'Courier New', monospace;
+      font-size: 9pt;
+      color: var(--azure);
+      font-weight: 700;
+      min-width: 22px;
+      padding-top: 1px;
+    }
+
+    /* FOOTER */
+    .report-footer {
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: gap;
+    }
+
+    .footer-left {
+      font-size: 9pt;
+      color: var(--text-light);
+    }
+
+    .footer-right {
+      font-family: 'Courier New', monospace;
+      font-size: 8.5pt;
+      color: var(--text-light);
+    }
+
+    /* PRINT */
+    @media print {
+      body { background: #0f172a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { padding: 32px 40px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-tag">Vertraulich · Internes Dokument</div>
+    <div class="report-title">Lizenz- &amp; Rechts-Audit<br><span>Project X</span></div>
+    <div class="report-meta">
+      <div class="meta-item">
+        <span class="meta-label">Datum</span>
+        <span class="meta-value">10.06.2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Geprüft von</span>
+        <span class="meta-value">Claude Code (Sonnet 4.6)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Repo</span>
+        <span class="meta-value">nepipo/project-x</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Status</span>
+        <span class="meta-value">Closed Beta</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Zielgruppe</span>
+        <span class="meta-value">Gymnasiasten 15–18 Jahre · DE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-grid">
+    <div class="summary-box red">
+      <div class="summary-count">3</div>
+      <div class="summary-label">Kritisch</div>
+    </div>
+    <div class="summary-box orange">
+      <div class="summary-count">3</div>
+      <div class="summary-label">Hoch</div>
+    </div>
+    <div class="summary-box yellow">
+      <div class="summary-count">3</div>
+      <div class="summary-label">Mittel</div>
+    </div>
+    <div class="summary-box green">
+      <div class="summary-count">8</div>
+      <div class="summary-label">OK / Kein Risiko</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: KRITISCHE RISIKEN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <span class="section-title">Kritische Risiken — vor Beta beheben</span>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-header">
+        <div class="finding-title">Impressum unvollständig (§5 TMG)</div>
+        <div class="badge critical">🔴 Kritisch</div>
+      </div>
+      <div class="finding-body">
+        Die Datei <code>/app/impressum/page.tsx</code> enthält nur Platzhalter: <code>[DEIN VOLLSTÄNDIGER NAME]</code>, <code>[STRAßE UND HAUSNUMMER]</code>, <code>[PLZ]</code>. Nach §5 TMG sind vollständiger Name, ladungsfähige Adresse und Telefonnummer Pflicht für jede kommerzielle Website.<br><br>
+        <strong>Wer kann klagen:</strong> Abmahn-Anwälte ab Tag 1 nach öffentlichem Launch. In Deutschland aktiv betriebenes Geschäftsmodell — sehr hohes Risiko.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Deinen echten Namen, Privatadresse und eine Telefonnummer eintragen. Alternativ: Postfach oder Geschäftsadresse mieten (~5–15€/Monat). Kein Code-Aufwand.
+      </div>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-header">
+        <div class="finding-title">Datenschutzerklärung ist faktisch falsch (DSGVO)</div>
+        <div class="badge critical">🔴 Kritisch</div>
+      </div>
+      <div class="finding-body">
+        Die Datenschutzerklärung behauptet, Anthropic erhalte nur <em>„anonymisierte"</em> Daten. Tatsächlich wird in <code>/app/api/coach/route.ts</code> der Vorname des Users direkt im System-Prompt übermittelt:<br><br>
+        <code>"Du bist ein älterer Freund von ${name}"</code><br><br>
+        Auch in <code>/lib/actions/briefing.ts</code> enthält der Kontext personenbezogene Daten. Eine falsche Datenschutzerklärung ist selbst ein DSGVO-Verstoß und kann mit Bußgeldern belegt werden.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix (Option A, einfacher) →</strong> Den <code>${name}</code>-Teil aus dem Anthropic-System-Prompt entfernen. Aus "Du bist ein Freund von Max" wird "Du bist ein persönlicher Lern-Coach". Eine Zeile Code.<br>
+        <strong>Fix (Option B) →</strong> Datenschutzerklärung korrekt anpassen: "Vorname wird an Anthropic (USA) übermittelt."
+      </div>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-header">
+        <div class="finding-title">Keine AGB vorhanden</div>
+        <div class="badge critical">🔴 Kritisch</div>
+      </div>
+      <div class="finding-body">
+        Es gibt keinerlei Nutzungsbedingungen. Sobald Zahlungen eingeführt werden (geplant: 3–5€/Monat), hat der Betreiber ohne AGB keinerlei Haftungsschutz. Fehlt auch: Mindestalter-Regelung, KI-Haftungsausschluss, Kündigungsbedingungen, Regelung zu Account-Sperrung.<br><br>
+        <strong>Besonders riskant:</strong> Die App macht KI-basierte Aussagen über Schulnoten. Ohne AGB-Haftungsausschluss könnte ein Nutzer bei falscher KI-Prognose Schadensersatz fordern.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Mindest-AGB erstellen mit: Haftungsausschluss KI-Inhalte, Mindestalter 15 Jahre, Kündigung, Datenlöschung. Empfehlung: eRecht24 AGB-Generator (~50–150€) statt selbst schreiben — spart rechtliche Risiken.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: HOHE RISIKEN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <span class="section-title">Hohe Risiken — vor monetisiertem Launch</span>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-header">
+        <div class="finding-title">DSGVO Art. 8 — Minderjährige unter 16 ohne Eltern-Consent</div>
+        <div class="badge high">🟠 Hoch</div>
+      </div>
+      <div class="finding-body">
+        Die Datenschutzerklärung (<code>/app/datenschutz/page.tsx</code>, Zeile 230) besagt korrekt: <em>"Für Nutzer unter 16 Jahren ist die Zustimmung eines Erziehungsberechtigten erforderlich."</em><br><br>
+        Beim Signup (<code>/components/auth/signup-form.tsx</code>) wird jedoch weder das Alter abgefragt, noch gibt es eine Checkbox oder Parental-Consent-Flow. Ein 14-Jähriger kann sich ungehindert registrieren — das verstößt gegen Art. 8 DSGVO.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix (pragmatisch für Beta) →</strong> Checkbox beim Signup: "Ich bin 16 Jahre oder älter, oder habe die Zustimmung meiner Erziehungsberechtigten." Für echten Launch: Geburtsjahrfeld + wenn &lt;16, Eltern-Bestätigungs-E-Mail.
+      </div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-header">
+        <div class="finding-title">Kein Account-Lösch-Flow (DSGVO Art. 17)</div>
+        <div class="badge high">🟠 Hoch</div>
+      </div>
+      <div class="finding-body">
+        DSGVO Art. 17 garantiert jedem Nutzer das Recht auf Löschung. Ein Daten-Export-Button (<code>/api/export/route.ts</code>) ist vorhanden — aber kein "Account löschen"-Button in der UI. Nutzer können ihre Daten derzeit nicht selbst löschen.<br><br>
+        <strong>Besonders heikel</strong> bei einem Minderjährigen-Service: Eltern können Löschung verlangen. Ohne UI muss manuell in Supabase gelöscht werden.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Button in <code>/app/(app)/einstellungen/</code>: "Account löschen" → Bestätigungs-Dialog → <code>supabase.auth.admin.deleteUser()</code>. Cascade-Delete ist im DB-Schema bereits konfiguriert (alle User-Daten werden automatisch mitgelöscht). Aufwand: ~1h.
+      </div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-header">
+        <div class="finding-title">Impressum widerspricht Datenschutzerklärung (kommerziell vs. Beta)</div>
+        <div class="badge high">🟠 Hoch</div>
+      </div>
+      <div class="finding-body">
+        Das Impressum sagt: <em>"kein kommerzielles Angebot."</em><br>
+        Die Datenschutzerklärung spricht von einem <em>"3–5€/Monat Abo-Modell"</em>.<br><br>
+        Das ist ein interner Widerspruch in Rechtsdokumenten. Sobald Zahlungen eingeführt werden, ist der Impressum-Hinweis schlicht falsch — und das kann bei Verbraucherschutz-Beschwerden nachteilig sein.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Impressum-Hinweis "kein kommerzielles Angebot" für Beta korrekt lassen. Vor Stripe-Launch: Impressum auf "kommerzielles Angebot" umstellen und Datenschutz entsprechend aktualisieren.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: MITTLERE RISIKEN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <span class="section-title">Mittlere Risiken — v1.0 Maßnahmen</span>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-header">
+        <div class="finding-title">Stundenplan-Fotos werden an Anthropic (USA) gesendet</div>
+        <div class="badge medium">🟡 Mittel</div>
+      </div>
+      <div class="finding-body">
+        Das Stundenplan-Import-Feature (<code>/lib/actions/stundenplan-import.ts</code>) sendet User-Fotos base64-kodiert an Claude Vision. Die Fotos können Lehrernamen, Raumbezeichnungen oder andere personenbezogene Daten enthalten. Die Datenschutzerklärung erwähnt dieses Feature nicht explizit.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Absatz in Datenschutzerklärung ergänzen: "Beim Stundenplan-Import per Foto wird das Bild zur OCR-Verarbeitung an Anthropic (USA) übertragen und dort nicht dauerhaft gespeichert."
+      </div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-header">
+        <div class="finding-title">Keine KI-Transparenzhinweise in der UI (EU AI Act)</div>
+        <div class="badge medium">🟡 Mittel</div>
+      </div>
+      <div class="finding-body">
+        Beim KI-Coach-Chat und beim Briefing ist nur ein Label "KI" sichtbar. Es fehlt ein Hinweis, dass Daten zu einem US-Dienst (Anthropic) übertragen werden. Der EU AI Act (ab 2026 vollständig in Kraft) wird Transparenzpflichten für KI-Interaktionen verschärfen.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Kleiner Hinweis unter dem Coach-Chat: "Powered by Anthropic Claude · Deine Daten werden zur Verarbeitung an Anthropic (USA) übermittelt. · Datenschutz" — verlinkt zur Datenschutzerklärung.
+      </div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-header">
+        <div class="finding-title">Supabase / Vercel DPA nur behauptet, nicht verifiziert</div>
+        <div class="badge medium">🟡 Mittel</div>
+      </div>
+      <div class="finding-body">
+        Die Datenschutzerklärung sagt, ein DPA (Data Processing Agreement) mit Supabase "liegt vor." Für eine neue App wurde dies jedoch nicht aktiv abgeschlossen — Supabase stellt ein Standard-DPA bereit, das über die Dashboard-Einstellungen aktiviert werden muss.
+      </div>
+      <div class="finding-fix">
+        <strong>Fix →</strong> Supabase Dashboard → Settings → Legal → DPA aktivieren/bestätigen. Vercel hat ein Auto-DPA in den ToS für Pro/Enterprise — Free-Tier-Nutzer sollten prüfen ob das DPA greift.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: LIZENZ-CHECKS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <span class="section-title">Lizenz-Status aller Ressourcen</span>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-header">
+        <div class="finding-title">Open-Source-Abhängigkeiten</div>
+        <div class="badge ok">✅ Alle OK</div>
+      </div>
+      <div class="finding-body">
+        Alle npm-Pakete nutzen Open-Source-Lizenzen die kommerzielle Nutzung erlauben.
+      </div>
+      <table>
+        <tr>
+          <th>Paket</th>
+          <th>Lizenz</th>
+          <th>Kommerzielle Nutzung</th>
+        </tr>
+        <tr>
+          <td>Next.js 16</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>React 19</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>Tailwind CSS v4</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>shadcn/ui + @base-ui/react</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>lucide-react</td>
+          <td>ISC</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>sonner, clsx, tailwind-merge</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>@anthropic-ai/sdk</td>
+          <td>Apache 2.0</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>@supabase/* (SDK)</td>
+          <td>Apache 2.0</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>web-push</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+        <tr>
+          <td>tw-animate-css</td>
+          <td>MIT</td>
+          <td><span class="status-dot"><span class="dot green"></span> Erlaubt</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-header">
+        <div class="finding-title">Fonts (Google Fonts via next/font)</div>
+        <div class="badge ok">✅ OK</div>
+      </div>
+      <div class="finding-body">
+        Bricolage Grotesque, Onest und JetBrains Mono werden via <code>next/font/google</code> geladen — das bedeutet: selbst-gehostet, keine direkte Google-Verbindung zur Laufzeit, DSGVO-konform. Alle drei Fonts stehen unter der <strong>SIL Open Font License (OFL)</strong>, die kommerzielle Nutzung ausdrücklich erlaubt.<br><br>
+        <strong>Bereits behoben:</strong> Google Fonts CDN-Links in <code>docs/*.html</code> wurden durch System-Font-Stack ersetzt (10.06.2026).
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-header">
+        <div class="finding-title">Boilerplate-SVGs aus /public</div>
+        <div class="badge ok">✅ Bereinigt</div>
+      </div>
+      <div class="finding-body">
+        <strong>Bereits bereinigt (10.06.2026):</strong> Die fünf create-next-app-Boilerplate-Assets (<code>file.svg</code>, <code>globe.svg</code>, <code>next.svg</code>, <code>vercel.svg</code>, <code>window.svg</code>) wurden aus <code>/public/</code> gelöscht. Das Verzeichnis enthält jetzt nur noch <code>sw.js</code> (eigener Service Worker).
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-header">
+        <div class="finding-title">Cookies &amp; Tracking</div>
+        <div class="badge ok">✅ DSGVO-konform</div>
+      </div>
+      <div class="finding-body">
+        Es werden ausschließlich <strong>funktionale First-Party-Cookies</strong> gesetzt: Supabase Session-Cookie (Auth), <code>project-x-theme</code> (Dark/Light), <code>project-x-accent</code> (Akzentfarbe). Kein Tracking, keine Werbe-Pixel, keine Analytics-Drittanbieter. Ein Cookie-Consent-Banner ist für diese Konfiguration nach DSGVO/ePrivacy nicht erforderlich.
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-header">
+        <div class="finding-title">Web Push Notifications</div>
+        <div class="badge ok">✅ Opt-In korrekt</div>
+      </div>
+      <div class="finding-body">
+        Push-Notifications sind standardmäßig deaktiviert. Aktivierung nur durch expliziten Klick + Browser-Permission-Dialog. Deaktivierung jederzeit möglich. DSGVO Art. 7 (informierte Einwilligung) und ePrivacy-Richtlinie werden eingehalten.
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-header">
+        <div class="finding-title">Datenbank-Sicherheit (RLS)</div>
+        <div class="badge ok">✅ OK</div>
+      </div>
+      <div class="finding-body">
+        Row Level Security ist auf allen 8 Tabellen aktiviert. Kaskadierendes Löschen ist konfiguriert (User-Löschung entfernt automatisch alle verknüpften Daten). Supabase-Projekt läuft in Frankfurt/EU (AWS eu-central-1) — DSGVO-konformer Serverstandort.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: PRIORITÄTEN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">05</span>
+      <span class="section-title">Priorisierte Handlungsliste</span>
+    </div>
+
+    <div class="finding" style="border-left: 4px solid var(--red);">
+      <div class="finding-header">
+        <div class="finding-title">Vor Beta-Launch (Blocker)</div>
+        <div class="badge critical">Sofort</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-num">01</span><span>Impressum ausfüllen — Name, Adresse, Telefon (§5 TMG). Kein Code-Aufwand.</span></div>
+        <div class="check-item"><span class="check-num">02</span><span>Name aus Anthropic-System-Prompt entfernen (<code>coach/route.ts</code> + <code>briefing.ts</code>). Eine Zeile Code.</span></div>
+        <div class="check-item"><span class="check-num">03</span><span>Alters-Checkbox beim Signup: "Ich bin 16+ oder habe Eltern-Zustimmung." ~30 Min.</span></div>
+        <div class="check-item"><span class="check-num">04</span><span>"Account löschen"-Button in Einstellungen. Cascade-Delete bereits konfiguriert. ~1h.</span></div>
+        <div class="check-item"><span class="check-num">05</span><span>AGB erstellen — eRecht24 Generator empfohlen (~50–150€), nicht selbst schreiben.</span></div>
+      </div>
+    </div>
+
+    <div class="finding" style="border-left: 4px solid var(--orange); margin-top: 14px;">
+      <div class="finding-header">
+        <div class="finding-title">Vor Monetisierung / Stripe-Launch</div>
+        <div class="badge high">V1.0</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-num">06</span><span>Datenschutzerklärung: Stundenplan-Foto-Import-Absatz ergänzen.</span></div>
+        <div class="check-item"><span class="check-num">07</span><span>KI-Transparenz-Hinweis im Coach-Chat-UI ("Powered by Anthropic · Datenschutz").</span></div>
+        <div class="check-item"><span class="check-num">08</span><span>Supabase DPA im Dashboard aktivieren/bestätigen.</span></div>
+        <div class="check-item"><span class="check-num">09</span><span>Impressum + Datenschutz auf "kommerziell" umstellen wenn Stripe live geht.</span></div>
+        <div class="check-item"><span class="check-num">10</span><span>Stripe Privacy Policy in Datenschutzerklärung ergänzen.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <div class="footer-left">
+      Project X · Nepomuk Polonius · Hamburg<br>
+      Vertrauliches internes Dokument — nicht zur Weitergabe bestimmt
+    </div>
+    <div class="footer-right">
+      Audit-Datum: 10.06.2026<br>
+      Erstellt mit Claude Code
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

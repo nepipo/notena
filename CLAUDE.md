@@ -296,6 +296,75 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 
 ---
 
+## 12. Pro-Plan & Monetarisierung — TODO: Noch komplett zu planen, besprechen & umsetzen
+
+> **Status: OFFEN** — Noch nicht geplant, nicht besprochen, nicht implementiert. Muss vor v1.0 vollständig durchdacht und gebaut werden.
+
+---
+
+### Was noch fehlt
+
+1. **Modell-Entscheidung** — Welches Pricing-Modell? Freemium mit harten Limits? Trial? Usage-based? Noch keine finale Entscheidung.
+2. **Feature-Grenze** — Welche Features sind Free, welche Pro? Noch nicht definiert.
+3. **Technische Umsetzung** — Payment-Provider, Subscription-Verwaltung, Feature-Gates im Code. Noch nicht gebaut.
+4. **Rechtliches** — AGB, Widerrufsrecht, USt bei Minderjährigen (Eltern-Zustimmung?). Noch nicht geprüft.
+
+---
+
+### Monetarisierungsmodell — Ideen-Rohmasse (noch nicht entschieden)
+
+**Modell-Optionen (müssen wir besprechen):**
+
+| Modell | Wie | Pro | Contra |
+|--------|-----|-----|--------|
+| **Freemium hard** | Free: 3 Fächer, 10 Noten/Monat. Pro: Unbegrenzt | Conversion-Druck | Nervt Beta-User |
+| **Freemium soft** | Free: Alles core. Pro: KI-Features + Extras | User-freundlich, vertrauen aufbauen | Conversion langsamer |
+| **Trial** | 30 Tage Pro kostenlos, danach Abo | Alle lernen Pro kennen | Viele vergessen/canceln |
+| **One-Time** | Einmalzahlung für Pro (~20€) | Kein Abo-Stress | Kein recurring revenue |
+| **Schüler-Deal** | 1€/Monat im Schuljahr, 0€ in den Ferien | Zielgruppen-fit | Komplex in Umsetzung |
+
+**Mein Bauchgefühl (noch zu validieren):** Freemium soft — Free für alles Kern-Nützliche, Pro für KI + Extras. 3–5€/Monat. Weniger Churn, mehr Vertrauen beim Launch.
+
+---
+
+### Pro-Feature-Kandidaten (noch zu priorisieren)
+
+- 🤖 **KI-Coach** — Chat mit Claude über Noten, Ziele, Lernplan
+- 🗞️ **Tägliches Audio-Briefing** — TTS-Zusammenfassung des Schultags
+- 📊 **Trend-Analyse** — Notenentwicklung über Zeit, Prognose bis Abi
+- 📅 **Smarte Klausur-Vorbereitung** — KI schlägt Lernplan vor
+- 🔔 **Push-Benachrichtigungen** — Klausur-Erinnerungen, Briefing
+- 📤 **Daten-Export** (CSV/PDF) — auch als DSGVO-Feature
+- 🎨 **Themes / Akzentfarben** — Customization als Motivation
+- 👥 **Klassen-Vergleich** (anonym) — "Du liegst über dem Schnitt deiner Klasse"
+
+---
+
+### Payment-Tech — Optionen (noch nicht entschieden)
+
+| Provider | Kosten | Notiz |
+|----------|--------|-------|
+| **Stripe** | 1,5% + 0,25€ je Transaktion (EU) | Standard, gut dokumentiert, Supabase-Integration vorhanden |
+| **LemonSqueezy** | 5% + 0,50€ | Merchant of Record — übernimmt Steuern/MwSt, ideal für Solopreneure |
+| **Paddle** | 5% + 0,50€ | Ähnlich LemonSqueezy |
+
+**Empfehlung noch offen** — LemonSqueezy könnte sinnvoll sein weil MoR (kein Steuer-Kopfschmerz als 17-Jähriger).
+
+---
+
+### Nächste Schritte für Pro-Planung
+
+- [ ] Session: Pro-Modell gemeinsam besprechen und entscheiden
+- [ ] Feature-Grenze definieren (was ist Free, was Pro)
+- [ ] Rechtliches klären (Minderjährige + Abo, Eltern-Zustimmung DE-Recht)
+- [ ] Payment-Provider wählen + integrieren
+- [ ] `nutzer_profil` um `plan` (free/pro) + `abo_bis` erweitern
+- [ ] Feature-Gates in der App implementieren (Middleware oder Hook)
+- [ ] Upgrade-Flow bauen (Pricing-Page → Checkout → Bestätigung)
+- [ ] Webhook für Abo-Events (Stripe/LemonSqueezy → Supabase)
+
+---
+
 ## 9. Wie wir starten
 
 1. Neuen GitHub-Repo erstellen: `gh repo create nepipo/project-x --private`

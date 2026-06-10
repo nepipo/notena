@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Identity Setup — Project X</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #e8eaf0;
+      font-family: 'Onest', sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 740px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 48px;
+    }
+    .tag {
+      display: inline-block;
+      background: rgba(29, 161, 255, 0.12);
+      border: 1px solid rgba(29, 161, 255, 0.3);
+      color: #1da1ff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    h1 span { color: #1da1ff; }
+    .subtitle {
+      color: #8891a4;
+      font-size: 15px;
+      max-width: 520px;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(29,161,255,0.3) 0%, rgba(29,161,255,0.05) 60%, transparent 100%);
+      margin: 32px 0;
+    }
+
+    /* Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .phase {
+      position: relative;
+      padding-left: 52px;
+      padding-bottom: 40px;
+    }
+    .phase:last-child { padding-bottom: 0; }
+
+    /* Vertical line */
+    .phase::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 36px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(29,161,255,0.4) 0%, rgba(29,161,255,0.05) 100%);
+    }
+    .phase:last-child::before { display: none; }
+
+    /* Step number circle */
+    .step-num {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(29, 161, 255, 0.12);
+      border: 2px solid rgba(29, 161, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1da1ff;
+    }
+    .phase.done .step-num {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #10b981;
+    }
+
+    .phase-content {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .phase-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+    }
+    .badge-wait {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      color: #fbbf24;
+    }
+    .badge-go {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #10b981;
+    }
+    .badge-later {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      color: #a78bfa;
+    }
+
+    /* Steps inside phase */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .step-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(29, 161, 255, 0.08);
+      border: 1px solid rgba(29, 161, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-text {
+      font-size: 14px;
+      color: #c8d0dc;
+      flex: 1;
+    }
+    .step-text strong {
+      color: #fff;
+      font-weight: 600;
+    }
+    .step-text code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(29, 161, 255, 0.1);
+      color: #1da1ff;
+      padding: 1px 6px;
+      border-radius: 5px;
+    }
+
+    /* Info box */
+    .info-box {
+      margin-top: 14px;
+      background: rgba(29, 161, 255, 0.05);
+      border: 1px solid rgba(29, 161, 255, 0.15);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #8891a4;
+    }
+    .info-box strong { color: #1da1ff; }
+
+    .warning-box {
+      margin-top: 14px;
+      background: rgba(251, 191, 36, 0.05);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #8891a4;
+    }
+    .warning-box strong { color: #fbbf24; }
+
+    /* Service grid */
+    .services {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .service-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #c8d0dc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .service-item span { font-size: 15px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #3d4455;
+    }
+    .tl-dr {
+      background: rgba(29, 161, 255, 0.06);
+      border: 1px solid rgba(29, 161, 255, 0.15);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 40px;
+    }
+    .tl-dr-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #1da1ff;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .tl-dr-text {
+      font-size: 14px;
+      color: #c8d0dc;
+      line-height: 1.7;
+    }
+
+    @media print {
+      body { background: white; color: black; padding: 32px; }
+      .phase-content { border-color: #ddd; background: #fafafa; }
+      h1 { color: black; }
+      h1 span { color: #1da1ff; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="tag">PROJECT X · SETUP GUIDE</div>
+      <h1>Business Identity<br/><span>in 3 Phasen</span></h1>
+      <p class="subtitle">Wann du was tust — von der Domain bis zum Geschäftskonto. Kein Vorziehen, kein Vergessen.</p>
+    </div>
+
+    <!-- TL;DR -->
+    <div class="tl-dr">
+      <div class="tl-dr-title">TL;DR</div>
+      <div class="tl-dr-text">
+        Jetzt: nichts. Sobald du den <strong>Namen</strong> hast → Domain + Business-Mail.<br/>
+        Sobald du <strong>Geld</strong> nimmst → Gewerbe + separates Konto.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+
+      <!-- Phase 1 -->
+      <div class="phase">
+        <div class="step-num">1</div>
+        <div class="phase-content">
+          <div class="phase-header">
+            <div class="phase-title">Name finalisieren</div>
+            <div class="badge badge-wait">JETZT</div>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-icon">💡</div>
+              <div class="step-text">
+                <strong>App-Name entscheiden</strong> — kurz, merkbar, domain-fähig (keine Sonderzeichen). Prüfe ob <code>.de</code> / <code>.app</code> / <code>.io</code> noch frei ist.
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-icon">🔍</div>
+              <div class="step-text">
+                <strong>Domain-Verfügbarkeit checken</strong> — kostenlos auf <code>namecheap.com</code> oder <code>cloudflare.com/registrar</code>. Noch nicht kaufen.
+              </div>
+            </div>
+          </div>
+          <div class="warning-box">
+            <strong>Wichtig:</strong> Solange du noch "Project X" sagst, ist jede Registrierung verschwendete Zeit. Warte auf den echten Namen.
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase">
+        <div class="step-num">2</div>
+        <div class="phase-content">
+          <div class="phase-header">
+            <div class="phase-title">Domain + Business-Mail</div>
+            <div class="badge badge-go">SOBALD NAME STEHT</div>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-icon">🌐</div>
+              <div class="step-text">
+                <strong>Domain kaufen</strong> — ca. <code>10–15 €/Jahr</code>. Empfehlung: Cloudflare Registrar (günstigste Preise, kein Aufschlag). Nimm <code>.de</code> + <code>.app</code> zusammen wenn möglich.
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-icon">📬</div>
+              <div class="step-text">
+                <strong>E-Mail einrichten</strong> — <code>hallo@dein-name.de</code> kostenlos via <strong>Cloudflare Email Routing</strong> → leitet weiter an deine Gmail. Kein Google Workspace nötig.
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-icon">✉️</div>
+              <div class="step-text">
+                <strong>Gmail als Absender konfigurieren</strong> — in Gmail → Einstellungen → Konten → "Weitere E-Mail-Adresse hinzufügen" → SMTP von Gmail nutzen. Dann kannst du <em>von</em> der Business-Mail senden.
+              </div>
+            </div>
+          </div>
+          <div class="info-box">
+            <strong>Ergebnis:</strong> Du empfängst und sendest als <code>hallo@dein-name.de</code> — alles läuft durch deine bestehende Gmail, gratis.
+          </div>
+
+          <div style="margin-top: 20px;">
+            <div style="font-size: 12px; color: #5a6275; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">DANN NEU ANMELDEN BEI</div>
+            <div class="services">
+              <div class="service-item"><span>🚀</span>Vercel</div>
+              <div class="service-item"><span>🗄️</span>Supabase</div>
+              <div class="service-item"><span>🐙</span>GitHub (Org)</div>
+              <div class="service-item"><span>💳</span>Stripe (wenn nötig)</div>
+              <div class="service-item"><span>🍎</span>Apple Developer</div>
+              <div class="service-item"><span>🤖</span>Anthropic API</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase">
+        <div class="step-num">3</div>
+        <div class="phase-content">
+          <div class="phase-header">
+            <div class="phase-title">Gewerbe + Konto</div>
+            <div class="badge badge-later">SOBALD ERSTER USER ZAHLT</div>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-icon">📋</div>
+              <div class="step-text">
+                <strong>Kleingewerbe anmelden</strong> — online beim Hamburger Gewerbeamt, kostet ca. <code>20–30 €</code>. Dauert 10 min. Pflicht sobald du regelmäßig Einnahmen hast.
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-icon">🏦</div>
+              <div class="step-text">
+                <strong>Separates Konto eröffnen</strong> — kein Geschäftskonto nötig (teuer, unnötig). Ein kostenloses Privatkonto bei <strong>DKB</strong> oder <strong>N26</strong> reicht. Alles App-bezogene darüber laufen lassen.
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-icon">🧾</div>
+              <div class="step-text">
+                <strong>Stripe verbinden</strong> — läuft über das neue Konto. Automatische Steuerbelege für Nutzer via Stripe Tax (einmalig einrichten).
+              </div>
+            </div>
+          </div>
+          <div class="info-box">
+            <strong>Bis dahin:</strong> Alles läuft über deinen privaten Account. Das ist legal solange du kein Gewerbe betreibst (= kein Geld nimmst).
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-text">PROJECT X · Stand 10.06.2026</div>
+      <div class="footer-text">Seite 1 von 1</div>
+    </div>
+
+  </div>
+</body>
+</html>

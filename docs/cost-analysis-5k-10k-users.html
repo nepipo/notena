@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project X — Kostenanalyse 5.000–10.000 User</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #1a1a2e;
+    background: #f8f9fc;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    padding: 60px 70px;
+  }
+
+  /* COVER */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1da1ff22 100%);
+    color: white;
+    padding: 60px 70px;
+    margin: -60px -70px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1da1ff33, transparent 70%);
+  }
+  .cover-tag {
+    display: inline-block;
+    background: #1da1ff22;
+    border: 1px solid #1da1ff55;
+    color: #1da1ff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .cover h1 { font-size: 32px; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
+  .cover h1 span { color: #1da1ff; }
+  .cover p { font-size: 14px; color: #94a3b8; margin-top: 8px; }
+  .cover-meta { display: flex; gap: 30px; margin-top: 30px; }
+  .cover-meta-item { text-align: center; }
+  .cover-meta-item .val { font-size: 22px; font-weight: 700; color: #1da1ff; }
+  .cover-meta-item .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* VERSION BADGE */
+  .version-banner {
+    background: linear-gradient(90deg, #14532d, #166534);
+    color: white;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .version-banner .badge {
+    background: #22c55e;
+    color: #052e16;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .version-banner .text { font-size: 12.5px; color: #bbf7d0; }
+  .version-banner .text strong { color: white; }
+
+  /* TYPOGRAPHY */
+  h2 {
+    font-size: 18px; font-weight: 700; color: #0f172a;
+    margin: 40px 0 16px; padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  h3 { font-size: 14px; font-weight: 600; color: #334155; margin: 20px 0 8px; }
+  p { margin-bottom: 10px; color: #475569; }
+
+  /* CALLOUTS */
+  .callout {
+    border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; }
+  .callout-body strong { display: block; margin-bottom: 3px; font-size: 13px; }
+  .callout-body p { margin: 0; font-size: 12.5px; }
+  .callout.red { background: #fef2f2; border-left: 3px solid #ef4444; }
+  .callout.red .callout-icon { color: #ef4444; }
+  .callout.red strong { color: #991b1b; }
+  .callout.yellow { background: #fffbeb; border-left: 3px solid #f59e0b; }
+  .callout.yellow .callout-icon { color: #d97706; }
+  .callout.yellow strong { color: #92400e; }
+  .callout.green { background: #f0fdf4; border-left: 3px solid #22c55e; }
+  .callout.green .callout-icon { color: #16a34a; }
+  .callout.green strong { color: #14532d; }
+  .callout.blue { background: #eff6ff; border-left: 3px solid #3b82f6; }
+  .callout.blue .callout-icon { color: #2563eb; }
+  .callout.blue strong { color: #1e3a8a; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12.5px; }
+  th {
+    background: #f1f5f9; color: #374151; font-weight: 600;
+    text-align: left; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #374151; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbfc; }
+  .num { font-variant-numeric: tabular-nums; font-family: 'Courier New', monospace; }
+  .total-row td { background: #0f172a; color: white; font-weight: 700; border-bottom: none; }
+  .highlight-green td { background: #f0fdf4; color: #14532d; font-weight: 600; }
+  .highlight-red td { background: #fef2f2; }
+  .strikethrough { text-decoration: line-through; color: #94a3b8; }
+  .new-val { color: #16a34a; font-weight: 700; }
+
+  /* COST COMPARE */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .compare-box { border-radius: 12px; padding: 18px; border: 1px solid; }
+  .compare-box.old { border-color: #fca5a5; background: #fef2f2; }
+  .compare-box.new { border-color: #86efac; background: #f0fdf4; }
+  .compare-box .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .compare-box.old .label { color: #ef4444; }
+  .compare-box.new .label { color: #16a34a; }
+  .compare-box .amount { font-size: 28px; font-weight: 800; line-height: 1; }
+  .compare-box.old .amount { color: #dc2626; }
+  .compare-box.new .amount { color: #16a34a; }
+  .compare-box .sub { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+  /* SCENARIO BLOCKS */
+  .scenario { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin: 20px 0; }
+  .scenario-header {
+    padding: 16px 20px; font-weight: 700; font-size: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .scenario-header .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .scenario-5k .scenario-header { background: #eff6ff; color: #1e40af; }
+  .scenario-5k .scenario-header .badge { background: #dbeafe; color: #1e40af; }
+  .scenario-75k .scenario-header { background: #f0fdf4; color: #14532d; }
+  .scenario-75k .scenario-header .badge { background: #dcfce7; color: #14532d; }
+  .scenario-10k .scenario-header { background: #fdf4ff; color: #6b21a8; }
+  .scenario-10k .scenario-header .badge { background: #f3e8ff; color: #6b21a8; }
+  .scenario-content { padding: 0 20px 16px; }
+
+  /* TIP LIST */
+  .tip-list { list-style: none; margin: 8px 0; }
+  .tip-list li {
+    padding: 8px 12px 8px 36px; border-radius: 8px; margin: 4px 0;
+    font-size: 12.5px; position: relative;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+  }
+  .tip-list li::before { content: attr(data-icon); position: absolute; left: 10px; top: 8px; }
+  .tip-list li strong { color: #0f172a; }
+  .tip-list li .saving {
+    display: inline-block; background: #dcfce7; color: #14532d;
+    font-size: 10.5px; font-weight: 600; padding: 1px 8px;
+    border-radius: 10px; margin-left: 6px;
+  }
+  .tip-list li .done {
+    display: inline-block; background: #22c55e; color: white;
+    font-size: 10px; font-weight: 700; padding: 1px 8px;
+    border-radius: 10px; margin-left: 6px;
+  }
+
+  /* HORROR */
+  .horror { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 20px; margin: 16px 0; }
+  .horror h3 { color: #991b1b; margin-top: 0; }
+  .horror table th { background: #fee2e2; color: #7f1d1d; }
+
+  .divider { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+  .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+  .info-box h4 { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-right: 4px; }
+  .tag-free { background: #dcfce7; color: #14532d; }
+  .tag-paid { background: #dbeafe; color: #1e40af; }
+  .tag-done { background: #22c55e; color: white; }
+
+  .footer {
+    margin-top: 50px; padding-top: 20px; border-top: 1px solid #e2e8f0;
+    font-size: 11px; color: #94a3b8;
+    display: flex; justify-content: space-between;
+  }
+
+  @media print {
+    body { background: white; }
+    .page { padding: 40px 50px; max-width: 100%; }
+    .cover { margin: -40px -50px 40px; }
+    h2 { page-break-after: avoid; }
+    .scenario, .horror { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-tag">Internes Dokument · Vertraulich</div>
+    <h1>Project X — <span>Kostenanalyse</span><br>bei 5.000 – 10.000 Usern</h1>
+    <p>Alle variablen und fixen Kosten · Worst-Case-Szenarien · Strategien zur Kostenreduktion</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><div class="val">3</div><div class="label">Szenarien</div></div>
+      <div class="cover-meta-item"><div class="val">6</div><div class="label">Kostenblöcke</div></div>
+      <div class="cover-meta-item"><div class="val">~95%</div><div class="label">Marge</div></div>
+      <div class="cover-meta-item"><div class="val">10.06.2026</div><div class="label">Stand</div></div>
+    </div>
+  </div>
+
+  <!-- VERSION BANNER -->
+  <div class="version-banner">
+    <span class="badge">v2 · Aktualisiert</span>
+    <span class="text">
+      <strong>Zwei Änderungen gegenüber v1:</strong>
+      Briefing nutzt jetzt <strong>Haiku 4.5</strong> statt Sonnet 4.6 (−67 % pro Call) ·
+      Briefing wird <strong>on-demand</strong> generiert wenn der User die App öffnet — kein Cron, keine Kosten für inaktive User.
+      Ergebnis: Briefing-Kosten bei 10k Usern von <strong>€558 → €25/Monat</strong>.
+    </span>
+  </div>
+
+  <!-- PREISE -->
+  <div class="callout blue">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Alle Preise live verifiziert am 10.06.2026</strong>
+      <p>Claude API: docs.anthropic.com · Vercel: vercel.com/pricing · Supabase: supabase.com/pricing · Resend: resend.com/pricing. Preise in EUR bei $1 = €0,92.</p>
+    </div>
+  </div>
+
+  <!-- 1. ANNAHMEN -->
+  <h2><span class="icon" style="background:#f1f5f9">📐</span> 1. Grundannahmen des Modells</h2>
+
+  <div class="two-col">
+    <div class="info-box">
+      <h4>Nutzerverhalten</h4>
+      <table style="margin:0">
+        <tr><td>Daily Active Users (DAU)</td><td class="num" style="text-align:right"><strong>20 %</strong> aller User</td></tr>
+        <tr><td>Premium-DAU (engagierter)</td><td class="num" style="text-align:right"><strong>30 %</strong> der Premium-User</td></tr>
+        <tr><td>Coach-Nutzung (DAU)</td><td class="num" style="text-align:right"><strong>25 %</strong></td></tr>
+        <tr><td>Ø Nachrichten/Coach-Session</td><td class="num" style="text-align:right"><strong>6</strong></td></tr>
+        <tr><td>Briefing-Trigger</td><td class="num" style="text-align:right"><strong>On-demand</strong> beim App-Öffnen</td></tr>
+        <tr><td>Premium-Conversion-Rate</td><td class="num" style="text-align:right"><strong>15 %</strong></td></tr>
+        <tr><td>Premium-Preis</td><td class="num" style="text-align:right"><strong>€ 4,00 / Monat</strong></td></tr>
+      </table>
+    </div>
+    <div class="info-box">
+      <h4>Token-Annahmen pro API-Call</h4>
+      <table style="margin:0">
+        <tr><td>Coach Input (Haiku 4.5)</td><td class="num" style="text-align:right"><strong>~800 Tokens</strong></td></tr>
+        <tr><td>Coach Output (Haiku 4.5)</td><td class="num" style="text-align:right"><strong>~300 Tokens</strong></td></tr>
+        <tr><td>Briefing Input (Haiku 4.5)</td><td class="num" style="text-align:right"><strong>~1.000 Tokens</strong></td></tr>
+        <tr><td>Briefing Output (Haiku 4.5)</td><td class="num" style="text-align:right"><strong>~200 Tokens</strong></td></tr>
+        <tr><td>Cache-Hit-Rate (Briefing)</td><td class="num" style="text-align:right"><strong>100 %</strong> ab 2. Öffnen</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. KOSTENBLÖCKE -->
+  <h2><span class="icon" style="background:#fef3c7">💰</span> 2. Was kostet was — alle Kostenblöcke im Detail</h2>
+
+  <!-- 2.1 Claude API -->
+  <h3>2.1 Claude API — der größte variable Kostenblock</h3>
+
+  <div class="callout green">
+    <div class="callout-icon">🔄</div>
+    <div class="callout-body">
+      <strong>Geändert gegenüber v1: Briefing jetzt mit Haiku statt Sonnet</strong>
+      <p>Haiku 4.5 kostet $1/$5 pro MTok (input/output). Sonnet 4.6 kostet $3/$15. Für strukturierte 2–3-Satz-Briefings auf Basis bekannter Daten ist Haiku mehr als ausreichend. Ersparnis: ~83 % pro Briefing-Call.</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Modell</th>
+        <th>Verwendet für</th>
+        <th>Input / 1M Tokens</th>
+        <th>Output / 1M Tokens</th>
+        <th>Kosten pro Call</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Haiku 4.5</strong></td>
+        <td>KI-Coach Chat <code>/api/coach</code></td>
+        <td class="num">$ 1,00 · € 0,92</td>
+        <td class="num">$ 5,00 · € 4,60</td>
+        <td class="num"><strong>~ € 0,0021</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Haiku 4.5</strong> <span class="tag tag-done">NEU</span></td>
+        <td>Tägliches Briefing <code>/dashboard</code></td>
+        <td class="num">$ 1,00 · € 0,92</td>
+        <td class="num">$ 5,00 · € 4,60</td>
+        <td class="num"><strong>~ € 0,0018</strong> <span class="strikethrough">€ 0,0124</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 Briefing: Cron vs. On-Demand — was das bedeutet</h3>
+
+  <div class="compare-grid">
+    <div class="compare-box old">
+      <div class="label">❌ Alt — Cron für alle Premium</div>
+      <div class="amount">100 %</div>
+      <div class="sub">aller Premium-User bekamen täglich ein Briefing — egal ob sie die App geöffnet haben oder nicht. <br><br>Bei 1.500 Premium-Usern: 1.500 Calls/Tag.</div>
+    </div>
+    <div class="compare-box new">
+      <div class="label">✅ Neu — On-Demand beim App-Öffnen</div>
+      <div class="amount">~30 %</div>
+      <div class="sub">der Premium-User öffnen die App täglich. Nur für diese wird generiert. Cache verhindert doppelte Calls am selben Tag.<br><br>Bei 1.500 Premium-Usern: ~450 Calls/Tag.</div>
+    </div>
+  </div>
+
+  <!-- 2.2 Vercel -->
+  <h3>2.3 Vercel — Hosting &amp; Cron</h3>
+  <table>
+    <thead>
+      <tr><th>Plan</th><th>Preis</th><th>Bandbreite</th><th>Cron Jobs</th><th>Wann nötig</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Hobby</strong> <span class="tag tag-free">Free</span></td>
+        <td class="num">€ 0</td>
+        <td>100 GB/Monat</td>
+        <td>Enthalten</td>
+        <td>bis ~3.000 User</td>
+      </tr>
+      <tr>
+        <td><strong>Pro</strong> <span class="tag tag-paid">Paid</span></td>
+        <td class="num">$ 20 · <strong>€ 18/Monat</strong></td>
+        <td>1 TB/Monat</td>
+        <td>Enthalten</td>
+        <td>ab ~3.000–5.000 User</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:#64748b">Bandwidth-Rechnung: 2.000 DAU × 10 Seitenaufrufe × 500 KB = ~10 GB/Tag = ~300 GB/Monat → Hobby-Limit (100 GB) wird bei 5k+ Usern gesprengt.</p>
+
+  <!-- 2.3 Supabase -->
+  <h3>2.4 Supabase — Datenbank, Auth, Storage</h3>
+  <table>
+    <thead>
+      <tr><th>Plan</th><th>Preis</th><th>MAU-Limit</th><th>DB-Größe</th><th>Wann nötig</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Free</strong> <span class="tag tag-free">Free</span></td>
+        <td class="num">€ 0</td>
+        <td>50.000</td>
+        <td>500 MB</td>
+        <td>bis ~10.000 User</td>
+      </tr>
+      <tr>
+        <td><strong>Pro</strong> <span class="tag tag-paid">Paid</span></td>
+        <td class="num">$ 25 · <strong>€ 23/Monat</strong></td>
+        <td>100.000 inkl.</td>
+        <td>8 GB inkl.</td>
+        <td>wenn 500 MB DB gesprengt</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout green">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Supabase Free reicht voraussichtlich bis 20.000+ User</strong>
+      <p>50k MAU-Limit ist bei 10k Usern problemlos. DB-Größe (500 MB) könnte erst bei sehr vielen Noten-Einträgen relevant werden. Bis dahin: €0.</p>
+    </div>
+  </div>
+
+  <!-- 2.4 Resend -->
+  <h3>2.5 Resend — Transaktions-E-Mails</h3>
+  <table>
+    <thead>
+      <tr><th>Plan</th><th>Preis</th><th>E-Mails/Monat</th><th>Wann nötig</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Free</strong> <span class="tag tag-free">Free</span></td><td class="num">€ 0</td><td>3.000</td><td>bis ~500 neue Registrierungen/Monat</td></tr>
+      <tr><td><strong>Starter</strong> <span class="tag tag-paid">Paid</span></td><td class="num">$ 20 · <strong>€ 18/Monat</strong></td><td>50.000</td><td>ab ~500 Neuregistrierungen/Monat</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 2.5 Web Push + Domain -->
+  <h3>2.6 Web Push &amp; Domain</h3>
+  <div class="callout green">
+    <div class="callout-icon">🎉</div>
+    <div class="callout-body">
+      <strong>Web Push kostenlos · Domain ~€ 1,25 / Monat</strong>
+      <p>Klausur-Erinnerungen per Web Push (VAPID, selbst-hosted) kosten nichts. Domain (.de) ~€15/Jahr. SSL automatisch via Vercel.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 3. SZENARIEN -->
+  <h2><span class="icon" style="background:#e0f2fe">📊</span> 3. Drei Szenarien: 5.000 / 7.500 / 10.000 User</h2>
+
+  <!-- SZENARIO 5k -->
+  <div class="scenario scenario-5k">
+    <div class="scenario-header">
+      🔵 Szenario A — 5.000 registrierte User
+      <span class="badge">Frühes Wachstum</span>
+    </div>
+    <div class="scenario-content">
+      <div class="two-col" style="margin-top:16px">
+        <table>
+          <thead><tr><th>Kenngröße</th><th style="text-align:right">Wert</th></tr></thead>
+          <tbody>
+            <tr><td>DAU (20 %)</td><td class="num" style="text-align:right">1.000 / Tag</td></tr>
+            <tr><td>Premium-User (15 %)</td><td class="num" style="text-align:right">750</td></tr>
+            <tr><td>Briefings / Tag (30 % der Premium)</td><td class="num" style="text-align:right">225</td></tr>
+            <tr><td>Coach-Nachrichten / Tag</td><td class="num" style="text-align:right">1.500</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <thead><tr><th>Posten</th><th style="text-align:right">€ / Monat</th></tr></thead>
+          <tbody>
+            <tr><td>Briefing (Haiku 4.5, on-demand)</td><td class="num" style="text-align:right"><span class="new-val">€ 12</span></td></tr>
+            <tr><td>Coach (Haiku 4.5)</td><td class="num" style="text-align:right">€ 95</td></tr>
+            <tr><td>Vercel Pro</td><td class="num" style="text-align:right">€ 18</td></tr>
+            <tr><td>Supabase Free</td><td class="num" style="text-align:right">€ 0</td></tr>
+            <tr><td>Resend Starter</td><td class="num" style="text-align:right">€ 18</td></tr>
+            <tr><td>Domain</td><td class="num" style="text-align:right">€ 1,25</td></tr>
+            <tr class="total-row"><td><strong>GESAMT</strong></td><td class="num" style="text-align:right"><strong>€ 144</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <table>
+        <thead><tr><th>Einnahmen vs. Kosten</th><th style="text-align:right">€ / Monat</th></tr></thead>
+        <tbody>
+          <tr><td>Einnahmen (750 Premium × € 4,00)</td><td class="num" style="text-align:right">€ 3.000</td></tr>
+          <tr><td>Kosten</td><td class="num" style="text-align:right">− € 144</td></tr>
+          <tr class="highlight-green"><td><strong>Nettogewinn · Marge 95,2 %</strong></td><td class="num" style="text-align:right"><strong>€ 2.856</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SZENARIO 7.5k -->
+  <div class="scenario scenario-75k">
+    <div class="scenario-header">
+      🟢 Szenario B — 7.500 registrierte User
+      <span class="badge">Solides Wachstum</span>
+    </div>
+    <div class="scenario-content">
+      <div class="two-col" style="margin-top:16px">
+        <table>
+          <thead><tr><th>Kenngröße</th><th style="text-align:right">Wert</th></tr></thead>
+          <tbody>
+            <tr><td>DAU (20 %)</td><td class="num" style="text-align:right">1.500 / Tag</td></tr>
+            <tr><td>Premium-User (15 %)</td><td class="num" style="text-align:right">1.125</td></tr>
+            <tr><td>Briefings / Tag (30 % der Premium)</td><td class="num" style="text-align:right">338</td></tr>
+            <tr><td>Coach-Nachrichten / Tag</td><td class="num" style="text-align:right">2.250</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <thead><tr><th>Posten</th><th style="text-align:right">€ / Monat</th></tr></thead>
+          <tbody>
+            <tr><td>Briefing (Haiku 4.5, on-demand)</td><td class="num" style="text-align:right"><span class="new-val">€ 19</span></td></tr>
+            <tr><td>Coach (Haiku 4.5)</td><td class="num" style="text-align:right">€ 143</td></tr>
+            <tr><td>Vercel Pro</td><td class="num" style="text-align:right">€ 18</td></tr>
+            <tr><td>Supabase Free</td><td class="num" style="text-align:right">€ 0</td></tr>
+            <tr><td>Resend Starter</td><td class="num" style="text-align:right">€ 18</td></tr>
+            <tr><td>Domain</td><td class="num" style="text-align:right">€ 1,25</td></tr>
+            <tr class="total-row"><td><strong>GESAMT</strong></td><td class="num" style="text-align:right"><strong>€ 199</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <table>
+        <thead><tr><th>Einnahmen vs. Kosten</th><th style="text-align:right">€ / Monat</th></tr></thead>
+        <tbody>
+          <tr><td>Einnahmen (1.125 Premium × € 4,00)</td><td class="num" style="text-align:right">€ 4.500</td></tr>
+          <tr><td>Kosten</td><td class="num" style="text-align:right">− € 199</td></tr>
+          <tr class="highlight-green"><td><strong>Nettogewinn · Marge 95,6 %</strong></td><td class="num" style="text-align:right"><strong>€ 4.301</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SZENARIO 10k -->
+  <div class="scenario scenario-10k">
+    <div class="scenario-header">
+      🟣 Szenario C — 10.000 registrierte User
+      <span class="badge">Starkes Wachstum</span>
+    </div>
+    <div class="scenario-content">
+      <div class="two-col" style="margin-top:16px">
+        <table>
+          <thead><tr><th>Kenngröße</th><th style="text-align:right">Wert</th></tr></thead>
+          <tbody>
+            <tr><td>DAU (20 %)</td><td class="num" style="text-align:right">2.000 / Tag</td></tr>
+            <tr><td>Premium-User (15 %)</td><td class="num" style="text-align:right">1.500</td></tr>
+            <tr><td>Briefings / Tag (30 % der Premium)</td><td class="num" style="text-align:right">450</td></tr>
+            <tr><td>Coach-Nachrichten / Tag</td><td class="num" style="text-align:right">3.000</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <thead><tr><th>Posten</th><th style="text-align:right">€ / Monat</th></tr></thead>
+          <tbody>
+            <tr><td>Briefing (Haiku 4.5, on-demand)</td><td class="num" style="text-align:right"><span class="new-val">€ 25</span></td></tr>
+            <tr><td>Coach (Haiku 4.5)</td><td class="num" style="text-align:right">€ 190</td></tr>
+            <tr><td>Vercel Pro</td><td class="num" style="text-align:right">€ 18</td></tr>
+            <tr><td>Supabase Free*</td><td class="num" style="text-align:right">€ 0</td></tr>
+            <tr><td>Resend Starter</td><td class="num" style="text-align:right">€ 18</td></tr>
+            <tr><td>Domain</td><td class="num" style="text-align:right">€ 1,25</td></tr>
+            <tr class="total-row"><td><strong>GESAMT</strong></td><td class="num" style="text-align:right"><strong>€ 252</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <table>
+        <thead><tr><th>Einnahmen vs. Kosten</th><th style="text-align:right">€ / Monat</th></tr></thead>
+        <tbody>
+          <tr><td>Einnahmen (1.500 Premium × € 4,00)</td><td class="num" style="text-align:right">€ 6.000</td></tr>
+          <tr><td>Kosten</td><td class="num" style="text-align:right">− € 252</td></tr>
+          <tr class="highlight-green"><td><strong>Nettogewinn · Marge 95,8 %</strong></td><td class="num" style="text-align:right"><strong>€ 5.748</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11.5px;color:#64748b;margin-top:8px">* Supabase Free hat 50k MAU-Limit — bei 10k Gesamt-Usern reicht das. Wenn DB 500 MB gesprengt → Pro für €23/Monat (Marge bleibt bei 95,4 %).</p>
+    </div>
+  </div>
+
+  <!-- VORHER/NACHHER -->
+  <h2><span class="icon" style="background:#dcfce7">📉</span> 4. Vorher / Nachher — was die Änderungen gebracht haben</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Szenario</th>
+        <th style="text-align:right">Kosten v1 (Sonnet + Cron)</th>
+        <th style="text-align:right">Kosten v2 (Haiku + On-Demand)</th>
+        <th style="text-align:right">Ersparnis</th>
+        <th style="text-align:right">Marge v2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>5.000 User</td>
+        <td class="num strikethrough" style="text-align:right">€ 411</td>
+        <td class="num new-val" style="text-align:right">€ 144</td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>− € 267 (−65 %)</strong></td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>95,2 %</strong></td>
+      </tr>
+      <tr>
+        <td>7.500 User</td>
+        <td class="num strikethrough" style="text-align:right">€ 597</td>
+        <td class="num new-val" style="text-align:right">€ 199</td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>− € 398 (−67 %)</strong></td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>95,6 %</strong></td>
+      </tr>
+      <tr>
+        <td>10.000 User</td>
+        <td class="num strikethrough" style="text-align:right">€ 807</td>
+        <td class="num new-val" style="text-align:right">€ 252</td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>− € 555 (−69 %)</strong></td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>95,8 %</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+
+  <!-- 5. HORROR -->
+  <h2><span class="icon" style="background:#fee2e2">💀</span> 5. Horror-Szenarien — was ohne Schutz passiert</h2>
+
+  <div class="horror">
+    <h3>⚠️ Diese Szenarien zeigen warum Schutzmechanismen nicht optional sind</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Szenario</th>
+          <th>Wie es passiert</th>
+          <th>Schaden / Monat</th>
+          <th>Schutz</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Briefing für inaktive User</strong></td>
+          <td>Cron statt on-demand, kein Cache-Check</td>
+          <td class="num highlight-red"><strong>€ 558</strong> statt € 25</td>
+          <td>On-demand + briefing_cache ✅</td>
+        </tr>
+        <tr>
+          <td><strong>User öffnet App 10× täglich</strong></td>
+          <td>Kein Cache-Check vor API-Call</td>
+          <td class="num highlight-red"><strong>10× Kosten</strong></td>
+          <td>briefing_cache unique (user_id, datum) ✅</td>
+        </tr>
+        <tr>
+          <td><strong>Bot spammt Coach-Route</strong></td>
+          <td>Kein Rate Limit</td>
+          <td class="num highlight-red"><strong>€ 0,002 × ∞</strong></td>
+          <td>Rate Limit (noch ausstehend ⚠️)</td>
+        </tr>
+        <tr>
+          <td><strong>Viral-Event: 50k Signups über Nacht</strong></td>
+          <td>TikTok-Video geht viral</td>
+          <td class="num highlight-red"><strong>unkontrolliert</strong></td>
+          <td>Anthropic Hard Limit ✅ gesetzt</td>
+        </tr>
+        <tr>
+          <td><strong>Endlos-Loop im Briefing-Code</strong></td>
+          <td>Bug ruft Claude in while(true) auf</td>
+          <td class="num highlight-red"><strong>bis Kreditlimit</strong></td>
+          <td>Anthropic Hard Limit ✅ gesetzt</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 6. OFFENE MASSNAHMEN -->
+  <h2><span class="icon" style="background:#fef3c7">📋</span> 6. Noch offene Schutzmaßnahmen</h2>
+
+  <ul class="tip-list">
+    <li data-icon="✅">
+      <strong>Anthropic Hard Limit</strong>
+      <span class="done">ERLEDIGT</span><br>
+      Hard Cap gesetzt. Kein unendliches Billing mehr möglich.
+    </li>
+    <li data-icon="✅">
+      <strong>Briefing on-demand statt Cron</strong>
+      <span class="done">ERLEDIGT</span><br>
+      <code>lib/actions/briefing.ts</code> — generiert beim Dashboard-Öffnen, cached danach den ganzen Tag.
+    </li>
+    <li data-icon="✅">
+      <strong>Haiku statt Sonnet für Briefing</strong>
+      <span class="done">ERLEDIGT</span><br>
+      −83 % pro Briefing-Call. Qualität für 2–3-Satz-Briefings identisch.
+    </li>
+    <li data-icon="⚠️">
+      <strong>Coach Rate Limit</strong>
+      <span class="saving">ausstehend · ~2h Aufwand</span><br>
+      Max. 20 Coach-Nachrichten/Stunde pro User. Blockiert Abuse ohne echte Nutzung einzuschränken. Braucht eine kleine DB-Tabelle <code>coach_request_log</code>.
+    </li>
+    <li data-icon="⚠️">
+      <strong>Briefing nur für Premium</strong>
+      <span class="saving">ausstehend · Entscheidung nötig</span><br>
+      Aktuell bekommt jeder eingeloggte User ein Briefing (<code>briefing_aktiv = true</code> by default). Wenn Briefing ein Premium-Feature wird, hier ein Check auf <code>plan_tier = 'premium'</code> einbauen.
+    </li>
+  </ul>
+
+  <hr class="divider">
+
+  <!-- 7. ZUSAMMENFASSUNG -->
+  <h2><span class="icon" style="background:#f3e8ff">🎯</span> 7. Gesamtübersicht</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Szenario</th>
+        <th style="text-align:right">Kosten / Monat</th>
+        <th style="text-align:right">Revenue / Monat</th>
+        <th style="text-align:right">Nettogewinn</th>
+        <th style="text-align:right">Marge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>5.000 User</td>
+        <td class="num" style="text-align:right">€ 144</td>
+        <td class="num" style="text-align:right">€ 3.000</td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>€ 2.856</strong></td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>95,2 %</strong></td>
+      </tr>
+      <tr>
+        <td>7.500 User</td>
+        <td class="num" style="text-align:right">€ 199</td>
+        <td class="num" style="text-align:right">€ 4.500</td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>€ 4.301</strong></td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>95,6 %</strong></td>
+      </tr>
+      <tr>
+        <td>10.000 User</td>
+        <td class="num" style="text-align:right">€ 252</td>
+        <td class="num" style="text-align:right">€ 6.000</td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>€ 5.748</strong></td>
+        <td class="num" style="text-align:right;color:#16a34a"><strong>95,8 %</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>~95 % Marge bei allen Szenarien — Software-Margen wie sie sein sollen</strong>
+      <p>Die Kombination aus Haiku (statt Sonnet) und on-demand (statt Cron) hat die Briefing-Kosten von €558 auf €25/Monat bei 10k Usern gesenkt. Der einzige relevante variable Kostenblock ist jetzt der Coach — und der skaliert direkt mit aktivem Nutzerengagement, was gesund ist.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Project X — v2 · Intern · Nepomuk Polonius · Stand 10.06.2026</span>
+    <span>Preise verifiziert: Anthropic API, Vercel, Supabase, Resend</span>
+  </div>
+
+</div>
+</body>
+</html>

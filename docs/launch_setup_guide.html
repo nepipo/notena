@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App Launch Setup Guide — Nepomuk Polonius</title>
+  <style>
+    /* Fonts: system stack statt Google Fonts CDN (DSGVO) */
+
+    :root {
+      --azure: #1da1ff;
+      --indigo: #6366f1;
+      --bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --surface: #f8fafc;
+      --surface-2: #f1f5f9;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --green: #10b981;
+      --orange: #f97316;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 10pt;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      max-width: 210mm;
+      margin: 0 auto;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      background: linear-gradient(160deg, #0f172a 0%, #1a1040 40%, #0d1f35 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 60px 64px;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content:''; position:absolute; top:-100px; right:-100px;
+      width:500px; height:500px;
+      background:radial-gradient(circle,rgba(29,161,255,0.12) 0%,transparent 65%);
+      border-radius:50%;
+    }
+    .cover::after {
+      content:''; position:absolute; bottom:-80px; left:100px;
+      width:350px; height:350px;
+      background:radial-gradient(circle,rgba(99,102,241,0.1) 0%,transparent 65%);
+      border-radius:50%;
+    }
+    .cover-tag {
+      display:inline-block;
+      background:rgba(29,161,255,0.15);
+      border:1px solid rgba(29,161,255,0.3);
+      color:var(--azure);
+      font-size:7.5pt; font-weight:600;
+      letter-spacing:0.12em; text-transform:uppercase;
+      padding:4px 12px; border-radius:4px; margin-bottom:32px;
+    }
+    .cover-title { font-size:38pt; font-weight:900; line-height:1.05; letter-spacing:-0.03em; }
+    .cover-title span { color:var(--azure); }
+    .cover-subtitle { font-size:13pt; font-weight:300; color:rgba(255,255,255,0.6); margin-top:14px; max-width:440px; line-height:1.6; }
+    .cover-divider { width:60px; height:3px; background:linear-gradient(90deg,var(--azure),var(--indigo)); border-radius:2px; margin:32px 0; }
+    .cover-chapters {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;
+    }
+    .cover-chapter {
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      padding:10px 14px; border-radius:6px;
+      font-size:8pt; color:rgba(255,255,255,0.65);
+    }
+    .cover-chapter strong { color:white; display:block; font-size:8.5pt; margin-bottom:2px; }
+    .cover-footer { display:flex; justify-content:space-between; align-items:flex-end; font-size:7.5pt; color:rgba(255,255,255,0.35); }
+    .cover-footer-right { text-align:right; line-height:1.8; }
+
+    /* ── Page ── */
+    .page { padding:52px 56px; page-break-after:always; min-height:100vh; position:relative; }
+    .page:last-child { page-break-after:auto; }
+
+    /* ── Typography ── */
+    .section-number { font-family:'JetBrains Mono',monospace; font-size:7.5pt; color:var(--azure); font-weight:500; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
+    h1 { font-size:22pt; font-weight:800; letter-spacing:-0.025em; line-height:1.15; margin-bottom:6px; }
+    h2 { font-size:12.5pt; font-weight:700; letter-spacing:-0.015em; margin-bottom:12px; margin-top:30px; color:var(--text); }
+    h2:first-of-type { margin-top:0; }
+    h3 { font-size:9.5pt; font-weight:600; margin-bottom:8px; margin-top:20px; }
+    .page-intro { font-size:10pt; color:var(--text-muted); max-width:580px; margin-bottom:32px; line-height:1.7; }
+    p { font-size:9pt; color:var(--text-muted); line-height:1.7; margin-bottom:8px; }
+
+    /* ── Cards ── */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 20px; }
+    .card-grid { display:grid; gap:12px; }
+    .card-grid-2 { grid-template-columns:1fr 1fr; }
+    .card-grid-3 { grid-template-columns:1fr 1fr 1fr; }
+    .card-label { font-size:7.5pt; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; }
+
+    /* ── Phase Header ── */
+    .phase-header {
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      border-radius:10px;
+      padding:20px 24px;
+      margin-bottom:20px;
+      display:flex; align-items:center; gap:16px;
+    }
+    .phase-number {
+      width:44px; height:44px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14pt; font-weight:800; color:white;
+      flex-shrink:0;
+    }
+    .phase-title { font-size:13pt; font-weight:700; color:white; }
+    .phase-subtitle { font-size:8.5pt; color:rgba(255,255,255,0.5); margin-top:2px; }
+    .phase-when { font-family:'JetBrains Mono',monospace; font-size:7.5pt; color:var(--azure); letter-spacing:0.08em; margin-top:4px; }
+
+    /* ── Step ── */
+    .step-list { display:flex; flex-direction:column; gap:10px; }
+    .step {
+      display:flex; gap:14px;
+      padding:14px 16px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; align-items:flex-start;
+    }
+    .step-num {
+      width:24px; height:24px; border-radius:50%;
+      background:var(--azure); color:white;
+      font-size:8pt; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; margin-top:1px;
+    }
+    .step-num-orange { background:var(--orange); }
+    .step-num-red { background:var(--red); }
+    .step-num-green { background:var(--green); }
+    .step-num-indigo { background:var(--indigo); }
+    .step-content {}
+    .step-title { font-size:9.5pt; font-weight:600; color:var(--text); margin-bottom:3px; }
+    .step-desc { font-size:8.5pt; color:var(--text-muted); line-height:1.6; }
+    .step-code { font-family:'JetBrains Mono',monospace; font-size:8pt; background:var(--surface-2); padding:2px 6px; border-radius:3px; color:var(--text); }
+    .step-cost { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600; color:var(--green); background:rgba(16,185,129,0.08); padding:2px 7px; border-radius:3px; margin-left:6px; }
+    .step-cost-paid { color:var(--orange); background:rgba(249,115,22,0.08); }
+    .step-cost-warn { color:var(--red); background:rgba(239,68,68,0.08); }
+
+    /* ── Warning / Info Boxes ── */
+    .box { border-left:3px solid var(--azure); background:rgba(29,161,255,0.05); padding:13px 16px; border-radius:0 8px 8px 0; margin:14px 0; }
+    .box-warn { border-left-color:var(--yellow); background:rgba(245,158,11,0.05); }
+    .box-danger { border-left-color:var(--red); background:rgba(239,68,68,0.05); }
+    .box-green { border-left-color:var(--green); background:rgba(16,185,129,0.05); }
+    .box-orange { border-left-color:var(--orange); background:rgba(249,115,22,0.05); }
+    .box-label { font-size:7.5pt; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--azure); margin-bottom:5px; }
+    .box-label-warn { color:var(--yellow); }
+    .box-label-danger { color:var(--red); }
+    .box-label-green { color:var(--green); }
+    .box-label-orange { color:var(--orange); }
+    .box p, .box li { font-size:9pt; color:var(--text-muted); line-height:1.65; }
+    .box strong { color:var(--text); }
+
+    /* ── Tables ── */
+    table { width:100%; border-collapse:collapse; font-size:9pt; margin:12px 0; }
+    thead th { background:var(--surface-2); font-size:7.5pt; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); padding:8px 11px; text-align:left; border-bottom:1px solid var(--border); }
+    tbody td { padding:8px 11px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    .td-mono { font-family:'JetBrains Mono',monospace; font-size:8.5pt; }
+    .td-green { color:var(--green); font-weight:600; }
+    .td-red { color:var(--red); font-weight:600; }
+    .td-orange { color:var(--orange); font-weight:600; }
+
+    /* ── Badges ── */
+    .badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:7pt; font-weight:600; letter-spacing:0.04em; }
+    .badge-blue { background:rgba(29,161,255,0.1); color:#0284c7; }
+    .badge-green { background:rgba(16,185,129,0.1); color:#059669; }
+    .badge-red { background:rgba(239,68,68,0.1); color:#dc2626; }
+    .badge-yellow { background:rgba(245,158,11,0.1); color:#d97706; }
+    .badge-orange { background:rgba(249,115,22,0.1); color:#ea580c; }
+    .badge-gray { background:var(--surface-2); color:var(--text-muted); }
+    .badge-indigo { background:rgba(99,102,241,0.1); color:var(--indigo); }
+
+    /* ── Checklist ── */
+    .checklist { list-style:none; padding:0; }
+    .checklist li { padding:6px 0; font-size:9pt; color:var(--text-muted); border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
+    .checklist li:last-child { border-bottom:none; }
+    .check-icon { color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
+    .check-icon-warn { color:var(--yellow); }
+    .check-icon-red { color:var(--red); }
+
+    /* ── Minor Warning Banner ── */
+    .minor-banner {
+      background:linear-gradient(135deg,#431407,#7c2d12);
+      border:1px solid #c2410c;
+      border-radius:10px; padding:18px 22px; margin-bottom:24px;
+    }
+    .minor-banner-title { font-size:10pt; font-weight:700; color:#fed7aa; margin-bottom:6px; }
+    .minor-banner p { font-size:9pt; color:#fdba74; line-height:1.65; }
+    .minor-banner strong { color:#fff7ed; }
+
+    /* ── Code block ── */
+    .code-block {
+      background:#1e293b; color:#e2e8f0;
+      font-family:'JetBrains Mono',monospace; font-size:8pt;
+      padding:14px 16px; border-radius:8px;
+      line-height:1.7; margin:10px 0;
+      white-space:pre-wrap;
+    }
+    .code-comment { color:#475569; }
+    .code-key { color:#7dd3fc; }
+    .code-val { color:#86efac; }
+
+    /* ── Print ── */
+    @media print {
+      body { margin:0; max-width:100%; }
+      .cover { min-height:297mm; }
+      .page { min-height:297mm; }
+      @page { size:A4; margin:0; }
+    }
+
+    hr { border:none; border-top:1px solid var(--border); margin:24px 0; }
+    ul, ol { padding-left:18px; }
+    li { font-size:9pt; color:var(--text-muted); line-height:1.7; margin-bottom:2px; }
+    .page-number { position:absolute; bottom:24px; right:56px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; color:var(--text-light); }
+    .divider { border:none; border-top:1px solid var(--border); margin:24px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ COVER ═══════════════════════ -->
+<div class="cover">
+  <div>
+    <div class="cover-tag">Komplett-Referenz &middot; App Launch &amp; Monetarisierung</div>
+    <h1 class="cover-title">App Launch<br><span>Setup Guide</span></h1>
+    <p class="cover-subtitle">Alles was du tun, können und wissen musst um eine App in Deutschland zu launchen und damit Geld zu verdienen — inklusive der Minderjährigen-Fallen die niemand erklärt.</p>
+    <div class="cover-divider"></div>
+    <div class="cover-chapters">
+      <div class="cover-chapter"><strong>01 — Minderjährige in DE</strong>Was du als 17-Jähriger nicht einfach so darfst</div>
+      <div class="cover-chapter"><strong>02 — Gewerbeanmeldung</strong>Wie du legal eine App verkaufen kannst</div>
+      <div class="cover-chapter"><strong>03 — DSGVO &amp; Recht</strong>Impressum, Datenschutz, AGB, Cookies</div>
+      <div class="cover-chapter"><strong>04 — Payments</strong>Stripe, Steuer, Kleinunternehmer</div>
+      <div class="cover-chapter"><strong>05 — Distribution</strong>PWA, App Store, Google Play</div>
+      <div class="cover-chapter"><strong>06 — Infrastruktur</strong>Email, Analytics, Error-Tracking</div>
+      <div class="cover-chapter"><strong>07 — Steuern &amp; Buchhaltung</strong>Was du aufschreiben und zahlen musst</div>
+      <div class="cover-chapter"><strong>08 — Checkliste</strong>Was vor Launch, was danach</div>
+    </div>
+  </div>
+  <div class="cover-footer">
+    <div>Nepomuk Polonius &middot; Hamburg &middot; 07. Juni 2026<br>Erstellt mit Claude Code (Sonnet 4.6)</div>
+    <div class="cover-footer-right">Vertraulich — nicht zur öffentlichen Verbreitung<br>Kein Ersatz für Rechts- oder Steuerberatung</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 1: MINDERJÄHRIGE ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">01 / Das Minderjährigen-Problem</div>
+  <h1>Was du als 17-Jähriger nicht einfach so darfst</h1>
+  <p class="page-intro">Der meistignorierte Teil in allen Guides. In Deutschland bist du bis 18 geschäftsunfähig für verpflichtende Verträge. Das betrifft konkret: Gewerbeanmeldung, Stripe, App Stores, Domains.</p>
+
+  <div class="minor-banner">
+    <div class="minor-banner-title">⚠️  Beschränkte Geschäftsfähigkeit (§ 106 BGB)</div>
+    <p>Du kannst als Minderjähriger keine rechtswirksamen Verträge abschließen, die <strong>Verpflichtungen für dich schaffen</strong> — also kein Stripe-Account, kein Apple Developer Account, kein Gewerbeschein — ohne Zustimmung deiner Eltern. Verträge die nur Vorteile bringen (z.B. kostenlose App runterladen) gehen. Alles andere braucht elterliche Zustimmung oder wird von deinen Eltern im eigenen Namen abgeschlossen.</p>
+  </div>
+
+  <h2>Was das konkret bedeutet — und wie du es löst</h2>
+  <table>
+    <thead>
+      <tr><th>Was du brauchst</th><th>Problem</th><th>Lösung</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Gewerbeanmeldung</strong></td>
+        <td>Minderjährige können kein Gewerbe eigenständig anmelden</td>
+        <td>Elternteil meldet an (oder: Eltern haften mit für das Gewerbe des Minderjährigen — Amt entscheidet)</td>
+      </tr>
+      <tr>
+        <td><strong>Stripe</strong></td>
+        <td>Stripe erfordert 18+. Strikte Kontrolle bei Payout-Setup.</td>
+        <td>Ein Elternteil eröffnet den Stripe-Account. Oder du wartest auf deinen 18. Geburtstag.</td>
+      </tr>
+      <tr>
+        <td><strong>Apple Developer</strong></td>
+        <td>Apple Developer Account: 18+ Pflicht</td>
+        <td>Elternteil meldet an, oder Organization-Account (braucht Rechtsform)</td>
+      </tr>
+      <tr>
+        <td><strong>Google Play</strong></td>
+        <td>Google Play Developer: 18+</td>
+        <td>Elternteil meldet an</td>
+      </tr>
+      <tr>
+        <td><strong>Geschäftskonto</strong></td>
+        <td>Kein Geschäftskonto ohne volljährige Person</td>
+        <td>Elternteil eröffnet, du bist bevollmächtigt. Oder: Privatgiro nutzen bis 18 (bei kleinen Beträgen ok)</td>
+      </tr>
+      <tr>
+        <td><strong>Domain</strong></td>
+        <td>Technisch möglich, aber Verträge mit Hostern bedürfen Elternzustimmung</td>
+        <td>In deinem Namen mit elterlicher Zustimmung, oder direkt im Elternnamen</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box box-green">
+    <div class="box-label box-label-green">Dein Plan für Project X</div>
+    <p>Du wirst im <strong>September 2026 volljährig</strong> (oder schon früher — dein Geburtsdatum kenne ich nicht). Für die Beta-Phase (August 2026) ist es komplett kostenlos, du brauchst noch keinen Stripe-Account. <strong>Timing-Empfehlung:</strong> Eröffne Stripe, Apple Developer und Gewerbeschein nach deinem 18. Geburtstag eigenständig. Bis dahin: alles über Eltern oder Free-Tier-Tools ohne Vertragsabschluss.</p>
+  </div>
+
+  <div class="box box-warn">
+    <div class="box-label box-label-warn">Elterngespräch — diese Punkte klären</div>
+    <ul>
+      <li>Wer meldet das Gewerbe an? (Empfehlung: du, mit Eltern-Einwilligung)</li>
+      <li>Wessen Konto für Stripe-Auszahlungen? (Am sichersten: Elternteil)</li>
+      <li>Haftung: Wenn du Schulden machst, haften Eltern mit</li>
+      <li>Steuern: Einnahmen werden in deiner Steuererklärung (oder Eltern) sichtbar</li>
+    </ul>
+  </div>
+
+  <div class="page-number">01</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 2: GEWERBE ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">02 / Gewerbeanmeldung</div>
+  <h1>Legal Geld verdienen</h1>
+  <p class="page-intro">Sobald du planst, mit der App Geld zu verdienen (auch 1€), brauchst du eine Gewerbeanmeldung. Das ist einfacher als du denkst — und kostet einmalig ~26€ in Hamburg.</p>
+
+  <h2>Brauche ich überhaupt ein Gewerbe?</h2>
+  <div class="box box-warn">
+    <div class="box-label box-label-warn">Ja, wenn du Geld verdienen willst</div>
+    <p>Sobald du regelmäßig Einnahmen erzielst (auch kleine Beträge), bist du nach deutschem Recht gewerbetreibend und musst ein Gewerbe anmelden. <strong>Keine Freigrenze für die Anmeldungspflicht.</strong> Es gibt eine Freigrenze bei Steuern (Kleinunternehmerregelung, §19 UStG, 22.000€/Jahr) — aber nicht für die Gewerbeanmeldung selbst.</p>
+  </div>
+
+  <h2>Einzelunternehmen vs. GmbH</h2>
+  <table>
+    <thead>
+      <tr><th>Form</th><th>Vorteile</th><th>Nachteile</th><th>Für dich?</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Einzelunternehmen</strong> (e.K. oder einfach "Nepomuk Polonius")</td>
+        <td>Sofort, kostet ~26€, kein Kapital nötig, einfachste Buchführung</td>
+        <td>Unbeschränkte Haftung mit Privatvermögen</td>
+        <td><span class="badge badge-green">Empfehlung für jetzt</span></td>
+      </tr>
+      <tr>
+        <td><strong>GmbH</strong></td>
+        <td>Haftungsbeschränkung, professioneller Eindruck</td>
+        <td>25.000€ Stammkapital, Notar, Handelsregistereintrag (~500–1.000€), laufende Kosten</td>
+        <td><span class="badge badge-gray">Erst wenn Revenue kommt</span></td>
+      </tr>
+      <tr>
+        <td><strong>UG (haftungsbeschränkt)</strong></td>
+        <td>Wie Mini-GmbH, ab 1€ Stammkapital</td>
+        <td>Notar, Handelsregister (~300–600€), Rücklagenbildung Pflicht</td>
+        <td><span class="badge badge-gray">Wenn Haftung Thema wird</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Schritt-für-Schritt: Gewerbeanmeldung Hamburg</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Online oder beim Bezirksamt anmelden <span class="step-cost">~26€</span></div>
+        <div class="step-desc">Hamburg: Gewerbeamt beim zuständigen Bezirksamt (Hamburg-Nord, Altona etc. je nach Wohnsitz). Online möglich über hamburg.de. Ausweis + Elternteil-Einwilligung mitbringen. <strong>Tätigkeit angeben:</strong> "Entwicklung und Betrieb von Software-as-a-Service Anwendungen, digitale Dienstleistungen"</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Steuernummer beim Finanzamt beantragen <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">Das Finanzamt meldet sich automatisch nach der Gewerbeanmeldung. Du bekommst einen Fragebogen zur steuerlichen Erfassung (ELSTER). Dort: Kleinunternehmerregelung wählen (§19 UStG) wenn geplanter Umsatz &lt;22.000€/Jahr. Dann keine USt-Abführung nötig.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">IHK-Mitgliedschaft <span class="step-cost">kostenlos im ersten Jahr</span></div>
+        <div class="step-desc">Gewerbetreibende werden automatisch IHK-Mitglied (Hamburg). Unter 5.200€ Gewerbeertrag/Jahr: beitragsfrei. Kein Handlungsbedarf.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num step-num-green">4</div>
+      <div class="step-content">
+        <div class="step-title">Geschäftskonto eröffnen <span class="step-cost">0€ mit Penta/Kontist Free</span></div>
+        <div class="step-desc">Nicht zwingend vorgeschrieben, aber empfohlen. Kostenloses Geschäftskonto bei <strong>Penta</strong> oder <strong>Kontist</strong> (beide 0€ Grundgebühr). Alternativ: Privatgiro mit eigenem Unterordner für Geschäftseinnahmen bis 18. <strong>Wichtig:</strong> Geschäfts- und Privatgeld trennen, macht Steuern einfacher.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="box-label">Wann anmelden?</div>
+    <p><strong>Empfehlung: nach dem 18. Geburtstag oder wenn erste Einnahmen kommen — je nachdem was früher ist.</strong> In der Beta-Phase (August 2026, kostenlos) brauchst du noch keinen Gewerbeschein. Sobald der erste Euro über Stripe reinkommt → Gewerbe anmelden. Rückwirkend ist nicht erlaubt, also kurz vor oder direkt beim Start des Paid-Plans.</p>
+  </div>
+
+  <div class="page-number">02</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 3: RECHT ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">03 / DSGVO, Impressum &amp; Recht</div>
+  <h1>Was rechtlich Pflicht ist</h1>
+  <p class="page-intro">Das ist kein Nice-to-have. Ohne Impressum und Datenschutzerklärung kannst du abgemahnt werden — ja, auch als Schüler. Eine Abmahnung kostet schnell 500–2.000€.</p>
+
+  <h2>Impressum — Pflicht ab erstem Online-Auftritt</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num step-num-red">!</div>
+      <div class="step-content">
+        <div class="step-title">Was ins Impressum muss (§5 TMG)</div>
+        <div class="step-desc">
+          Name, Anschrift (deine Heimatadresse, oder ein Postfach — kein PO Box möglich!), E-Mail-Adresse, ggf. Steuernummer. Bei Minderjährigen: gesetzlicher Vertreter (Elternteil) mit angeben.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Privatadresse nicht veröffentlichen wollen?</div>
+        <div class="step-desc">Option 1: <strong>Postfach mieten</strong> (~7€/Monat bei Deutsche Post) — in Hamburg-Geschäftsstelle. Option 2: <strong>Virtuelles Büro</strong> / Briefkastenadresse (~10–30€/Monat). Option 3: Elternhaus-Adresse nutzen wenn einverstanden.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Datenschutzerklärung — DSGVO</h2>
+  <div class="box box-danger" style="margin-bottom:16px;">
+    <div class="box-label box-label-danger">Kritisch: Deine Zielgruppe ist u.U. unter 16</div>
+    <p>Das deutsche Datenschutzrecht folgt Art. 8 DSGVO: Für Kinder unter <strong>16 Jahren</strong> (in Deutschland) braucht es die Zustimmung der Eltern für die Datenverarbeitung. Da deine Zielgruppe 15–18 Jahre alt ist, musst du entweder: (a) Mindestalter 16 festlegen, oder (b) einen Eltern-Consent-Flow einbauen. Option (a) ist der pragmatische Weg — "Mindestalter 16" in die AGB und das Signup-Formular.</p>
+  </div>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Datenschutzerklärung generieren <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc"><strong>datenschutz-generator.de</strong> (von Dr. Thomas Schwenke) — kostenlos, rechtssicher, für App + Website. Alle Dienste eintragen die du nutzt: Supabase (Server in Frankfurt = EU ✓), Vercel (Server USA — SCCs erforderlich!), Stripe, Google Fonts wenn du die von Google lädst (lokal hosten!), Resend. Monatlich auf Aktualität prüfen.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Google Fonts lokal hosten — JETZT <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">Google Fonts direkt von Google laden = DSGVO-Problem (IP-Übertragung an US-Server). Lösung: <span class="step-code">google-webfonts-helper.herokuapp.com</span> → Fonts runterladen → in <span class="step-code">/public/fonts/</span> legen → CSS self-hosted. Project X nutzt Bricolage Grotesque, Onest, JetBrains Mono — alle lokal hosten.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Vercel &amp; DSGVO — Data Processing Agreement</div>
+        <div class="step-desc">Vercel hostet Server in den USA. Du brauchst einen Data Processing Agreement (DPA) mit Vercel → vercel.com/legal/dpa. Kostenlos, online abschließbar. Vercel bietet auch EU-Region-Deployments (Frankfurt) — für Login-Daten aktivieren wenn möglich.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>AGB (Allgemeine Geschäftsbedingungen)</h2>
+  <div class="card-grid card-grid-2" style="margin-top:12px;">
+    <div class="card">
+      <div class="card-label">Pflicht-Inhalte AGB</div>
+      <ul style="margin-top:8px;">
+        <li>Vertragsgegenstand (was du anbietest)</li>
+        <li>Preise + Zahlungsmodalitäten</li>
+        <li>Laufzeit + Kündigung (Subscription)</li>
+        <li>Mindestalter (16 Jahre empfohlen)</li>
+        <li>Haftungsausschluss</li>
+        <li>Gerichtsstand (Hamburg)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-label">Generator-Empfehlung</div>
+      <p style="font-size:9pt; color:var(--text-muted); margin-top:6px; line-height:1.65;"><strong>it-recht-kanzlei.de</strong> — kostenlos-Basis oder ~10€/Monat für Full-Suite inkl. Abmahn-Schutz. Für die Beta-Phase: kostenloser Generator reicht. Vor Paid-Launch: aktualisierten kostenpflichtigen Service nutzen.</p>
+    </div>
+  </div>
+
+  <h2>Cookie-Consent</h2>
+  <p>Wenn du nur funktionale Cookies nutzt (Session, Auth) — kein Consent-Banner nötig. Sobald Analytics, Tracking oder Marketing-Cookies dazukommen: <strong>Consent Management Platform</strong> einbauen. Empfehlung: <strong>Cookie Consent by Osano</strong> (kostenlos bis 5k Sessions/Monat).</p>
+
+  <div class="page-number">03</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 4: PAYMENTS ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">04 / Payments &amp; Monetarisierung</div>
+  <h1>Geld einnehmen</h1>
+  <p class="page-intro">Stripe ist der Standard für SaaS-Subscriptions. Aber: Stripe hat eine 18+-Regel. Hier ist der vollständige Setup — mit Alternativen für die Zeit vor deinem 18. Geburtstag.</div>
+
+  <h2>Stripe — der Standard</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num step-num-red">!</div>
+      <div class="step-content">
+        <div class="step-title">Stripe: 18+ Pflicht <span class="step-cost-warn step-cost">Eltern nötig</span></div>
+        <div class="step-desc">Stripe verlangt volljährige Kontoinhaber. Lösung bis 18: Ein Elternteil eröffnet den Account. Die Auszahlung geht auf das Eltern-Konto (oder ein gemeinsames Konto). Stripe prüft Identität via ID-Upload. Nach deinem 18. Geburtstag kannst du den Account auf deinen Namen übertragen (Stripe Support kontaktieren).</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Stripe Setup — Subscription-Modell</div>
+        <div class="step-desc">
+          <strong>Produkte anlegen:</strong> "Project X Premium" — 3,99€/Monat oder 34,99€/Jahr (Jahresplan ~27% Rabatt als Incentive).
+          <br>
+          <strong>Integration:</strong> <span class="step-code">@stripe/stripe-js</span> + <span class="step-code">stripe</span> (Node). Stripe Checkout hosted (einfachster Weg) oder Custom Payment Element.
+          <br>
+          <strong>Webhooks:</strong> <span class="step-code">customer.subscription.created</span>, <span class="step-code">.updated</span>, <span class="step-code">.deleted</span> → in Supabase <span class="step-code">nutzer_profil.is_premium</span> schreiben.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Stripe + Deutsche Steuer</div>
+        <div class="step-desc">Als Kleinunternehmer (§19 UStG, &lt;22.000€/Jahr) weist du <strong>keine Umsatzsteuer</strong> auf Rechnungen aus. In Stripe: Tax-Einstellungen auf "exempt" oder "keine automatische Steuerberechnung" setzen. Jede Stripe-Zahlung ist deine Netto-Einnahme.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Preismodell — konkrete Empfehlung für Project X</h2>
+  <table>
+    <thead>
+      <tr><th>Tier</th><th>Preis</th><th>Features</th><th>Ziel</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Free</strong></td>
+        <td class="td-mono">0€</td>
+        <td>Notenrechner, 3 Fächer, Klausur-Übersicht, Dashboard</td>
+        <td>Acquisition, Gewohnheit aufbauen</td>
+      </tr>
+      <tr>
+        <td><strong>Premium</strong></td>
+        <td class="td-mono">3,99€/Monat<br>34,99€/Jahr</td>
+        <td>Alle Fächer, KI-Briefing täglich, What-If-Szenarien, Klausur-Reminder, Daten-Export</td>
+        <td>Revenue, LTV</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box">
+    <div class="box-label">Psychologie: Warum 3,99€ nicht 4,99€</div>
+    <p>Preis-Psychologie: Schüler hören "unter 4€" als "fast nichts". 4,99€ klingt nach "fast 5€". 3,99€ ist der Sweet Spot — günstig genug um ohne elterliche Genehmigung vom Taschengeld zu zahlen, hoch genug um nicht wertlos zu wirken. Jahresplan gibt 2 Monate gratis = starkes Angebot.</p>
+  </div>
+
+  <h2>Alternative Zahlungsanbieter (für vor dem 18. Geburtstag)</h2>
+  <table>
+    <thead>
+      <tr><th>Anbieter</th><th>Altersgrenze</th><th>Gebühren</th><th>Nachteil</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Paddle</strong></td>
+        <td>18+</td>
+        <td>5% + 0,50€</td>
+        <td>Teurer als Stripe, auch 18+</td>
+      </tr>
+      <tr>
+        <td><strong>Lemon Squeezy</strong></td>
+        <td>18+</td>
+        <td>5% + 0,50€</td>
+        <td>Handelt Steuern ab, aber teurer</td>
+      </tr>
+      <tr>
+        <td><strong>PayPal Checkout</strong></td>
+        <td>Eltern können Merchant sein</td>
+        <td>2,49% + 0,35€</td>
+        <td>Weniger professionell, kein echtes Subscription-Mgmt</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Empfehlung:</strong> Bis 18 → Stripe via Elternteil. Nach 18 → eigener Stripe-Account. Kein Anbieter-Wechsel nötig.</p>
+
+  <div class="page-number">04</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 5: STEUERN ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">05 / Steuern &amp; Buchhaltung</div>
+  <h1>Was du dem Finanzamt schuldesd</h1>
+  <p class="page-intro">Einfacher als du denkst — besonders mit der Kleinunternehmerregelung. Aber du musst es von Tag 1 richtig machen, sonst wird's beim ersten Steuerberater teuer.</p>
+
+  <h2>Kleinunternehmerregelung §19 UStG</h2>
+  <div class="box box-green">
+    <div class="box-label box-label-green">Die gute Nachricht</div>
+    <p>Wenn du im ersten Jahr weniger als <strong>22.000€ Umsatz</strong> machst (und das wirst du in der Beta-Phase sicher), brauchst du <strong>keine Umsatzsteuer</strong> auf deinen Rechnungen ausweisen und keine Umsatzsteuer-Voranmeldung machen. Das spart massiv Verwaltungsaufwand. Im zweiten Jahr gilt die Grenze 50.000€. → <strong>Kleinunternehmer-Status beim Finanzamt-Fragebogen ankreuzen.</strong></p>
+  </div>
+
+  <h2>Welche Steuern du zahlst</h2>
+  <table>
+    <thead>
+      <tr><th>Steuer</th><th>Wann</th><th>Wie viel</th><th>Wann relevant</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Einkommensteuer</strong></td>
+        <td>Jährlich (Steuererklärung)</td>
+        <td>0€ bis 11.604€ Grundfreibetrag. Danach 14–42%</td>
+        <td>Sobald Gewinn > Grundfreibetrag. Für Beta-Phase: 0€</td>
+      </tr>
+      <tr>
+        <td><strong>Umsatzsteuer</strong></td>
+        <td>Nur wenn kein Kleinunternehmer</td>
+        <td>19% (digital services in DE)</td>
+        <td>Erst über 22.000€ Jahresumsatz</td>
+      </tr>
+      <tr>
+        <td><strong>Gewerbesteuer</strong></td>
+        <td>Jährlich</td>
+        <td>Erst ab 24.500€ Gewerbegewinn (Freibetrag)</td>
+        <td>Weit weg — in Beta-Phase kein Thema</td>
+      </tr>
+      <tr>
+        <td><strong>Solidaritätszuschlag</strong></td>
+        <td>Wenn Einkommensteuer fällig</td>
+        <td>Entfällt für die meisten seit 2021</td>
+        <td>Kein Thema</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Buchhaltung — was du von Tag 1 aufschreiben musst</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Einnahmen-Überschuss-Rechnung (EÜR) <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">Als Einzelunternehmer machst du keine doppelte Buchführung, sondern eine einfache EÜR: <strong>Einnahmen minus Ausgaben = Gewinn.</strong> Jede Einnahme (Stripe-Zahlung) und jede Ausgabe (Vercel, Anthropic API, Domain, etc.) notieren — Datum, Betrag, Beschreibung, Beleg. Tool: Excel-Tabelle reicht am Anfang.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Belege aufbewahren — 10 Jahre</div>
+        <div class="step-desc">Alle Quittungen, Rechnungen, Stripe-Auszahlungen — digital oder physisch. Einfachste Lösung: <strong>Ordner in Google Drive oder Apple Notes</strong> mit jedem Monat als Unterordner. Stripe-Dashboard exportiert Berichte automatisch — monatlich sichern.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num step-num-green">3</div>
+      <div class="step-content">
+        <div class="step-title">Tool-Empfehlung: Sorted <span class="step-cost">kostenlos Basis</span></div>
+        <div class="step-desc"><strong>sorted.eu</strong> oder <strong>Kontist Accounting</strong> (wenn Kontist-Konto) — auf deutsche Kleinunternehmer ausgerichtet, automatische EÜR-Erstellung, Steuerberater-Export. Alternativ: <strong>Lexoffice Lite</strong> kostenlos bis gewisse Transaktionen.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Wann brauchst du einen Steuerberater?</div>
+        <div class="step-desc">Wenn du <strong>über 5.000€/Jahr Einnahmen</strong> hast oder <strong>USt-pflichtig</strong> wirst. Steuerberater in Hamburg: ~70–150€/Stunde, Jahresabschluss ~500–1.500€. Bis dahin: ELSTER kostenlos für die Steuererklärung. Oder: Wundertax.de (online Steuererklärung, ~35€).</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Absetzbare Ausgaben (Betriebsausgaben)</h2>
+  <p>Diese Kosten mindern deinen Gewinn und damit die Steuer:</p>
+  <div class="card-grid card-grid-2" style="margin-top:10px;">
+    <div class="card">
+      <div class="card-label">Direkte Tech-Kosten</div>
+      <ul style="margin-top:8px;">
+        <li>Vercel Pro (wenn nötig)</li>
+        <li>Supabase Paid</li>
+        <li>Anthropic API</li>
+        <li>Resend, Higgsfield</li>
+        <li>Domain-Kosten</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-label">Weitere Betriebsausgaben</div>
+      <ul style="margin-top:8px;">
+        <li>Anteil Laptop (wenn für Arbeit genutzt)</li>
+        <li>Anteil Internet-Abo (~20% abzugsfähig)</li>
+        <li>Büromaterial</li>
+        <li>Steuerberater-Kosten selbst</li>
+        <li>Fachliteratur, Online-Kurse</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-number">05</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 6: DISTRIBUTION ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">06 / Distribution &amp; App Stores</div>
+  <h1>Wie User an die App kommen</h1>
+  <p class="page-intro">PWA first — das ist die richtige Entscheidung. Hier ist was das bedeutet, wann du in die Stores gehst und was das kostet.</p>
+
+  <h2>PWA (Progressive Web App) — dein Status quo</h2>
+  <div class="box box-green">
+    <div class="box-label box-label-green">PWA ist die richtige Wahl für jetzt</div>
+    <p>Deine App ist bereits als Next.js App gebaut. Mit einem <span class="step-code">manifest.json</span> und einem Service Worker wird sie zur PWA — installierbar auf iOS und Android vom Browser aus. <strong>Kein App-Store nötig, keine 99€/Jahr, keine Review-Prozesse.</strong> User gehen auf die URL, tippen "Zum Home-Bildschirm hinzufügen" — fertig. Fühlt sich wie eine native App an.</p>
+  </div>
+
+  <h2>PWA Setup — was du noch brauchst</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">manifest.json erstellen <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">In <span class="step-code">/public/manifest.json</span>: App-Name, Icons (192×192, 512×512 PNG), theme_color (#1da1ff), background_color (#0f172a), display: "standalone". In <span class="step-code">layout.tsx</span> verlinken.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Icons generieren <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc"><strong>realfavicongenerator.net</strong> — gibt dir alle Icon-Größen für iOS, Android, Desktop. Einmal rein, alle Formate raus. In <span class="step-code">/public/icons/</span> ablegen.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">next-pwa Package <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">Package <span class="step-code">next-pwa</span> oder <span class="step-code">@ducanh2912/next-pwa</span> (aktiver Fork). Gibt Offline-Support und Service Worker. Config in <span class="step-code">next.config.ts</span> — 3 Zeilen.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">iOS "Add to Home" Prompt einbauen</div>
+        <div class="step-desc">iOS zeigt keinen automatischen Install-Banner wie Android. Du musst selbst einen Banner bauen: "Tippe auf Teilen → Zum Home-Bildschirm" mit einer kleinen Erklärung. Zeige ihn nach 2. Login oder wenn User 5+ Minuten in der App.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>App Store Roadmap</h2>
+  <table>
+    <thead>
+      <tr><th>Store</th><th>Kosten</th><th>Altersgrenze</th><th>Wann</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>PWA (jetzt)</strong></td>
+        <td class="td-green">0€</td>
+        <td>Keine</td>
+        <td>Jetzt — sofort umsetzen</td>
+      </tr>
+      <tr>
+        <td><strong>Google Play Store</strong></td>
+        <td class="td-orange">25€ einmalig</td>
+        <td class="td-red">18+</td>
+        <td>Nach 18. Geburtstag, wenn PWA-User es fordern. Capacitor macht aus der Next.js App eine native Android-App.</td>
+      </tr>
+      <tr>
+        <td><strong>Apple App Store</strong></td>
+        <td class="td-orange">99€/Jahr</td>
+        <td class="td-red">18+</td>
+        <td>Nach 18. Geburtstag UND nach ersten stabilen Einnahmen (ROI muss stimmen). Review-Prozess: 1–3 Tage.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box box-warn">
+    <div class="box-label box-label-warn">Apple In-App-Purchases</div>
+    <p>Wenn du eine iOS-App veröffentlichst und darin Premium-Features verkaufst, <strong>muss</strong> das über Apple In-App Purchase laufen — Apple nimmt 30% (oder 15% für Kleinstunternehmer). Stripe direkt ist gegen Apples Richtlinien und führt zur App-Sperre. Lösung: "Externe" Subscriptions dürfen nach einem US-Gerichtsurteil verlinkt werden, aber das ist kompliziert. → PWA umgeht das komplett (Browser ≠ App Store).</p>
+  </div>
+
+  <div class="page-number">06</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 7: INFRASTRUKTUR ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">07 / Tech-Infrastruktur für Launch</div>
+  <h1>Der Tech-Stack für den Launch</h1>
+  <p class="page-intro">Was du zusätzlich zum aktuellen Stack brauchst: Transactional Email, Error-Tracking, Analytics, Backups. Alles im Free Tier lösbar.</p>
+
+  <h2>Transactional Email — Resend</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num step-num-green">✓</div>
+      <div class="step-content">
+        <div class="step-title">Resend — schon im Stack <span class="step-cost">Free: 3.000 Mails/Monat</span></div>
+        <div class="step-desc">Resend für: Signup-Bestätigung, Passwort-Reset, Klausur-Erinnerungen, wöchentliche Noten-Summary. <strong>Custom Domain für E-Mails:</strong> Eine eigene Domain kaufen (z.B. projekt-x.de ~12€/Jahr bei IONOS) und DNS für Resend konfigurieren. Mails von <span class="step-code">hallo@projekt-x.de</span> statt von resend.dev.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">E-Mail-Templates pflegen</div>
+        <div class="step-desc">Mindest-Set: (1) Welcome-Mail nach Signup, (2) Passwort-Reset, (3) Klausur-Reminder. Design: React Email (<span class="step-code">react-email</span>) — HTML-Templates in React geschrieben. Kostenlos, perfekte Vercel-Integration.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Error-Tracking — Sentry</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Sentry einrichten <span class="step-cost">Free: 5k Errors/Monat</span></div>
+        <div class="step-desc">Sentry fängt JavaScript-Fehler in Production ab und schickt dir eine E-Mail. Du weißt sofort wenn etwas kaputtgeht — ohne dass ein User es meldet. <span class="step-code">npm install @sentry/nextjs</span> → Setup-Wizard → 10 Minuten. Unverzichtbar ab Beta-Launch.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Analytics</h2>
+  <table>
+    <thead>
+      <tr><th>Tool</th><th>Kosten</th><th>DSGVO</th><th>Was du siehst</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Vercel Analytics</strong></td>
+        <td class="td-green">Free (Hobby Plan)</td>
+        <td>Konform</td>
+        <td>Pageviews, unique visitors, top pages. Kein Cookie-Banner nötig.</td>
+      </tr>
+      <tr>
+        <td><strong>Plausible</strong></td>
+        <td class="td-orange">~9€/Monat</td>
+        <td>Konform, EU-Server</td>
+        <td>Detaillierteres Dashboard, Goals, Funnels, UTM-Parameter</td>
+      </tr>
+      <tr>
+        <td><strong>PostHog</strong></td>
+        <td class="td-green">Free bis 1M Events</td>
+        <td>Self-hostable</td>
+        <td>Feature-Flags, Session-Recordings, Funnels, Cohorts</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Empfehlung:</strong> Vercel Analytics jetzt (kostenlos, reicht für Beta). PostHog wenn du Feature-Nutzung und Conversion-Funnels verstehen willst — lohnt sich ab 50+ aktiven Usern.</p>
+
+  <h2>Backups</h2>
+  <div class="box">
+    <div class="box-label">Supabase Backups</div>
+    <p>Supabase Free Tier: <strong>tägliche Backups, 7 Tage Aufbewahrung</strong>. Genug für Beta. Paid Plan: Point-in-time Recovery. Für kritische User-Daten (Noten, Klausuren) zusätzlich: wöchentlicher manueller Export via <span class="step-code">pg_dump</span> in einen S3 Bucket oder Google Drive. Schreibe dir einen Cron-Job dafür (Vercel Cron, kostenlos bis 2 Jobs).</p>
+  </div>
+
+  <h2>Domain</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Domain kaufen <span class="step-cost-paid step-cost">~12€/Jahr</span></div>
+        <div class="step-desc">Empfehlung: <strong>IONOS</strong> oder <strong>Namecheap</strong>. .de Domain ~5€/Jahr, .app Domain ~15€/Jahr. Finale Domain erst kaufen wenn Produktname final ist. Bis dahin: Vercel-Preview-URL reicht für Beta. Empfohlenes Format: <span class="step-code">[produktname].de</span> + <span class="step-code">[produktname].app</span> als Redirect.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Custom Domain in Vercel verbinden <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">Vercel Dashboard → Domains → Add → DNS-Record beim Registrar setzen (A-Record + CNAME). 5 Minuten. HTTPS automatisch via Vercel (Let's Encrypt).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-number">07</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 8: KOSTEN-ÜBERSICHT ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">08 / Kosten-Übersicht</div>
+  <h1>Was der Launch kostet</h1>
+  <p class="page-intro">Ehrliche Aufstellung — einmalig und laufend. Alles was du brauchst um professionell zu launchen und zu skalieren.</p>
+
+  <h2>Einmalige Kosten (vor Launch)</h2>
+  <table>
+    <thead>
+      <tr><th>Was</th><th>Kosten</th><th>Wann</th><th>Notiz</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Gewerbeanmeldung Hamburg</strong></td>
+        <td class="td-mono">~26€</td>
+        <td>Vor erster Einnahme</td>
+        <td>Einmalig. Beim Gewerbeamt oder online.</td>
+      </tr>
+      <tr>
+        <td><strong>Domain (.de)</strong></td>
+        <td class="td-mono">~5–15€</td>
+        <td>Wenn Produktname final</td>
+        <td>Jährliche Verlängerung ~5–15€</td>
+      </tr>
+      <tr>
+        <td><strong>Google Play Store</strong></td>
+        <td class="td-mono">25€ einmalig</td>
+        <td>Nach 18, wenn App nötig</td>
+        <td>Einmalig, keine Jahresgebühr</td>
+      </tr>
+      <tr>
+        <td><strong>Apple Developer</strong></td>
+        <td class="td-mono">99€/Jahr</td>
+        <td>Nach 18, wenn iOS-App</td>
+        <td>Jährlich. Nur wenn echter Bedarf.</td>
+      </tr>
+      <tr>
+        <td><strong>AGB / Datenschutz (Premium)</strong></td>
+        <td class="td-mono">~100€ einmalig</td>
+        <td>Vor Paid-Launch</td>
+        <td>it-recht-kanzlei.de Starter-Paket empfohlen</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Laufende Kosten pro Monat — nach Wachstumsstufe</h2>
+  <table>
+    <thead>
+      <tr><th>Service</th><th>Beta (0 User)</th><th>50 User</th><th>500 User</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Vercel</strong></td>
+        <td class="td-green">0€</td>
+        <td class="td-green">0€</td>
+        <td class="td-orange">~20€</td>
+      </tr>
+      <tr>
+        <td><strong>Supabase</strong></td>
+        <td class="td-green">0€</td>
+        <td class="td-green">0€</td>
+        <td class="td-orange">~25€</td>
+      </tr>
+      <tr>
+        <td><strong>Anthropic API (Claude)</strong></td>
+        <td class="td-orange">~5€</td>
+        <td class="td-orange">~15€</td>
+        <td class="td-orange">~80€</td>
+      </tr>
+      <tr>
+        <td><strong>Resend</strong></td>
+        <td class="td-green">0€</td>
+        <td class="td-green">0€</td>
+        <td class="td-green">0€</td>
+      </tr>
+      <tr>
+        <td><strong>Sentry</strong></td>
+        <td class="td-green">0€</td>
+        <td class="td-green">0€</td>
+        <td class="td-green">0€</td>
+      </tr>
+      <tr>
+        <td><strong>Domain</strong></td>
+        <td class="td-orange">~1€</td>
+        <td class="td-orange">~1€</td>
+        <td class="td-orange">~1€</td>
+      </tr>
+      <tr style="background:var(--surface); font-weight:700;">
+        <td><strong>Gesamt</strong></td>
+        <td class="td-mono">~6€</td>
+        <td class="td-mono">~16€</td>
+        <td class="td-mono">~126€</td>
+      </tr>
+      <tr style="background:rgba(16,185,129,0.04);">
+        <td><strong>Revenue (3,99€/User, 10% Conversion)</strong></td>
+        <td class="td-green">0€</td>
+        <td class="td-green">~20€</td>
+        <td class="td-green">~200€</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box box-green">
+    <div class="box-label box-label-green">Fazit: Unit Economics</div>
+    <p>Ab ~100 zahlenden Usern ist das Produkt profitabel. Das sind 10% von 1.000 aktiven Nutzern oder 5% von 2.000. Sehr erreichbar — und dann wächst der Gewinn linear mit jedem neuen zahlenden User.</p>
+  </div>
+
+  <div class="page-number">08</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 9: CUSTOMER SUPPORT ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">09 / Customer Support &amp; Feedback</div>
+  <h1>User glücklich halten</h1>
+  <p class="page-intro">In der Beta-Phase ist Support dein wichtigstes Marketing-Tool. Jeder gelöste Bug, jedes beantwortete Feedback wird zu einer Empfehlung.</p>
+
+  <h2>Support-Stack (kostenlos)</h2>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num step-num-green">1</div>
+      <div class="step-content">
+        <div class="step-title">In-App Feedback-Button <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc">Kleiner "Feedback"-Button im Footer oder als Floating Button. Öffnet ein Tally-Formular (kostenlos). Felder: Was hat nicht funktioniert? Was fehlt dir? Wie gut ist die App auf einer Skala von 1–10? → Antworten per E-Mail an dich.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Beta-WhatsApp-Gruppe</div>
+        <div class="step-desc">Für die ersten 20 User: WhatsApp-Gruppe "Project X Beta". Direkter Kanal, keine Support-Software nötig. Du kannst schnell reagieren und Bugs bestätigen. Nach 50+ Usern: Discord-Server aufmachen.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Support-E-Mail einrichten <span class="step-cost">kostenlos</span></div>
+        <div class="step-desc"><span class="step-code">hallo@[deinprodukt].de</span> → leitet weiter auf deine Gmail-Adresse. Setup: Google Workspace kostet 6€/Monat. Billiger: IONOS MailBusiness (1€/Monat) oder einfach Weiterleitung auf Gmail ohne eigene Domain.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Antwortzeit-Regel: 24 Stunden</div>
+        <div class="step-desc">Jede Nutzer-Nachricht in 24h beantworten. Das klingt wenig, macht aber den riesigen Unterschied zu "etablierten" Apps. Wenn du in der Schule bist: abends kurz antworten reicht. Persönliche Antworten > automatische.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>NPS messen</h2>
+  <p>Net Promoter Score — die eine Frage die alles sagt: <em>"Wie wahrscheinlich ist es, dass du diese App einem Freund empfiehlst? (0–10)"</em></p>
+  <table>
+    <thead><tr><th>Score</th><th>Was es bedeutet</th><th>Was tun</th></tr></thead>
+    <tbody>
+      <tr><td>9–10 (Promoter)</td><td>Aktive Weiterempfehler</td><td>Bitte aktiv um Empfehlungen + Testimonials</td></tr>
+      <tr><td>7–8 (Passive)</td><td>Zufrieden aber nicht begeistert</td><td>Rausfinden was fehlt um auf 9 zu kommen</td></tr>
+      <tr><td>0–6 (Detraktoren)</td><td>Unzufrieden, erzählen anderen davon</td><td>Sofort kontaktieren, verstehen was falsch ist</td></tr>
+    </tbody>
+  </table>
+  <p>Schicke die NPS-Frage nach 2 Wochen Beta-Nutzung. Tally-Formular, keine fancy Software nötig. <strong>Ziel: NPS &gt; 40 vor öffentlichem Launch.</strong></p>
+
+  <div class="page-number">09</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 10: SKALIERUNG ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">10 / Skalierung &amp; Limits</div>
+  <h1>Was passiert wenn es wächst</h1>
+  <p class="page-intro">Wann du upgraden musst, was es kostet und worauf du achten sollst wenn plötzlich 1.000 User gleichzeitig online sind.</p>
+
+  <h2>Vercel Limits — wann Upgrade?</h2>
+  <table>
+    <thead><tr><th>Ressource</th><th>Free (Hobby)</th><th>Wann relevant</th><th>Upgrade-Kosten</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Bandwidth</td>
+        <td>100 GB/Monat</td>
+        <td>Bei ~5.000+ aktiven Usern</td>
+        <td>Pro: 20€/Monat, dann 0,15€/GB</td>
+      </tr>
+      <tr>
+        <td>Serverless Function Executions</td>
+        <td>100k/Monat</td>
+        <td>Wenn viel API-Traffic (Briefing-Generation)</td>
+        <td>Pro: inklusive 1M</td>
+      </tr>
+      <tr>
+        <td>Cron Jobs</td>
+        <td>2 Jobs</td>
+        <td>Für tägl. Briefing + Klausur-Reminder</td>
+        <td>Pro: unlimitiert</td>
+      </tr>
+      <tr>
+        <td>Build Time</td>
+        <td>6.000 Min/Monat</td>
+        <td>Bei vielen Deployments</td>
+        <td>Kein echtes Problem in Wachstumsphase</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Supabase Limits</h2>
+  <table>
+    <thead><tr><th>Ressource</th><th>Free</th><th>Wann relevant</th><th>Upgrade</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Datenbank-Größe</td>
+        <td>500 MB</td>
+        <td>Bei ~50.000+ Noten-Einträgen</td>
+        <td>Pro: 25€/Monat, 8 GB</td>
+      </tr>
+      <tr>
+        <td>Auth MAU</td>
+        <td>50.000 Nutzer</td>
+        <td>Nicht relevant in Beta</td>
+        <td>Pro: unlimitiert</td>
+      </tr>
+      <tr>
+        <td>API Requests</td>
+        <td>2 Mio/Monat</td>
+        <td>Bei aktivem Briefing-Feature</td>
+        <td>Pro: unlimitiert</td>
+      </tr>
+      <tr>
+        <td>Realtime Connections</td>
+        <td>200 gleichzeitig</td>
+        <td>Wenn du Live-Features baust</td>
+        <td>Pro: 500</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Performance — was du von Anfang an richtig machen sollst</h2>
+  <div class="card-grid card-grid-2" style="margin-top:12px;">
+    <div class="card">
+      <div class="card-label">Jetzt (Beta)</div>
+      <ul style="margin-top:8px;">
+        <li>Bilder als WebP/AVIF (Next.js Image Component)</li>
+        <li>Keine unnötigen Client-Side JS Bundles</li>
+        <li>Supabase-Queries mit select() — nur was du brauchst laden</li>
+        <li>Fonts lokal hosten (DSGVO + Performance)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-label">Wenn Wachstum kommt</div>
+      <ul style="margin-top:8px;">
+        <li>Redis Caching für Briefing-Ergebnisse (Upstash Free)</li>
+        <li>Edge Functions für schnelle API-Responses</li>
+        <li>Supabase RLS optimieren (Indexes auf user_id)</li>
+        <li>Vercel ISR für statische Marketing-Seiten</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box box-warn">
+    <div class="box-label box-label-warn">Das Supabase-Pause-Problem</div>
+    <p>Supabase Free-Tier-Projekte werden nach <strong>7 Tagen Inaktivität pausiert</strong>. Damit die App nicht beim ersten echten User schläft: Einen einfachen "Health-Check" einbauen — ein Vercel Cron Job der täglich einmal die DB pingt. Das verhindert das Pausieren. Oder: Supabase Pro (25€/Monat) — kein Pausieren.</p>
+  </div>
+
+  <div class="page-number">10</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 11: MASTER CHECKLIST ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">11 / Master-Checkliste</div>
+  <h1>Was vor dem Launch erledigt sein muss</h1>
+  <p class="page-intro">Diese Liste ist abzuarbeiten bevor der erste echte User eingeladen wird. Kein Launch ohne grüne Haken.</p>
+
+  <div class="card-grid card-grid-2">
+    <div>
+      <h2 style="margin-top:0;">Rechtliches</h2>
+      <ul class="checklist">
+        <li><span class="check-icon check-icon-red">!</span> <strong>Gespräch mit Eltern</strong> über Gewerbe, Stripe, Haftung</li>
+        <li><span class="check-icon">✓</span> Impressum auf der App/Landing Page (§5 TMG)</li>
+        <li><span class="check-icon">✓</span> Datenschutzerklärung live (datenschutz-generator.de)</li>
+        <li><span class="check-icon">✓</span> AGB live (it-recht-kanzlei.de)</li>
+        <li><span class="check-icon">✓</span> Mindestalter 16 in Signup-Formular kommuniziert</li>
+        <li><span class="check-icon">✓</span> Google Fonts lokal gehostet (kein Google-CDN)</li>
+        <li><span class="check-icon">✓</span> Vercel DPA abgeschlossen (vercel.com/legal/dpa)</li>
+        <li><span class="check-icon check-icon-warn">○</span> Gewerbeanmeldung (vor erster Einnahme)</li>
+      </ul>
+
+      <h2>Payments</h2>
+      <ul class="checklist">
+        <li><span class="check-icon check-icon-warn">○</span> Stripe-Account (Elternteil oder nach 18)</li>
+        <li><span class="check-icon check-icon-warn">○</span> Produkt + Preise in Stripe angelegt</li>
+        <li><span class="check-icon check-icon-warn">○</span> Webhook-Integration: subscription-Events → Supabase</li>
+        <li><span class="check-icon check-icon-warn">○</span> Kleinunternehmer-Setting in Stripe korrekt</li>
+        <li><span class="check-icon check-icon-warn">○</span> Test-Zahlung durchgeführt</li>
+      </ul>
+
+      <h2>Distribution</h2>
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span> PWA manifest.json erstellt</li>
+        <li><span class="check-icon">✓</span> Icons alle Größen generiert</li>
+        <li><span class="check-icon">✓</span> iOS "Add to Home" Prompt eingebaut</li>
+        <li><span class="check-icon check-icon-warn">○</span> Custom Domain gekauft + verbunden</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 style="margin-top:0;">Infrastruktur</h2>
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span> Sentry eingerichtet (Error-Tracking)</li>
+        <li><span class="check-icon">✓</span> Vercel Analytics aktiviert</li>
+        <li><span class="check-icon">✓</span> Resend mit Custom Domain konfiguriert</li>
+        <li><span class="check-icon">✓</span> Welcome-E-Mail Template vorhanden</li>
+        <li><span class="check-icon">✓</span> Supabase DB-Pause-Verhinderung (Cron Ping)</li>
+        <li><span class="check-icon">✓</span> Backup-Routine eingerichtet</li>
+      </ul>
+
+      <h2>Produkt</h2>
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span> Onboarding-Flow funktioniert</li>
+        <li><span class="check-icon">✓</span> Passwort-Reset funktioniert</li>
+        <li><span class="check-icon">✓</span> Datenschutz/Impressum von App aus erreichbar</li>
+        <li><span class="check-icon">✓</span> Feedback-Button in App vorhanden</li>
+        <li><span class="check-icon">✓</span> App auf iOS Safari getestet (PWA)</li>
+        <li><span class="check-icon">✓</span> App auf Android Chrome getestet</li>
+        <li><span class="check-icon check-icon-warn">○</span> Account-Löschung für User möglich (DSGVO)</li>
+      </ul>
+
+      <h2>Marketing</h2>
+      <ul class="checklist">
+        <li><span class="check-icon check-icon-warn">○</span> TikTok-Account angelegt</li>
+        <li><span class="check-icon check-icon-warn">○</span> Instagram-Account angelegt</li>
+        <li><span class="check-icon check-icon-warn">○</span> Higgsfield-Account angelegt</li>
+        <li><span class="check-icon check-icon-warn">○</span> Waitlist-Tally-Form live</li>
+        <li><span class="check-icon check-icon-warn">○</span> Erster TikTok-Post live</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:16px; display:flex; gap:20px; font-size:8.5pt; color:var(--text-muted);">
+    <div>✓ = in deinem Stack schon vorhanden oder einfach umsetzbar</div>
+    <div>○ = noch zu erledigen</div>
+    <div>! = sofortiger Handlungsbedarf</div>
+  </div>
+
+  <div class="page-number">11</div>
+</div>
+
+
+<!-- ═══════════════════════ PAGE 12: QUICK-REFERENCE ═══════════════════════ -->
+<div class="page" style="page-break-after:auto;">
+  <div class="section-number">12 / Quick Reference</div>
+  <h1>Alle wichtigen Links &amp; Kosten</h1>
+  <p class="page-intro">Das Cheat-Sheet für alles was du brauchst — alphabetisch nach Thema.</p>
+
+  <table>
+    <thead><tr><th>Service</th><th>URL / Zugang</th><th>Kosten</th><th>Wofür</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Anthropic API</strong></td><td>console.anthropic.com</td><td class="td-mono">Pay-per-use (~0,003$/1k Token Sonnet)</td><td>KI-Briefing, Coach</td></tr>
+      <tr><td><strong>Apple Developer</strong></td><td>developer.apple.com</td><td class="td-orange td-mono">99€/Jahr (18+)</td><td>iOS App Store</td></tr>
+      <tr><td><strong>CapCut</strong></td><td>capcut.com</td><td class="td-green td-mono">0€</td><td>Video-Editing für TikTok</td></tr>
+      <tr><td><strong>Cookie Consent (Osano)</strong></td><td>osano.com</td><td class="td-green td-mono">0€ bis 5k Sessions</td><td>DSGVO Cookie-Banner</td></tr>
+      <tr><td><strong>Datenschutz-Generator</strong></td><td>datenschutz-generator.de</td><td class="td-green td-mono">0€</td><td>DSGVO Datenschutzerklärung</td></tr>
+      <tr><td><strong>Domain (.de)</strong></td><td>ionos.de / namecheap.com</td><td class="td-orange td-mono">~5–15€/Jahr</td><td>Eigene Domain</td></tr>
+      <tr><td><strong>Gewerbeamt Hamburg</strong></td><td>hamburg.de/gewerbe</td><td class="td-orange td-mono">~26€ einmalig</td><td>Gewerbeanmeldung</td></tr>
+      <tr><td><strong>Google Play Store</strong></td><td>play.google.com/console</td><td class="td-orange td-mono">25€ einmalig (18+)</td><td>Android App</td></tr>
+      <tr><td><strong>Higgsfield AI</strong></td><td>higgsfield.ai</td><td class="td-green td-mono">0€ Free / ~18€/Monat Paid</td><td>KI Video-Content</td></tr>
+      <tr><td><strong>it-recht-kanzlei.de</strong></td><td>it-recht-kanzlei.de</td><td class="td-orange td-mono">~10€/Monat oder Einmalzahlung</td><td>AGB, Datenschutz rechtssicher</td></tr>
+      <tr><td><strong>Kontist</strong></td><td>kontist.com</td><td class="td-green td-mono">0€ Basis</td><td>Geschäftskonto</td></tr>
+      <tr><td><strong>Lexoffice Lite</strong></td><td>lexoffice.de</td><td class="td-green td-mono">0€</td><td>Buchhaltung / EÜR</td></tr>
+      <tr><td><strong>PostHog</strong></td><td>posthog.com</td><td class="td-green td-mono">0€ bis 1M Events</td><td>Analytics, Feature-Flags</td></tr>
+      <tr><td><strong>React Email</strong></td><td>react.email</td><td class="td-green td-mono">0€</td><td>E-Mail-Templates</td></tr>
+      <tr><td><strong>realfavicongenerator.net</strong></td><td>realfavicongenerator.net</td><td class="td-green td-mono">0€</td><td>Alle Icon-Formate generieren</td></tr>
+      <tr><td><strong>Resend</strong></td><td>resend.com</td><td class="td-green td-mono">0€ bis 3k/Monat</td><td>Transactional Email</td></tr>
+      <tr><td><strong>Sentry</strong></td><td>sentry.io</td><td class="td-green td-mono">0€ bis 5k Errors/Monat</td><td>Error-Tracking</td></tr>
+      <tr><td><strong>Stripe</strong></td><td>stripe.com</td><td class="td-orange td-mono">1,5% + 0,25€ pro Transaktion (18+)</td><td>Payments / Subscriptions</td></tr>
+      <tr><td><strong>Supabase</strong></td><td>supabase.com</td><td class="td-green td-mono">0€ Free / 25€ Pro</td><td>DB, Auth, Storage</td></tr>
+      <tr><td><strong>Tally</strong></td><td>tally.so</td><td class="td-green td-mono">0€</td><td>Feedback-Formulare, Waitlist</td></tr>
+      <tr><td><strong>Vercel</strong></td><td>vercel.com</td><td class="td-green td-mono">0€ Hobby / 20€ Pro</td><td>Hosting, Cron Jobs</td></tr>
+      <tr><td><strong>Wundertax</strong></td><td>wundertax.de</td><td class="td-orange td-mono">~35€/Steuererklärung</td><td>Online-Steuererklärung</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <div class="card-grid card-grid-3">
+    <div class="card" style="border-top:3px solid var(--azure);">
+      <div class="card-label">Gesamtkosten bis Beta</div>
+      <div style="font-size:16pt; font-weight:800; color:var(--azure); line-height:1;">~0–26€</div>
+      <p style="font-size:8.5pt; margin-top:4px;">0€ ohne Gewerbe. Mit Gewerbe ~26€ einmalig. Beta bleibt komplett kostenlos.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--green);">
+      <div class="card-label">Laufend (Break-Even)</div>
+      <div style="font-size:16pt; font-weight:800; color:var(--green); line-height:1;">~50 User</div>
+      <p style="font-size:8.5pt; margin-top:4px;">Bei 10% Conversion rate von 500 aktiven Nutzern → alle Kosten gedeckt.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--indigo);">
+      <div class="card-label">Nächste Review</div>
+      <div style="font-size:14pt; font-weight:800; color:var(--indigo); line-height:1;">07.07.2026</div>
+      <p style="font-size:8.5pt; margin-top:4px;">4 Wochen nach heute — was ist umgesetzt, was fehlt noch?</p>
+    </div>
+  </div>
+
+  <div style="margin-top:40px; padding-top:24px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div style="font-size:8.5pt; color:var(--text-muted);">App Launch Setup Guide — Project X</div>
+      <div style="font-size:8pt; color:var(--text-light);">Nepomuk Polonius &middot; Hamburg &middot; 07. Juni 2026</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:8pt; color:var(--text-light);">Kein Ersatz für Rechts- oder Steuerberatung.<br>Bei Unsicherheit: Steuerberater oder Anwalt konsultieren.</div>
+    </div>
+  </div>
+
+  <div class="page-number">12</div>
+</div>
+
+</body>
+</html>
