@@ -240,6 +240,8 @@ async function executeTool(
 
 // ── Hauptkomponente ────────────────────────────────────────────────────
 
+const STORAGE_KEY = "coach-chat-v1";
+
 export function CoachChat() {
   const [uiMessages, setUiMessages] = useState<UiMsg[]>([
     { kind: "text", role: "assistant", content: STARTER },
@@ -249,8 +251,34 @@ export function CoachChat() {
   const [lastUndoVisible, setLastUndoVisible] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Persisted state nach Mount laden
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as {
+          uiMessages: (UiMsg & { kind: "text" })[];
+          apiMessages: ClientMessage[];
+        };
+        if (saved.uiMessages?.length) setUiMessages(saved.uiMessages);
+        if (saved.apiMessages?.length) setApiMessages(saved.apiMessages);
+      }
+    } catch { /* ignore */ }
+    setHydrated(true);
+  }, []);
+
+  // State bei jeder Änderung speichern (nur text-Nachrichten, keine ephemeren)
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      const persistable = uiMessages.filter((m): m is UiMsg & { kind: "text" } => m.kind === "text");
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ uiMessages: persistable, apiMessages }));
+    } catch { /* ignore */ }
+  }, [uiMessages, apiMessages, hydrated]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

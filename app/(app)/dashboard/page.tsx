@@ -79,12 +79,18 @@ export default async function DashboardPage() {
     .select("*", { count: "exact", head: true })
     .eq("erledigt", false);
 
+  // Alle Fächer (ohne Halbjahr-Filter) für Stundenplan-Widget-Namen
+  const { data: alleFachRows } = await supabase
+    .from("schule_fach")
+    .select("id, name")
+    .eq("user_id", userId);
+
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],
     (noteRows ?? []) as NoteRow[],
   );
   const gesamt = gesamtSchnittGerundet(faecher);
-  const fachName = new Map(faecher.map((f) => [f.id, f.name]));
+  const fachName = new Map((alleFachRows ?? []).map((f) => [f.id, f.name]));
   const naechste = ((klausurRows ?? []) as KlausurRow[])[0] ?? null;
   const heutigeStunden = (stundeRows ?? []) as StundeRow[];
   const gesamtNoten = faecher.reduce((s, f) => s + f.noten.length, 0);
