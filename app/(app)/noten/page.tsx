@@ -120,6 +120,7 @@ export default async function NotenPage() {
       </header>
 
       <NotenrechnerBoard
+        key={halbjahr}
         initialFaecher={faecher}
         halbjahr={halbjahr}
         initialKlausuren={klausuren}
