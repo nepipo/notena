@@ -2,6 +2,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 export type ToolName =
+  | "respond_to_user"
   | "note_erstellen" | "note_bearbeiten" | "note_loeschen"
   | "klausur_erstellen" | "klausur_bearbeiten" | "klausur_loeschen"
   | "aufgabe_erstellen" | "aufgabe_erledigt" | "aufgabe_loeschen"
@@ -9,6 +10,19 @@ export type ToolName =
   | "fach_erstellen" | "fach_bearbeiten" | "fach_loeschen";
 
 export const COACH_TOOLS: Anthropic.Tool[] = [
+  // ── Meta: Text-Antwort ─────────────────────────────────────────────
+  {
+    name: "respond_to_user",
+    description: "Schickt eine Text-Antwort an den User. Nutze dieses Tool wenn du eine Frage beantwortest, etwas erklärst, oder keine Datenänderung nötig ist.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        text: { type: "string", description: "Deine Antwort auf Deutsch" },
+      },
+      required: ["text"],
+    },
+  },
+
   // ── Noten ──────────────────────────────────────────────────────────
   {
     name: "note_erstellen",

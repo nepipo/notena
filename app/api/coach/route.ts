@@ -147,26 +147,31 @@ export async function POST(req: Request) {
     max_tokens: 1024,
     system: kontext.systemPrompt,
     tools: COACH_TOOLS,
+    tool_choice: { type: "any" },
     messages: toAnthropicMessages(body.messages),
   });
 
   const toolBlock = response.content.find((b) => b.type === "tool_use");
-  if (toolBlock && toolBlock.type === "tool_use") {
-    const name = toolBlock.name as ToolName;
-    const input = toolBlock.input as Record<string, unknown>;
-    const result: CoachApiResponse = {
-      type: "tool_call",
-      name,
-      input,
-      tool_use_id: toolBlock.id,
-      preview: buildPreview(name, input, fachName),
-      snapshot: findSnapshot(name, input, kontext.raw),
-    };
+  if (!toolBlock || toolBlock.type !== "tool_use") {
+    return Response.json({ type: "text", content: "–" } satisfies CoachApiResponse);
+  }
+
+  const name = toolBlock.name as ToolName;
+  const input = toolBlock.input as Record<string, unknown>;
+
+  // respond_to_user = kein Mutations-Tool, direkt als Text zurückgeben
+  if (name === "respond_to_user") {
+    const result: CoachApiResponse = { type: "text", content: (input.text as string) ?? "–" };
     return Response.json(result);
   }
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  const content = textBlock && textBlock.type === "text" ? textBlock.text : "–";
-  const result: CoachApiResponse = { type: "text", content };
+  const result: CoachApiResponse = {
+    type: "tool_call",
+    name,
+    input,
+    tool_use_id: toolBlock.id,
+    preview: buildPreview(name, input, fachName),
+    snapshot: findSnapshot(name, input, kontext.raw),
+  };
   return Response.json(result);
 }
