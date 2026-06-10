@@ -433,6 +433,45 @@ export async function saveBundesland(bundesland: string | null): Promise<ActionR
   }
 }
 
+export async function loescheHalbjahr(hj: string): Promise<ActionResult> {
+  if (!hj.trim()) return { ok: false, error: "Halbjahr fehlt." };
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+
+    // Fächer löschen — Noten kaskadieren automatisch (ON DELETE CASCADE)
+    const { error: faecherError } = await supabase
+      .from("schule_fach")
+      .delete()
+      .eq("user_id", userId)
+      .eq("halbjahr", hj);
+    if (faecherError) return { ok: false, error: faecherError.message };
+
+    // Falls das gelöschte HJ das aktive war → auf vorheriges wechseln
+    const { data: profil } = await supabase
+      .from("nutzer_profil")
+      .select("aktuelles_halbjahr")
+      .eq("id", userId)
+      .single();
+
+    if (profil?.aktuelles_halbjahr === hj) {
+      const { vorherigesHalbjahr } = await import("@/lib/grades/halbjahr");
+      const { error: profilError } = await supabase
+        .from("nutzer_profil")
+        .update({ aktuelles_halbjahr: vorherigesHalbjahr(hj) })
+        .eq("id", userId);
+      if (profilError) return { ok: false, error: profilError.message };
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/noten");
+    revalidatePath("/einstellungen");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
 export async function setKlausurErinnerungTage(
   tage: number[],
 ): Promise<ActionResult> {
@@ -444,6 +483,34 @@ export async function setKlausurErinnerungTage(
       .update({ klausur_erinnerung_tage: tage })
       .eq("id", userId);
     if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function updateKlausur(
+  klausurId: string,
+  updates: { titel?: string; datum?: string },
+): Promise<ActionResult> {
+  if (updates.titel !== undefined && !updates.titel.trim()) {
+    return { ok: false, error: "Titel darf nicht leer sein." };
+  }
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const patch: Record<string, unknown> = {};
+    if (updates.titel !== undefined) patch.titel = updates.titel.trim();
+    if (updates.datum !== undefined) patch.datum = updates.datum;
+    const { error } = await supabase
+      .from("schule_klausur")
+      .update(patch)
+      .eq("id", klausurId)
+      .eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard");
+    revalidatePath("/aufgaben");
+    revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };

@@ -79,3 +79,26 @@ export async function toggleErledigt(
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }
 }
+
+export async function updateHausaufgabe(
+  id: string,
+  updates: { beschreibung?: string; faelligAm?: string },
+): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const patch: Record<string, unknown> = {};
+    if (updates.beschreibung !== undefined) patch.beschreibung = updates.beschreibung.trim();
+    if (updates.faelligAm !== undefined) patch.faellig_am = updates.faelligAm;
+    const { error } = await supabase
+      .from("hausaufgabe")
+      .update(patch)
+      .eq("id", id)
+      .eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/aufgaben");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
