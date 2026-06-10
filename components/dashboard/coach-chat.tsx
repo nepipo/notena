@@ -155,6 +155,7 @@ async function executeTool(
       case "stunde_erstellen": {
         const r = await addStunde({
           fachId: (input.fach_id as string | undefined) ?? null,
+          bezeichnung: null,
           wochentag: input.wochentag as number,
           zeitStart: input.zeit_start as string,
           zeitEnd: input.zeit_end as string,
@@ -167,9 +168,10 @@ async function executeTool(
       }
       case "stunde_bearbeiten": {
         if (!snapshot) return { ok: false, summary: "Stunde nicht gefunden.", undoFn: null };
-        const prev = snapshot as { wochentag: number; zeit_start: string; zeit_end: string; fach_id: string | null; raum: string | null; lehrer: string | null; woche_typ: "A" | "B" | null };
+        const prev = snapshot as { wochentag: number; zeit_start: string; zeit_end: string; fach_id: string | null; bezeichnung: string | null; raum: string | null; lehrer: string | null; woche_typ: "A" | "B" | null };
         const r = await updateStunde(input.stunde_id as string, {
           fachId: (input.fach_id as string | undefined) ?? prev.fach_id,
+          bezeichnung: prev.bezeichnung,
           wochentag: (input.wochentag as number | undefined) ?? prev.wochentag,
           zeitStart: (input.zeit_start as string | undefined) ?? prev.zeit_start.slice(0, 5),
           zeitEnd: (input.zeit_end as string | undefined) ?? prev.zeit_end.slice(0, 5),
@@ -184,6 +186,7 @@ async function executeTool(
           undoFn: async () => {
             await updateStunde(input.stunde_id as string, {
               fachId: prev.fach_id,
+              bezeichnung: prev.bezeichnung,
               wochentag: prev.wochentag,
               zeitStart: prev.zeit_start.slice(0, 5),
               zeitEnd: prev.zeit_end.slice(0, 5),
@@ -332,6 +335,20 @@ export function CoachChat() {
         body: JSON.stringify({ messages: nextApiMessages }),
       });
 
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setLoading(false);
+        setUiMessages((prev) => [
+          ...prev.filter((m) => m.kind !== "loading"),
+          {
+            kind: "text",
+            role: "assistant",
+            content: (err as { error?: string }).error ?? "Fehler — bitte nochmal versuchen.",
+          },
+        ]);
+        return;
+      }
+
       const data: CoachApiResponse = await res.json();
       setLoading(false);
       setUiMessages((prev) => prev.filter((m) => m.kind !== "loading"));
@@ -461,9 +478,15 @@ export function CoachChat() {
 
   // ── Render ──────────────────────────────────────────────────────────
 
+  function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 96) + "px";
+  }
+
   return (
     <section
-      className="animate-fade-up rounded-[28px] border border-border"
+      className="animate-fade-up rounded-3xl border border-border"
       style={{ background: "var(--card-grad)", animationDelay: "0.08s" }}
     >
       {/* Header */}
@@ -483,10 +506,21 @@ export function CoachChat() {
               return (
                 <div key={i} className="flex justify-start">
                   <div
-                    className="rounded-2xl rounded-bl-sm px-4 py-2.5 text-text-mute"
+                    className="rounded-2xl rounded-bl-sm px-4 py-3"
                     style={{ background: "var(--surface-2)" }}
                   >
-                    <Loader2 className="size-3 animate-spin" />
+                    <div className="flex items-center gap-1">
+                      {[0, 1, 2].map((j) => (
+                        <span
+                          key={j}
+                          className="size-1.5 rounded-full bg-text-mute"
+                          style={{
+                            animation: "typing-dot 1.4s ease-in-out infinite",
+                            animationDelay: `${j * 0.16}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               );
@@ -527,7 +561,7 @@ export function CoachChat() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => void confirmTool(m)}
-                        className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-mono text-[11px] font-semibold text-black transition-opacity hover:opacity-90"
+                        className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-mono text-[11px] font-semibold text-black transition-[transform,opacity] duration-150 hover:opacity-90 active:scale-[0.95]"
                         style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
                       >
                         <Check className="size-3" />
@@ -535,7 +569,7 @@ export function CoachChat() {
                       </button>
                       <button
                         onClick={() => void cancelTool(m)}
-                        className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 font-mono text-[11px] font-semibold text-text-mute transition-colors hover:text-foreground"
+                        className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 font-mono text-[11px] font-semibold text-text-mute transition-[transform,color] duration-150 hover:text-foreground active:scale-[0.95]"
                         style={{ background: "var(--surface-1)" }}
                       >
                         <X className="size-3" />
@@ -555,8 +589,8 @@ export function CoachChat() {
                     style={{
                       background: m.success
                         ? "color-mix(in srgb, var(--success) 15%, var(--surface-2))"
-                        : "color-mix(in srgb, var(--error, #ef4444) 15%, var(--surface-2))",
-                      color: m.success ? "var(--success)" : "var(--error, #ef4444)",
+                        : "color-mix(in srgb, var(--destructive) 15%, var(--surface-2))",
+                      color: m.success ? "var(--success)" : "var(--destructive)",
                     }}
                   >
                     {m.success ? <Check className="size-3" /> : <X className="size-3" />}
@@ -581,7 +615,7 @@ export function CoachChat() {
             </span>
             <button
               onClick={() => void handleUndo()}
-              className="flex items-center gap-1 font-mono text-[10px] font-semibold text-brand transition-opacity hover:opacity-70"
+              className="flex items-center gap-1 font-mono text-[10px] font-semibold text-brand transition-[transform,opacity] duration-150 hover:opacity-70 active:scale-[0.95]"
             >
               <RotateCcw className="size-3" />
               Rückgängig
@@ -592,7 +626,7 @@ export function CoachChat() {
           <textarea
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKey}
             placeholder="Frag mich was oder gib einen Befehl…"
             rows={1}
@@ -603,7 +637,7 @@ export function CoachChat() {
           <button
             onClick={() => void send()}
             disabled={!input.trim() || loading}
-            className="flex size-9 flex-shrink-0 items-center justify-center rounded-xl transition-all disabled:opacity-40"
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl transition-[transform,box-shadow,opacity] duration-150 active:scale-[0.93] disabled:opacity-40"
             style={{
               background: "linear-gradient(135deg, var(--brand), var(--brand-2))",
               boxShadow: input.trim() ? "0 4px 14px color-mix(in srgb, var(--brand) 40%, transparent)" : "none",

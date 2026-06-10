@@ -2,12 +2,21 @@ export interface StundeRow {
   id: string;
   user_id: string;
   fach_id: string | null;
+  bezeichnung: string | null;
   wochentag: number;       // 1=Mo … 7=So
   zeit_start: string;      // "HH:MM:SS" (Postgres time)
   zeit_end: string;
   raum: string | null;
   lehrer: string | null;
   woche_typ: "A" | "B" | null;
+}
+
+export interface EntfallRow {
+  id: string;
+  user_id: string;
+  stunde_id: string;
+  datum: string; // "YYYY-MM-DD"
+  created_at: string;
 }
 
 export interface HausaufgabeRow {

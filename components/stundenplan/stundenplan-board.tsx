@@ -3,13 +3,21 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, X, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, X, CalendarDays, ChevronLeft, ChevronRight, BanIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addStunde, removeStunde, updateStunde } from "@/lib/actions/stundenplan";
+import {
+  addStunde,
+  removeStunde,
+  updateStunde,
+  addEntfall,
+  removeEntfall,
+  addTagEntfall,
+  removeTagEntfall,
+} from "@/lib/actions/stundenplan";
 import { updateFach } from "@/lib/actions/schule";
 import { hexToRgba, fmtZeit, FACH_FALLBACK_FARBE } from "@/lib/stundenplan/types";
-import type { StundeRow, HausaufgabeRow } from "@/lib/stundenplan/types";
+import type { StundeRow, HausaufgabeRow, EntfallRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
 import { FotoImport } from "@/components/stundenplan/foto-import";
 
@@ -62,6 +70,11 @@ function toLocalIso(datum: string): string {
   return datum.slice(0, 10);
 }
 
+function fmtDatum(iso: string): string {
+  const [, m, d] = iso.split("-");
+  return `${d}.${m}.`;
+}
+
 // ── Typen ─────────────────────────────────────────────────────────────────────
 const TAGE = ["Mo", "Di", "Mi", "Do", "Fr"] as const;
 const STUNDEN_LABELS = Array.from({ length: END_H - START_H }, (_, i) => START_H + i);
@@ -75,6 +88,7 @@ interface FormWerte {
   zeitStart: string;
   zeitEnd: string;
   fachId: string;
+  bezeichnung: string;
   lehrer: string;
   raum: string;
 }
@@ -84,6 +98,7 @@ const FORM_LEER: FormWerte = {
   zeitStart: "08:00",
   zeitEnd: "09:30",
   fachId: "",
+  bezeichnung: "",
   lehrer: "",
   raum: "",
 };
@@ -129,6 +144,17 @@ function StundeFormFelder({
           {faecher.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
       </div>
+      {!werte.fachId && (
+        <div className="space-y-1">
+          <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">Bezeichnung</label>
+          <Input
+            value={werte.bezeichnung}
+            onChange={(e) => onChange({ bezeichnung: e.target.value })}
+            placeholder="z. B. Freistunde, Sport-AG …"
+            className="h-9 bg-surface-2 font-mono text-sm"
+          />
+        </div>
+      )}
       <div className="space-y-1">
         <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">Lehrer</label>
         <Input value={werte.lehrer} onChange={(e) => onChange({ lehrer: e.target.value })} placeholder="Hr. Müller (optional)" className="h-9 bg-surface-2 font-mono text-sm" />
@@ -147,17 +173,22 @@ export function StundenplanBoard({
   faecher,
   hausaufgaben,
   klausuren,
+  entfaelle,
 }: {
   stunden: StundeRow[];
   faecher: FachRow[];
   hausaufgaben: HausaufgabeRow[];
   klausuren: KlausurRow[];
+  entfaelle: EntfallRow[];
 }) {
   const fachMap = new Map(faecher.map((f) => [f.id, f]));
   const angereichert: StundeAngereichert[] = stunden.map((s) => ({
     ...s,
     fach: s.fach_id ? fachMap.get(s.fach_id) : undefined,
   }));
+
+  // Fast lookup: "stundeId:datum" → true
+  const entfallSet = new Set(entfaelle.map((e) => `${e.stunde_id}:${e.datum}`));
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -203,6 +234,22 @@ export function StundenplanBoard({
     angereichert.filter((s) => s.wochentag === i + 1),
   );
 
+  // Entfall-Helpers
+  function istEntfall(stundeId: string, tagIndex: number): boolean {
+    return entfallSet.has(`${stundeId}:${tagIsos[tagIndex]}`);
+  }
+
+  function alleStundenAmTagEntfall(tagIndex: number): boolean {
+    const stundenAmTag = proTag[tagIndex];
+    return stundenAmTag.length > 0 && stundenAmTag.every((s) => istEntfall(s.id, tagIndex));
+  }
+
+  // Datum der editierten Stunde in der aktuellen Woche
+  const editDatum = editingStunde ? tagIsos[editingStunde.wochentag - 1] : null;
+  const editIstEntfall = editingStunde && editDatum
+    ? entfallSet.has(`${editingStunde.id}:${editDatum}`)
+    : false;
+
   function validiereZeiten(w: FormWerte): boolean {
     if (!w.zeitStart || !w.zeitEnd) { toast.error("Start- und Endzeit sind nötig."); return false; }
     if (w.zeitStart >= w.zeitEnd) { toast.error("Endzeit muss nach Startzeit liegen."); return false; }
@@ -214,6 +261,7 @@ export function StundenplanBoard({
     start(async () => {
       const res = await addStunde({
         fachId: addWerte.fachId || null,
+        bezeichnung: addWerte.bezeichnung.trim() || null,
         wochentag: addWerte.wochentag,
         zeitStart: addWerte.zeitStart,
         zeitEnd: addWerte.zeitEnd,
@@ -240,6 +288,7 @@ export function StundenplanBoard({
       }
       const res = await updateStunde(editingStunde.id, {
         fachId: editWerte.fachId || null,
+        bezeichnung: editWerte.bezeichnung.trim() || null,
         wochentag: editWerte.wochentag,
         zeitStart: editWerte.zeitStart,
         zeitEnd: editWerte.zeitEnd,
@@ -264,6 +313,28 @@ export function StundenplanBoard({
     });
   }
 
+  function toggleEntfall(stundeId: string, datum: string, aktuellEntfall: boolean) {
+    start(async () => {
+      const res = aktuellEntfall
+        ? await removeEntfall(stundeId, datum)
+        : await addEntfall(stundeId, datum);
+      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
+      toast.success(aktuellEntfall ? "Entfall aufgehoben." : "Stunde als Entfall markiert.");
+      router.refresh();
+    });
+  }
+
+  function toggleTagEntfall(datum: string, alleEntfall: boolean) {
+    start(async () => {
+      const res = alleEntfall
+        ? await removeTagEntfall(datum)
+        : await addTagEntfall(datum);
+      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
+      toast.success(alleEntfall ? "Tag-Entfall aufgehoben." : "Ganzer Tag als Entfall markiert.");
+      router.refresh();
+    });
+  }
+
   function openEdit(s: StundeAngereichert) {
     setShowAddForm(false);
     setEditingStunde(s);
@@ -273,6 +344,7 @@ export function StundenplanBoard({
       zeitStart: s.zeit_start.slice(0, 5),
       zeitEnd: s.zeit_end.slice(0, 5),
       fachId: s.fach_id ?? "",
+      bezeichnung: s.bezeichnung ?? "",
       lehrer: s.lehrer ?? "",
       raum: s.raum ?? "",
     });
@@ -393,20 +465,46 @@ export function StundenplanBoard({
             {TAGE.map((t, i) => {
               const { kls, has } = eventsProTag[i];
               const istHeute = i === heuteIndex;
+              const alleEntfall = alleStundenAmTagEntfall(i);
+              const hatStunden = proTag[i].length > 0;
               return (
                 <div
                   key={t}
-                  className="py-2 text-center"
+                  className="group/tag py-2 text-center"
                   style={istHeute ? { background: "color-mix(in srgb, var(--brand) 6%, transparent)" } : undefined}
                 >
-                  <div
-                    className="font-display text-sm font-extrabold"
-                    style={{ color: istHeute ? "var(--brand)" : "var(--foreground)" }}
-                  >
-                    {t}
+                  <div className="flex items-center justify-center gap-1">
+                    <div
+                      className="font-display text-sm font-extrabold"
+                      style={{
+                        color: alleEntfall ? "#ff3050" : istHeute ? "var(--brand)" : "var(--foreground)",
+                        textDecoration: alleEntfall ? "line-through" : undefined,
+                      }}
+                    >
+                      {t}
+                    </div>
+                    {/* Ganzen Tag als Entfall / aufheben */}
+                    {hatStunden && (
+                      <button
+                        onClick={() => toggleTagEntfall(tagIsos[i], alleEntfall)}
+                        disabled={pending}
+                        title={alleEntfall ? "Tag-Entfall aufheben" : "Ganzen Tag als Entfall"}
+                        className="opacity-0 group-hover/tag:opacity-100 transition-opacity flex size-4 items-center justify-center rounded text-text-mute hover:text-[#ff3050]"
+                      >
+                        <BanIcon className="size-3" />
+                      </button>
+                    )}
                   </div>
                   <div className="font-mono text-[10px] text-text-mute">{fmtTagDatum(tagIsos[i])}</div>
-                  {(kls.length > 0 || has.length > 0) && (
+                  {alleEntfall && (
+                    <div
+                      className="mx-auto mt-0.5 w-fit rounded px-1.5 py-0.5 font-mono text-[9px] font-bold"
+                      style={{ background: "rgba(255,48,80,.15)", color: "#ff3050" }}
+                    >
+                      Entfall
+                    </div>
+                  )}
+                  {!alleEntfall && (kls.length > 0 || has.length > 0) && (
                     <div className="mt-1 flex flex-wrap items-center justify-center gap-0.5 px-1">
                       {kls.map((k) => (
                         <span
@@ -515,6 +613,8 @@ export function StundenplanBoard({
                 const top = topPct(s.zeit_start);
                 const height = hoehePct(s.zeit_start, s.zeit_end);
                 const isAktiv = editingStunde?.id === s.id;
+                const entfall = istEntfall(s.id, tagIndex);
+                const label = s.fach?.name ?? s.bezeichnung ?? "–";
 
                 return (
                   <div
@@ -531,25 +631,38 @@ export function StundenplanBoard({
                       onClick={() => openEdit(s)}
                       className="group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-xl p-2 transition-all hover:scale-[1.02]"
                       style={{
-                        background: hexToRgba(farbe, isAktiv ? 0.3 : 0.18),
-                        border: `1px solid ${hexToRgba(farbe, isAktiv ? 0.8 : 0.45)}`,
-                        boxShadow: isAktiv
+                        background: entfall
+                          ? "rgba(255,48,80,.08)"
+                          : hexToRgba(farbe, isAktiv ? 0.3 : 0.18),
+                        border: entfall
+                          ? "1px solid rgba(255,48,80,.35)"
+                          : `1px solid ${hexToRgba(farbe, isAktiv ? 0.8 : 0.45)}`,
+                        boxShadow: isAktiv && !entfall
                           ? `0 0 0 2px ${hexToRgba(farbe, 0.4)}, 0 4px 16px ${hexToRgba(farbe, 0.2)}`
                           : `0 2px 12px ${hexToRgba(farbe, 0.15)}`,
+                        opacity: entfall ? 0.55 : 1,
                       }}
                     >
                       <div
                         className="absolute left-0 top-0 h-full w-[3px] rounded-l-xl"
-                        style={{ background: farbe }}
+                        style={{ background: entfall ? "#ff3050" : farbe }}
                       />
                       <div className="pl-2">
                         <div
                           className="truncate font-display text-xs font-bold leading-tight"
-                          style={{ color: farbe }}
+                          style={{
+                            color: entfall ? "#ff3050" : farbe,
+                            textDecoration: entfall ? "line-through" : undefined,
+                          }}
                         >
-                          {s.fach?.name ?? "Freizeit"}
+                          {label}
                         </div>
-                        {(s.lehrer || s.raum) && (
+                        {entfall && (
+                          <div className="font-mono text-[9px] font-bold" style={{ color: "#ff3050" }}>
+                            Entfall
+                          </div>
+                        )}
+                        {!entfall && (s.lehrer || s.raum) && (
                           <div className="truncate font-mono text-[9px] text-text-dim">
                             {[s.lehrer, s.raum].filter(Boolean).join(" · ")}
                           </div>
@@ -622,6 +735,36 @@ export function StundenplanBoard({
                 />
               </div>
             )}
+
+            {/* Entfall für diesen konkreten Tag */}
+            {editDatum && (
+              <div
+                className="mt-4 flex items-center justify-between rounded-xl px-3 py-2.5"
+                style={{ background: editIstEntfall ? "rgba(255,48,80,.1)" : "var(--surface-2)" }}
+              >
+                <div>
+                  <div className="font-mono text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: editIstEntfall ? "#ff3050" : "var(--text-mute)" }}>
+                    {fmtDatum(editDatum)} – Diese Woche
+                  </div>
+                  <div className="font-mono text-[11px] text-text-dim">
+                    {editIstEntfall ? "Stunde fällt aus · Entfall aufheben?" : "Findet statt · Als Entfall markieren?"}
+                  </div>
+                </div>
+                <button
+                  onClick={() => toggleEntfall(editingStunde.id, editDatum, editIstEntfall)}
+                  disabled={pending}
+                  className="rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold transition-colors"
+                  style={editIstEntfall
+                    ? { background: "rgba(255,48,80,.2)", color: "#ff3050" }
+                    : { background: "var(--surface-3, var(--surface-2))", color: "var(--text-dim)" }
+                  }
+                >
+                  {editIstEntfall ? "Aufheben" : "Entfall"}
+                </button>
+              </div>
+            )}
+
             <div className="mt-4 flex items-center gap-2">
               <Button onClick={submitEdit} disabled={pending} className="font-display font-bold">
                 Speichern

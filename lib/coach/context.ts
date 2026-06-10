@@ -54,12 +54,16 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
     { data: klausurRows },
     { data: haRows },
     { data: stundeRows },
+    { data: entfallRows },
   ] = await Promise.all([
     supabase.from("schule_fach").select("*").eq("user_id", userId).eq("halbjahr", halbjahr).order("created_at"),
     supabase.from("schule_note").select("*").eq("user_id", userId),
     supabase.from("schule_klausur").select("*").eq("user_id", userId).gte("datum", heute).order("datum").limit(10),
     supabase.from("hausaufgabe").select("*").eq("user_id", userId).eq("erledigt", false).order("faellig_am").limit(20),
     supabase.from("stundenplan_stunde").select("*").eq("user_id", userId).order("wochentag").order("zeit_start"),
+    supabase.from("stundenplan_entfall").select("*").eq("user_id", userId)
+      .gte("datum", heute)
+      .lte("datum", (() => { const d = new Date(heute); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })()),
   ]);
 
   const faecher = assembleFaecher(
@@ -116,17 +120,43 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
         .join("\n")
     : "Keine offenen";
 
+  const entfallStundeIds = new Set((entfallRows ?? []).map((e: { stunde_id: string }) => e.stunde_id));
+
   const stundenStr = (stundeRows ?? []).length
     ? (stundeRows as StundeRow[])
         .map(
-          (s) =>
-            `- [id:${s.id}] ${wochentagName(s.wochentag)} ${s.zeit_start.slice(0, 5)}–${s.zeit_end.slice(0, 5)}${s.fach_id && fachMap.get(s.fach_id) ? ` · ${fachMap.get(s.fach_id)}` : ""}${s.raum ? ` · Raum ${s.raum}` : ""}${s.lehrer ? ` · ${s.lehrer}` : ""}`,
+          (s) => {
+            const entfallHinweis = entfallStundeIds.has(s.id) ? " ⚠️ ENTFALL diese Woche" : "";
+            const fachName = s.fach_id ? fachMap.get(s.fach_id) : (s.bezeichnung ?? null);
+            return `- [id:${s.id}] ${wochentagName(s.wochentag)} ${s.zeit_start.slice(0, 5)}–${s.zeit_end.slice(0, 5)}${fachName ? ` · ${fachName}` : ""}${s.raum ? ` · Raum ${s.raum}` : ""}${s.lehrer ? ` · ${s.lehrer}` : ""}${entfallHinweis}`;
+          },
         )
         .join("\n")
     : "Kein Stundenplan";
 
-  const systemPrompt = `Du bist das KI-Backend von Project X, einer Schul-App für ${name} (17, Gymnasium, ${halbjahr}).
+  const systemPrompt = `Du bist der Coach in Project X — einer Schul-App für ${name} (17, Gymnasium, ${halbjahr}).
 
+── STIMME & TON ───────────────────────────────────────────────────────
+Du klingst wie ein 20-jähriger, der selbst Gymnasium durchgezogen hat und jetzt studiert.
+Kennt die Situation, sagt direkt was Sache ist — kein Coaching-Blabla, keine Motivations-Phrasen.
+
+du-Form. Kurz. Schreib wie jemand der tippt, nicht wie jemand der einen Aufsatz formuliert.
+
+Wenn ${name} etwas Emotionales schreibt ("ich pack das nicht", "hab wieder versagt"):
+→ Einen kurzen Satz Verständnis, dann sofort konkret auf die Daten eingehen.
+→ Beispiel: "Kenn ich. Dein Mathe-Schnitt liegt bei 9 — was war die letzte Klausur?"
+→ NICHT: "Das verstehe ich total! Es ist wichtig, dass du dir keine Vorwürfe machst..."
+
+Länge:
+- Bestätigung nach Dateneintrag → 1 Satz
+- Einfache Frage → 1–2 Sätze
+- Komplexe Situation → max 4 Sätze, nie mehr
+
+Nur auf das eingehen was ${name} gerade angesprochen hat — nichts von sich aus aufwerfen.
+
+VERBOTEN: "Es gilt" · "Fokus liegt auf" · "Ich würde empfehlen" · "Großartig!" · "Super!" · "Weiter so!" · "Als dein KI-Coach" · Bullet-Point-Listen · mehr als 4 Sätze
+
+── TOOL-REGELN ────────────────────────────────────────────────────────
 Du MUSST bei JEDER Antwort genau ein Tool aufrufen — ohne Ausnahme.
 - Für Text-Antworten (Fragen beantworten, erklären, kommentieren): → "respond_to_user"
 - Für Daten schreiben (eintragen, löschen, ändern): → das passende Mutations-Tool
@@ -135,8 +165,6 @@ Mutations-Tools sind echte Datenbankaufrufe, keine Simulation. Du hast Schreibre
 "Trag ein / lösch / ändere" → sofort das passende Tool, nicht respond_to_user.
 Keine Erklärungen vor oder nach einem Mutations-Tool-Aufruf — nur das Tool.
 Nach tool_result: kurze Bestätigung via respond_to_user (1 Satz).
-
-Ton in respond_to_user: direkter Kumpel, du-Form, kein Coach-Speak, kurz.
 
 ── AKTUELLER DATENSTAND (${heute}) ─────────────────
 Gesamtschnitt: ${gesamt ?? "–"}/15

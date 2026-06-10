@@ -12,12 +12,15 @@ const FACH_FARBEN = [
   "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#1da1ff",
 ];
 
+const FREIZEIT_NAMEN = new Set(["freizeit", "freistunde", "frei", "free", "pause", "leerstunde"]);
+
 export interface ParsedStunde {
   tempId: string;
   wochentag: number;
   zeitStart: string;
   zeitEnd: string;
   fachName: string;
+  bezeichnung: string | null;
   fachId: string | null;
   isNew: boolean;
   lehrer: string;
@@ -102,8 +105,9 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
       .filter((s) => s.wochentag >= 1 && s.wochentag <= 5 && s.zeitStart && s.zeitEnd)
       .map((s, i) => {
         const normalisiert = s.fachName.toLowerCase().trim();
-        const matchedId = fachMap.get(normalisiert) ?? null;
-        const isNew = !matchedId && !!s.fachName.trim();
+        const istFreizeit = FREIZEIT_NAMEN.has(normalisiert);
+        const matchedId = istFreizeit ? null : (fachMap.get(normalisiert) ?? null);
+        const isNew = !istFreizeit && !matchedId && !!s.fachName.trim();
         if (isNew) neueFachNamen.add(s.fachName.trim());
         const wocheTyp = s.wocheTyp === "A" || s.wocheTyp === "B" ? s.wocheTyp : null;
         return {
@@ -111,7 +115,8 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
           wochentag: s.wochentag,
           zeitStart: s.zeitStart.slice(0, 5),
           zeitEnd: s.zeitEnd.slice(0, 5),
-          fachName: s.fachName.trim() || "Unbekannt",
+          fachName: istFreizeit ? "" : (s.fachName.trim() || "Unbekannt"),
+          bezeichnung: istFreizeit ? s.fachName.trim() || "Freistunde" : null,
           fachId: matchedId,
           isNew,
           lehrer: s.lehrer ?? "",
@@ -164,7 +169,8 @@ export async function importStunden(
     // Stunden bulk-eintragen
     const insert = stunden.map((s) => ({
       user_id: userId,
-      fach_id: s.fachId ?? neuFachIdMap.get(s.fachName) ?? null,
+      fach_id: s.fachId ?? (s.fachName ? neuFachIdMap.get(s.fachName) ?? null : null),
+      bezeichnung: s.bezeichnung || null,
       wochentag: s.wochentag,
       zeit_start: s.zeitStart + ":00",
       zeit_end: s.zeitEnd + ":00",

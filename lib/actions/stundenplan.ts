@@ -15,6 +15,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 
 export async function addStunde(params: {
   fachId: string | null;
+  bezeichnung: string | null;
   wochentag: number;
   zeitStart: string;
   zeitEnd: string;
@@ -34,6 +35,7 @@ export async function addStunde(params: {
     const { error } = await supabase.from("stundenplan_stunde").insert({
       user_id: userId,
       fach_id: params.fachId,
+      bezeichnung: params.bezeichnung || null,
       wochentag: params.wochentag,
       zeit_start: params.zeitStart,
       zeit_end: params.zeitEnd,
@@ -70,6 +72,7 @@ export async function updateStunde(
   id: string,
   params: {
     fachId: string | null;
+    bezeichnung: string | null;
     wochentag: number;
     zeitStart: string;
     zeitEnd: string;
@@ -91,6 +94,7 @@ export async function updateStunde(
       .from("stundenplan_stunde")
       .update({
         fach_id: params.fachId,
+        bezeichnung: params.bezeichnung || null,
         wochentag: params.wochentag,
         zeit_start: params.zeitStart,
         zeit_end: params.zeitEnd,
@@ -100,6 +104,81 @@ export async function updateStunde(
       })
       .eq("id", id)
       .eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/stundenplan");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function addEntfall(stundeId: string, datum: string): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("stundenplan_entfall")
+      .upsert({ user_id: userId, stunde_id: stundeId, datum }, { onConflict: "stunde_id,datum", ignoreDuplicates: true });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/stundenplan");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function removeEntfall(stundeId: string, datum: string): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("stundenplan_entfall")
+      .delete()
+      .eq("user_id", userId)
+      .eq("stunde_id", stundeId)
+      .eq("datum", datum);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/stundenplan");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function addTagEntfall(datum: string): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const d = new Date(datum + "T12:00:00");
+    const js = d.getDay();
+    const wochentag = js === 0 ? 7 : js;
+    const { data: stundenHeute } = await supabase
+      .from("stundenplan_stunde")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("wochentag", wochentag);
+    if (!stundenHeute?.length) return { ok: true };
+    const rows = stundenHeute.map((s) => ({ user_id: userId, stunde_id: s.id, datum }));
+    const { error } = await supabase
+      .from("stundenplan_entfall")
+      .upsert(rows, { onConflict: "stunde_id,datum", ignoreDuplicates: true });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/stundenplan");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+  }
+}
+
+export async function removeTagEntfall(datum: string): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("stundenplan_entfall")
+      .delete()
+      .eq("user_id", userId)
+      .eq("datum", datum);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/stundenplan");
     return { ok: true };
