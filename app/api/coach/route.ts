@@ -145,8 +145,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Nicht eingeloggt" }, { status: 401 });
   }
 
-  const userId = auth.claims.sub;
-  const rateLimit = checkRateLimit(userId);
+  const rateLimit = await checkRateLimit(supabase);
   if (!rateLimit.allowed) {
     const resetIn = Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60_000);
     return Response.json(

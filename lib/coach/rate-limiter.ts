@@ -1,71 +1,43 @@
-// Sliding-Window Rate-Limiter: 20 Nachrichten pro Stunde pro User.
+// DB-backed sliding-window rate limiter für den KI-Coach.
+// Nutzt eine Postgres-RPC mit atomic INSERT ... ON CONFLICT — race-condition-sicher
+// über alle Vercel-Instanzen hinweg (im Gegensatz zu in-memory Maps).
 //
-// Persistenz-Upgrade: Map → Redis ersetzen (ZADD/ZREMRANGEBYSCORE/ZCARD).
-// Limit anpassen: LIMIT oder WINDOW_MS ändern.
+// Fail-open: wenn die DB nicht erreichbar ist, wird der Request durchgelassen
+// damit ein DB-Ausfall die Coaching-Funktion nicht vollständig blockiert.
+
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const LIMIT = 20;
-const WINDOW_MS = 60 * 60 * 1000; // 1 Stunde
-
-interface WindowEntry {
-  timestamps: number[];
-  // GC-Marker: letzter Cleanup, damit wir nicht bei jedem Request aufräumen
-  lastCleanup: number;
-}
-
-// Modul-Singleton — überlebt Request-Grenzen im gleichen Node.js-Prozess.
-// Bei Serverless (Vercel) wird dieser Zustand pro Instanz gehalten, nicht global.
-// Für globale Persistenz: Redis/Upstash verwenden.
-const store = new Map<string, WindowEntry>();
 
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
-  resetAt: Date; // wann das älteste Token aus dem Fenster fällt
+  resetAt: Date;
 }
 
-export function checkRateLimit(userId: string): RateLimitResult {
-  const now = Date.now();
-  const cutoff = now - WINDOW_MS;
+type RpcResult = {
+  allowed: boolean;
+  count: number;
+  remaining: number;
+  reset_at: string;
+};
 
-  let entry = store.get(userId);
-  if (!entry) {
-    entry = { timestamps: [], lastCleanup: now };
-    store.set(userId, entry);
-  }
+export async function checkRateLimit(supabase: SupabaseClient): Promise<RateLimitResult> {
+  const { data, error } = await supabase.rpc("check_coach_rate_limit", { p_limit: LIMIT });
 
-  // Altes Fenster leeren (nur wenn nötig — spart CPU)
-  if (now - entry.lastCleanup > 60_000) {
-    entry.timestamps = entry.timestamps.filter((t) => t > cutoff);
-    entry.lastCleanup = now;
-  }
-
-  const inWindow = entry.timestamps.filter((t) => t > cutoff);
-  const count = inWindow.length;
-
-  if (count >= LIMIT) {
-    const oldestInWindow = inWindow[0] ?? now;
+  if (error) {
+    console.error("[rate-limiter] RPC-Fehler — fail open:", error.message);
     return {
-      allowed: false,
-      remaining: 0,
-      resetAt: new Date(oldestInWindow + WINDOW_MS),
+      allowed: true,
+      remaining: 1,
+      resetAt: new Date(Date.now() + 3_600_000),
     };
   }
 
-  entry.timestamps.push(now);
+  const r = data as RpcResult;
   return {
-    allowed: true,
-    remaining: LIMIT - (count + 1),
-    resetAt: new Date((inWindow[0] ?? now) + WINDOW_MS),
+    allowed: r.allowed,
+    remaining: r.remaining,
+    resetAt: new Date(r.reset_at),
   };
-}
-
-// Cleanup: verhindert Memory-Leaks bei sehr vielen inaktiven Usern.
-// Empfehlung: alle 30 Min via setInterval aufrufen (oder Cron in Edge-Runtime weglassen).
-export function pruneInactiveUsers(): void {
-  const cutoff = Date.now() - WINDOW_MS;
-  for (const [userId, entry] of store) {
-    if (entry.timestamps.every((t) => t <= cutoff)) {
-      store.delete(userId);
-    }
-  }
 }
