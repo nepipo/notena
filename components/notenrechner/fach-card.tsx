@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp, Sparkles, Settings2 } from "lucide-react";
+import { TrendingUp, Sparkles, Settings2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -455,10 +455,10 @@ function NoteEditForm({
           <button
             key={k}
             onClick={() => setKategorie(k)}
-            className={`rounded-lg px-2 py-0.5 font-mono text-[10px] transition-colors ${
+            className={`rounded-lg px-2 py-0.5 font-mono text-[10px] transition-[transform,background-color,color] duration-150 active:scale-[0.93] ${
               kategorie === k
                 ? "bg-brand font-semibold text-black"
-                : "bg-surface-3 text-text-dim hover:bg-surface-3"
+                : "bg-surface-3 text-text-dim hover:bg-surface-2"
             }`}
           >
             {KAT_LABEL[k]}
@@ -541,7 +541,7 @@ function AddNote({
           <button
             key={k}
             onClick={() => setKategorie(k)}
-            className={`rounded-lg px-2 py-1 font-mono text-[11px] transition-colors ${
+            className={`rounded-lg px-2 py-1 font-mono text-[11px] transition-[transform,background-color,color] duration-150 active:scale-[0.93] ${
               kategorie === k
                 ? "bg-brand font-semibold text-black"
                 : "bg-surface-2 text-text-dim hover:bg-surface-3"
@@ -565,9 +565,13 @@ function AddNote({
         />
         <button
           onClick={() => setErweitert(!erweitert)}
-          className="font-mono text-[11px] text-text-mute hover:text-text-dim"
+          className="flex items-center gap-1 font-mono text-[11px] text-text-mute transition-[transform,color] duration-150 hover:text-text-dim active:scale-[0.95]"
         >
-          {erweitert ? "weniger ▲" : "mehr ▼"}
+          Optionen
+          <ChevronDown
+            className={`size-3 transition-transform duration-200 ${erweitert ? "rotate-180" : ""}`}
+            style={{ transitionTimingFunction: "var(--ease-out)" }}
+          />
         </button>
         <Button onClick={submit} size="sm" className="ml-auto font-display font-bold">
           + Note

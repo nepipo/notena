@@ -3,579 +3,526 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Project X — Szenarien-Kostenanalyse 5k–100k User</title>
+<title>Project X — Kostenanalyse v6 · 5 bis 100.000 User</title>
 <style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:'Segoe UI',system-ui,sans-serif; font-size:13px; line-height:1.6; color:#1a1a2e; background:#f8f9fc; }
-.page { max-width:1020px; margin:0 auto; background:white; padding:60px 70px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.6;color:#1a1a2e;background:#f8f9fc}
+.page{max-width:1100px;margin:0 auto;background:white;padding:52px 60px}
 
 /* COVER */
-.cover { background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1da1ff12 100%); color:white; padding:52px 70px; margin:-60px -70px 44px; position:relative; overflow:hidden; }
-.cover::after { content:''; position:absolute; right:-60px; top:-60px; width:280px; height:280px; border-radius:50%; background:radial-gradient(circle,#1da1ff20,transparent 70%); }
-.cover-tag { display:inline-block; background:#1da1ff18; border:1px solid #1da1ff44; color:#1da1ff; font-size:10.5px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:16px; }
-.cover h1 { font-size:28px; font-weight:800; line-height:1.2; margin-bottom:6px; }
-.cover h1 span { color:#1da1ff; }
-.cover p { font-size:12.5px; color:#94a3b8; margin-top:5px; }
-.cover-scenes { display:flex; gap:16px; margin-top:28px; flex-wrap:wrap; }
-.scene-chip { padding:10px 18px; border-radius:10px; font-size:12px; font-weight:700; }
-.chip-w { background:#ef444420; border:1px solid #ef444440; color:#fca5a5; }
-.chip-m { background:#f59e0b20; border:1px solid #f59e0b40; color:#fcd34d; }
-.chip-b { background:#22c55e20; border:1px solid #22c55e40; color:#86efac; }
-.chip-lbl { font-size:9.5px; font-weight:400; opacity:0.7; display:block; margin-top:1px; }
+.cover{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#1da1ff10 100%);color:white;padding:44px 60px;margin:-52px -60px 36px;position:relative;overflow:hidden}
+.cover::after{content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#1da1ff18,transparent 70%)}
+.cover-tag{display:inline-block;background:#1da1ff18;border:1px solid #1da1ff44;color:#1da1ff;font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.cover h1{font-size:26px;font-weight:800;line-height:1.2}
+.cover h1 span{color:#1da1ff}
+.cover p{font-size:12px;color:#94a3b8;margin-top:4px}
+.cover-chips{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.chip{padding:8px 13px;border-radius:8px;font-size:11px;font-weight:700}
+.cw{background:#ef444420;border:1px solid #ef444440;color:#fca5a5}
+.cm{background:#f59e0b20;border:1px solid #f59e0b40;color:#fcd34d}
+.cb{background:#22c55e20;border:1px solid #22c55e40;color:#86efac}
+.chip-sub{font-size:9px;font-weight:400;opacity:.7;display:block;margin-top:1px}
 
-/* SECTION HEADERS */
-h2 { font-size:16px; font-weight:800; color:#0f172a; margin:38px 0 14px; padding-bottom:8px; border-bottom:2px solid #e2e8f0; display:flex; align-items:center; gap:10px; }
-h2 .ico { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
-h3 { font-size:13.5px; font-weight:700; color:#1e293b; margin:20px 0 9px; }
-p { margin-bottom:8px; color:#475569; font-size:12.5px; }
-hr { border:none; border-top:1px solid #e2e8f0; margin:32px 0; }
+h2{font-size:14px;font-weight:800;color:#0f172a;margin:32px 0 10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+h2 .ico{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+hr{border:none;border-top:1px solid #e2e8f0;margin:24px 0}
+p{margin-bottom:6px;color:#475569;font-size:12px}
 
 /* CALLOUTS */
-.callout { border-radius:9px; padding:13px 17px; margin:14px 0; display:flex; gap:12px; }
-.callout-i { font-size:16px; flex-shrink:0; margin-top:1px; }
-.callout-b strong { display:block; margin-bottom:2px; font-size:12.5px; }
-.callout-b p { margin:0; font-size:12px; }
-.callout.red    { background:#fef2f2; border-left:3px solid #ef4444; }
-.callout.red    .callout-i { color:#ef4444; }
-.callout.red    strong { color:#991b1b; }
-.callout.yellow { background:#fffbeb; border-left:3px solid #f59e0b; }
-.callout.yellow .callout-i { color:#d97706; }
-.callout.yellow strong { color:#92400e; }
-.callout.green  { background:#f0fdf4; border-left:3px solid #22c55e; }
-.callout.green  .callout-i { color:#16a34a; }
-.callout.green  strong { color:#14532d; }
-.callout.blue   { background:#eff6ff; border-left:3px solid #3b82f6; }
-.callout.blue   .callout-i { color:#2563eb; }
-.callout.blue   strong { color:#1e3a8a; }
+.co{border-radius:8px;padding:11px 14px;margin:10px 0;display:flex;gap:10px}
+.co-i{font-size:14px;flex-shrink:0;margin-top:1px}
+.co-b strong{display:block;margin-bottom:2px;font-size:12px}
+.co-b p{margin:0;font-size:11.5px}
+.co.red{background:#fef2f2;border-left:3px solid #ef4444}
+.co.red strong{color:#991b1b}
+.co.yellow{background:#fffbeb;border-left:3px solid #f59e0b}
+.co.yellow strong{color:#92400e}
+.co.green{background:#f0fdf4;border-left:3px solid #22c55e}
+.co.green strong{color:#14532d}
+.co.blue{background:#eff6ff;border-left:3px solid #3b82f6}
+.co.blue strong{color:#1e3a8a}
+.co.purple{background:#faf5ff;border-left:3px solid #8b5cf6}
+.co.purple strong{color:#4c1d95}
 
 /* TABLES */
-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:12px; }
-th { background:#f1f5f9; color:#374151; font-weight:700; text-align:left; padding:8px 11px; border-bottom:2px solid #e2e8f0; font-size:10.5px; text-transform:uppercase; letter-spacing:0.3px; }
-td { padding:8px 11px; border-bottom:1px solid #f1f5f9; color:#374151; vertical-align:middle; }
-tr:last-child td { border-bottom:none; }
-.r { text-align:right; }
-.num { font-family:'Courier New',monospace; white-space:nowrap; }
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:11px}
+th{background:#f1f5f9;color:#374151;font-weight:700;text-align:left;padding:6px 8px;border-bottom:2px solid #e2e8f0;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid #f1f5f9;color:#374151;vertical-align:middle;white-space:nowrap}
+.r{text-align:right}
+.num{font-family:'Courier New',monospace}
+.neg{color:#ef4444!important;font-weight:700}
+.pos{color:#16a34a!important}
+.rw td{background:#fff8f8}
+.rm td{background:#fffef5}
+.rb td{background:#f5fff8}
+.gh td{background:#f1f5f9;font-weight:700;font-size:10.5px;color:#0f172a;border-top:2px solid #e2e8f0;padding:5px 8px}
+.gi td{background:#fffbeb!important;border-top:2px dashed #f59e0b!important;color:#92400e}
+.bw{display:inline-block;font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;background:#fee2e2;color:#991b1b}
+.bm{display:inline-block;font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;background:#fef3c7;color:#92400e}
+.bb{display:inline-block;font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;background:#dcfce7;color:#14532d}
 
-/* SCENARIO COLORS */
-.row-w td { background:#fff5f5; border-bottom:1px solid #fecaca22; }
-.row-m td { background:#fffef5; border-bottom:1px solid #fde68a22; }
-.row-b td { background:#f5fff8; border-bottom:1px solid #bbf7d022; }
-.group-header td { background:#f8fafc; font-weight:800; font-size:11.5px; color:#0f172a; border-top:2px solid #e2e8f0; padding:7px 11px; }
-.infra-jump td { background:#fff8f0 !important; border-top:2px dashed #f59e0b !important; }
-.infra-jump2 td { background:#fff5f5 !important; border-top:2px dashed #ef4444 !important; }
-
-/* SCENARIO BADGES */
-.badge { display:inline-block; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:0.3px; }
-.bw { background:#fee2e2; color:#991b1b; }
-.bm { background:#fef3c7; color:#92400e; }
-.bb { background:#dcfce7; color:#14532d; }
-
-/* 3-COL SCENARIO CARDS */
-.scene-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:14px 0; }
-.scene-card { border-radius:11px; overflow:hidden; border:1px solid; }
-.scene-card.worst { border-color:#fca5a5; }
-.scene-card.mid   { border-color:#fcd34d; }
-.scene-card.best  { border-color:#86efac; }
-.scene-head { padding:12px 16px 10px; font-weight:800; font-size:14px; }
-.scene-head.worst { background:#fef2f2; color:#991b1b; }
-.scene-head.mid   { background:#fffbeb; color:#92400e; }
-.scene-head.best  { background:#f0fdf4; color:#14532d; }
-.scene-sub { font-size:10px; font-weight:500; display:block; margin-top:1px; opacity:0.7; }
-.scene-body { padding:10px 16px 12px; background:white; }
-.scene-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:12px; }
-.scene-row:last-child { border-bottom:none; }
-.scene-row .lbl { color:#64748b; }
-.scene-row .val { font-weight:700; font-family:'Courier New',monospace; font-size:12px; }
-.val-r { color:#991b1b; }
-.val-m { color:#92400e; }
-.val-g { color:#14532d; }
-
-/* MARKETING CARDS */
-.mkt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:14px 0; }
-.mkt-card { border-radius:11px; border:1px solid #e2e8f0; padding:16px; background:#fafbfc; }
-.mkt-card h4 { font-size:12.5px; font-weight:700; margin-bottom:10px; }
-.mkt-tag { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:4px; margin-bottom:8px; }
-.mkt-item { display:flex; gap:8px; margin-bottom:6px; font-size:12px; }
-.mkt-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:5px; }
-.mkt-dot-r { background:#ef4444; }
-.mkt-dot-m { background:#f59e0b; }
-.mkt-dot-g { background:#22c55e; }
-
-/* KPI BOXES */
-.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:14px 0; }
-.kpi-box { border:1px solid #e2e8f0; border-radius:9px; padding:13px 15px; background:#fafbfc; text-align:center; }
-.kpi-val { font-size:20px; font-weight:800; color:#0f172a; line-height:1; margin:6px 0 3px; }
-.kpi-lbl { font-size:10px; font-weight:500; color:#64748b; text-transform:uppercase; letter-spacing:0.3px; }
+/* SCENARIOS */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.sc{border-radius:9px;overflow:hidden;border:1px solid}
+.sc.w{border-color:#fca5a5}
+.sc.m{border-color:#fcd34d}
+.sc.b{border-color:#86efac}
+.sh{padding:9px 12px;font-weight:800;font-size:12.5px}
+.sh.w{background:#fef2f2;color:#991b1b}
+.sh.m{background:#fffbeb;color:#92400e}
+.sh.b{background:#f0fdf4;color:#14532d}
+.ss{font-size:9px;font-weight:400;opacity:.7;display:block;margin-top:1px}
+.sb{padding:8px 12px 10px;background:white}
+.sr{display:flex;justify-content:space-between;padding:2.5px 0;border-bottom:1px solid #f8fafc;font-size:11px}
+.sr:last-child{border:none}
+.sl{color:#64748b}
+.sv{font-weight:700;font-family:'Courier New',monospace;font-size:10.5px}
+.sv-r{color:#991b1b}
+.sv-m{color:#92400e}
+.sv-g{color:#14532d}
 
 /* FORMULA */
-.formula { background:#1e293b; color:#e2e8f0; border-radius:9px; padding:13px 17px; font-family:'Courier New',monospace; font-size:11px; line-height:1.9; margin:13px 0; }
-.f-c { color:#64748b; }
-.f-v { color:#86efac; }
-.f-k { color:#7dd3fc; }
+.formula{background:#1e293b;color:#e2e8f0;border-radius:8px;padding:12px 16px;font-family:'Courier New',monospace;font-size:10.5px;line-height:2;margin:10px 0;overflow-x:auto}
+.fc{color:#64748b}
+.fv{color:#86efac}
+.fk{color:#7dd3fc}
+.fw{color:#fca5a5}
+.fy{color:#fcd34d}
 
-/* TIER BOX */
-.tier-box { border:1px solid #e2e8f0; border-radius:9px; overflow:hidden; margin:10px 0; }
-.tier-head { padding:9px 14px; font-weight:700; font-size:12.5px; display:flex; justify-content:space-between; align-items:center; }
-.tier-a .tier-head { background:#eff6ff; color:#1e40af; }
-.tier-b .tier-head { background:#fffbeb; color:#92400e; }
-.tier-c .tier-head { background:#fef2f2; color:#991b1b; }
-.tier-bd { padding:0 14px 12px; font-size:12px; color:#475569; }
+/* TIERS */
+.tier{border:1px solid #e2e8f0;border-radius:7px;overflow:hidden;margin:6px 0}
+.tier-h{padding:7px 12px;font-weight:700;font-size:12px;display:flex;justify-content:space-between}
+.ta .tier-h{background:#eff6ff;color:#1e40af}
+.tb .tier-h{background:#fffbeb;color:#92400e}
+.tc .tier-h{background:#fef2f2;color:#991b1b}
+.td_ .tier-h{background:#f3e8ff;color:#6b21a8}
+.tier-b{padding:0 12px 8px;font-size:11px;color:#475569}
 
-/* LEVERAGE BARS */
-.lev-bar-wrap { margin:14px 0; }
-.lev-bar-row { display:flex; align-items:center; gap:12px; margin-bottom:9px; font-size:12px; }
-.lev-bar-lbl { width:120px; flex-shrink:0; color:#475569; font-weight:600; }
-.lev-bar { height:20px; border-radius:4px; display:flex; align-items:center; padding:0 8px; font-size:10.5px; font-weight:700; color:white; min-width:32px; }
-.lev-bar-w { background:#ef4444; }
-.lev-bar-m { background:#f59e0b; }
-.lev-bar-b { background:#22c55e; }
+/* STORE */
+.store-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.store-card{border-radius:9px;border:1px solid #e2e8f0;padding:14px;background:#fafbfc}
+.store-icon{font-size:22px;margin-bottom:6px}
+.store-title{font-weight:800;font-size:13px;margin-bottom:8px}
+.store-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11.5px;border-bottom:1px solid #f1f5f9}
+.store-row:last-child{border:none}
 
-/* FOOTER */
-.footer { margin-top:48px; padding-top:16px; border-top:1px solid #e2e8f0; font-size:10.5px; color:#94a3b8; display:flex; justify-content:space-between; }
+/* KPI */
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.kb{border:1px solid #e2e8f0;border-radius:8px;padding:12px;background:#fafbfc;text-align:center}
+.kv{font-size:18px;font-weight:800;line-height:1.1;margin:4px 0 2px}
+.kl{font-size:9.5px;color:#64748b;text-transform:uppercase;letter-spacing:.3px}
+.ks{font-size:9.5px;color:#94a3b8}
 
-@media print {
-  body { background:white; }
-  .page { padding:36px 48px; max-width:100%; }
-  .cover { margin:-36px -48px 40px; }
-  .scene-grid,.mkt-grid { page-break-inside:avoid; }
-  .group-header { page-break-before:always; }
-}
+/* UPGRADE */
+.upg{width:100%;border-collapse:collapse;margin:10px 0;font-size:11.5px}
+.upg th{background:#f1f5f9;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid #e2e8f0;text-align:left}
+.upg td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.upg tr:last-child td{border:none}
+.tag-now{display:inline-block;background:#dcfce7;color:#14532d;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+.tag-later{display:inline-block;background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+.tag-no{display:inline-block;background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+.tag-cur{display:inline-block;background:#eff6ff;color:#1e40af;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+
+.sec-lbl{background:#0f172a;color:#94a3b8;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 8px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.footer{margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+code{background:#f1f5f9;padding:1px 4px;border-radius:3px;font-family:'Courier New',monospace;font-size:10.5px}
 </style>
 </head>
 <body>
 <div class="page">
 
-<!-- ═══════════════════════════ COVER ═══════════════════════════ -->
+<!-- COVER -->
 <div class="cover">
-  <div class="cover-tag">Intern · Vertraulich · v4 · Best / Mid / Worst Case</div>
-  <h1>Project X — <span>Szenarien-Analyse</span><br>5.000 bis 100.000 User</h1>
-  <p>Alle Zahlen doppelt mit Node.js berechnet · Haiku 4.5 · Verifizierte API-Preise · Stand 10.06.2026</p>
-  <div class="cover-scenes">
-    <div class="scene-chip chip-w">🔴 WORST CASE<span class="chip-lbl">8 % Conv · €2,99 · Low Engagement · Paid-Heavy Ads</span></div>
-    <div class="scene-chip chip-m">🟡 MID CASE<span class="chip-lbl">15 % Conv · €4,00 · Realistisch · Organic + Paid Mix</span></div>
-    <div class="scene-chip chip-b">🟢 BEST CASE<span class="chip-lbl">25 % Conv · €5,99 · Viral · Organic-First</span></div>
+  <div class="cover-tag">Intern · v6 · Sonnet Coach korrekt · App Store · Wann auf MAX? · 10.06.2026</div>
+  <h1>Project X — <span>Kostenanalyse</span><br>5 bis 100.000 User</h1>
+  <p>Briefing: Haiku 4.5 · Coach: Sonnet 4.6 (korrekt, mit realistischem Token-Kontext) · App Store Launch-Kosten · Model-Upgrade-Roadmap · 57 Datenpunkte</p>
+  <div class="cover-chips">
+    <div class="chip cw">🔴 WORST<span class="chip-sub">8 % Conv · €2,99 · Paid-Ads-Heavy</span></div>
+    <div class="chip cm">🟡 MID<span class="chip-sub">15 % Conv · €4,00 · Organic + Paid</span></div>
+    <div class="chip cb">🟢 BEST<span class="chip-sub">25 % Conv · €5,99 · Viral / Organic</span></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════ VERIFIKATION ═══════════════════════════ -->
-<div class="callout blue">
-  <div class="callout-i">✅</div>
-  <div class="callout-b">
-    <strong>Alle Zahlen mit Node.js doppelt berechnet — keine Schätzungen in den Tabellen</strong>
-    <p>Haiku 4.5 von docs.anthropic.com: $1,00/MTok Input · $5,00/MTok Output · Kurs $1 = €0,92. Briefing: 1.000 In + 200 Out = €0,001840/Call. Coach: 800 In + 300 Out = €0,002116/Nachricht. Marketing-Budgets und CAC-Werte sind begründete Branchenvergleichswerte (B2C-SaaS DE, 15–18-jährige Zielgruppe) — wo unsicher, steht Schätzwert-Hinweis.</p>
+<div class="co red">
+  <div class="co-i">⚠️</div>
+  <div class="co-b">
+    <strong>Korrektur vs. v5: Coach läuft auf Sonnet 4.6 — nicht Haiku</strong>
+    <p>Verifikation in <code>app/api/coach/route.ts</code> bestätigt: <code>model: "claude-sonnet-4-6"</code>. Sonnet kostet 3× so viel pro Token wie Haiku. Der Coach-Kontext enthält zudem 16 Tool-Schemas (~1.000 Token) die in v5 nicht berücksichtigt wurden. Real-Kosten: <strong>~€0,013/Nachricht statt €0,002</strong> — ein 6,5×-Faktor. Alle 57 Datenpunkte wurden korrigiert.</p>
   </div>
 </div>
 
-<!-- ═══════════════════════════ SZENARIO-PARAMETER ═══════════════════════════ -->
-<h2><span class="ico" style="background:#f1f5f9">📐</span> 1. Szenario-Parameter — Was sich zwischen den Szenarien unterscheidet</h2>
-
-<div class="scene-grid">
-  <div class="scene-card worst">
-    <div class="scene-head worst">🔴 WORST CASE<span class="scene-sub">Pessimistisch — schlechtes PMF, kein Organic</span></div>
-    <div class="scene-body">
-      <div class="scene-row"><span class="lbl">Premium-Conversion</span><span class="val val-r">8 %</span></div>
-      <div class="scene-row"><span class="lbl">Preis / Monat</span><span class="val val-r">€ 2,99</span></div>
-      <div class="scene-row"><span class="lbl">DAU-Rate (% aller User)</span><span class="val val-r">15 %</span></div>
-      <div class="scene-row"><span class="lbl">Premium-DAU (% der Prem.)</span><span class="val val-r">20 %</span></div>
-      <div class="scene-row"><span class="lbl">Coach-Nutzung (% von DAU)</span><span class="val val-r">15 %</span></div>
-      <div class="scene-row"><span class="lbl">Nachrichten / Coach-Session</span><span class="val val-r">8</span></div>
-      <div class="scene-row"><span class="lbl">Marketing-Approach</span><span class="val val-r">Paid-heavy</span></div>
-      <div class="scene-row"><span class="lbl">Claude als % Revenue</span><span class="val val-r">5,1 %</span></div>
-      <div class="scene-row"><span class="lbl">Revenue / User / Monat</span><span class="val val-r">€ 0,239</span></div>
-    </div>
-  </div>
-  <div class="scene-card mid">
-    <div class="scene-head mid">🟡 MID CASE<span class="scene-sub">Realistisch — Basisplanung, solider Launch</span></div>
-    <div class="scene-body">
-      <div class="scene-row"><span class="lbl">Premium-Conversion</span><span class="val val-m">15 %</span></div>
-      <div class="scene-row"><span class="lbl">Preis / Monat</span><span class="val val-m">€ 4,00</span></div>
-      <div class="scene-row"><span class="lbl">DAU-Rate</span><span class="val val-m">20 %</span></div>
-      <div class="scene-row"><span class="lbl">Premium-DAU</span><span class="val val-m">30 %</span></div>
-      <div class="scene-row"><span class="lbl">Coach-Nutzung</span><span class="val val-m">25 %</span></div>
-      <div class="scene-row"><span class="lbl">Nachrichten / Session</span><span class="val val-m">6</span></div>
-      <div class="scene-row"><span class="lbl">Marketing-Approach</span><span class="val val-m">Organic + Paid Mix</span></div>
-      <div class="scene-row"><span class="lbl">Claude als % Revenue</span><span class="val val-m">3,6 %</span></div>
-      <div class="scene-row"><span class="lbl">Revenue / User / Monat</span><span class="val val-m">€ 0,600</span></div>
-    </div>
-  </div>
-  <div class="scene-card best">
-    <div class="scene-head best">🟢 BEST CASE<span class="scene-sub">Optimistisch — viral, starkes Produkt</span></div>
-    <div class="scene-body">
-      <div class="scene-row"><span class="lbl">Premium-Conversion</span><span class="val val-g">25 %</span></div>
-      <div class="scene-row"><span class="lbl">Preis / Monat</span><span class="val val-g">€ 5,99</span></div>
-      <div class="scene-row"><span class="lbl">DAU-Rate</span><span class="val val-g">35 %</span></div>
-      <div class="scene-row"><span class="lbl">Premium-DAU</span><span class="val val-g">50 %</span></div>
-      <div class="scene-row"><span class="lbl">Coach-Nutzung</span><span class="val val-g">40 %</span></div>
-      <div class="scene-row"><span class="lbl">Nachrichten / Session</span><span class="val val-g">5</span></div>
-      <div class="scene-row"><span class="lbl">Marketing-Approach</span><span class="val val-g">Organic-first, viral</span></div>
-      <div class="scene-row"><span class="lbl">Claude als % Revenue</span><span class="val val-g">3,4 %</span></div>
-      <div class="scene-row"><span class="lbl">Revenue / User / Monat</span><span class="val val-g">€ 1,498</span></div>
-    </div>
-  </div>
-</div>
-
-<div class="callout yellow">
-  <div class="callout-i">⚠️</div>
-  <div class="callout-b">
-    <strong>Claude-API als % Revenue ist bei jedem Szenario über alle User-Zahlen konstant</strong>
-    <p>Da beide (API-Kosten und Revenue) linear mit N skalieren, bleibt das Verhältnis fix: WORST 5,1 % · MID 3,6 % · BEST 3,4 % — egal ob 5k oder 100k User. Was sich verändert: der absolute Gewinn und der Marketing-Anteil. Das ist die stärkste strukturelle Eigenschaft dieses Modells.</p>
-  </div>
-</div>
+<!-- 1. MODELL-KOSTEN -->
+<h2><span class="ico" style="background:#fef2f2">💸</span> 1. Korrekte Modell-Kosten (verifiziert)</h2>
 
 <div class="formula">
-<span class="f-c">// Haiku 4.5 Preise (verifiziert · docs.anthropic.com/models/overview · 10.06.2026)</span>
-<span class="f-k">Briefing</span>  = 1.000 × €0,00000092 + 200 × €0,0000046 = <span class="f-v">€0,001840</span>/Call
-<span class="f-k">Coach-Msg</span> = 800 × €0,00000092 + 300 × €0,0000046 = <span class="f-v">€0,002116</span>/Nachricht
+<span class="fc">// Preise: Haiku 4.5 = $1,00/$5,00 · Sonnet 4.6 = $3,00/$15,00 pro MTok · $1 = €0,92</span>
 
-<span class="f-c">// Monatliche Claude-Kosten: linear mit N</span>
-<span class="f-k">WORST</span>: Briefing-Faktor 0,000883 + Coach-Faktor 0,011427 = <span class="f-v">N × €0,012310</span>/Monat
-<span class="f-k">MID  </span>: Briefing-Faktor 0,002484 + Coach-Faktor 0,019044 = <span class="f-v">N × €0,021528</span>/Monat
-<span class="f-k">BEST </span>: Briefing-Faktor 0,006900 + Coach-Faktor 0,044436 = <span class="f-v">N × €0,051336</span>/Monat
+<span class="fk">── BRIEFING (Haiku 4.5, einfacher Kontext, kein Tool-Schema) ──────────────</span>
+Input  ~1.000 Token × €0,00000092  =  €0,000920
+Output   ~200 Token × €0,0000046   =  €0,000920
+<span class="fv">→ €0,001840 / Briefing-Call  (gecacht pro User+Tag, DAU × 30 Tage)</span>
 
-<span class="f-c">// Revenue ebenfalls linear</span>
-<span class="f-k">WORST</span>: N × 0,08 × €2,99 = <span class="f-v">N × €0,2392</span>/Monat
-<span class="f-k">MID  </span>: N × 0,15 × €4,00 = <span class="f-v">N × €0,6000</span>/Monat
-<span class="f-k">BEST </span>: N × 0,25 × €5,99 = <span class="f-v">N × €1,4975</span>/Monat
+<span class="fk">── COACH (Sonnet 4.6, voller Kontext aus context.ts + tools.ts) ──────────</span>
+System-Prompt   ~1.800 Token  <span class="fc">(Anweisungen + Fächer/Noten/Klausuren/Hausaufgaben/Stundenplan)</span>
+Tools-Schema    ~1.000 Token  <span class="fc">(16 Tools als JSON: note/klausur/aufgabe/stunde/fach + respond)</span>
+Konversation      ~600 Token  <span class="fc">(Ø 3 vorherige Turns)</span>
+User-Message       ~50 Token
+                 ──────────
+Input gesamt    ~3.450 Token × €0,00000276  =  €0,009522
+Output (Tool)     ~250 Token × €0,0000138   =  €0,003450
+<span class="fv">→ €0,012972 ≈ €0,013 / Nachricht</span>
+
+<span class="fk">── MIT PROMPT CACHING (noch nicht implementiert — Optimierungs-Potenzial) ──</span>
+System+Tools gecacht = ~2.800 Token:
+<span class="fw">Cache-Write: 2.800 × €0,00000276 × 0,25  =  €0,001932  (1. Nachricht/Session)</span>
+<span class="fw">Cache-Read:  2.800 × €0,00000276 × 0,10  =  €0,000773  (jede weitere Nachricht)</span>
+<span class="fy">→ Ø €0,007/Msg bei 4-Msg-Session  →  −47% vs. aktuell</span>
+
+<span class="fk">── MONATLICHE CLAUDE-KOSTEN PRO USER (diese Tabellen: OHNE Caching) ─────</span>
+<span class="fw">WORST</span>: DAU=15%, premDau=20%, coachPct=15%, msgs/session=8
+   → 5,4 Coach-Msgs/User/Mo  · brief=€0,0009  coach=€0,0702  <span class="fv">claude=€0,0711  (29,7% Rev)</span>
+<span class="fy">MID  </span>: DAU=20%, premDau=30%, coachPct=25%, msgs/session=6
+   → 9,0 Coach-Msgs/User/Mo  · brief=€0,0025  coach=€0,1170  <span class="fv">claude=€0,1195  (19,9% Rev)</span>
+<span class="fv">BEST </span>: DAU=35%, premDau=50%, coachPct=40%, msgs/session=5
+   → 21,0 Coach-Msgs/User/Mo · brief=€0,0069  coach=€0,2730  <span class="fv">claude=€0,2799  (18,7% Rev)</span>
 </div>
 
-<!-- ═══════════════════════════ INFRASTRUKTUR ═══════════════════════════ -->
-<h2><span class="ico" style="background:#f1f5f9">🏗️</span> 2. Infrastruktur — identisch für alle drei Szenarien</h2>
-
-<div class="tier-box tier-a">
-  <div class="tier-head">Stufe 1 · Unter 15.000 User <span style="font-size:12px;font-weight:400">€ 19,25 / Monat</span></div>
-  <div class="tier-bd"><table style="margin:8px 0 0"><tr><td><strong>Vercel Pro</strong></td><td class="r"><strong>€ 18,00</strong></td><td>$ 20 · Nötig ab ~3k User (Bandwidth > 100 GB)</td></tr><tr><td><strong>Supabase Free</strong></td><td class="r"><strong>€ 0</strong></td><td>500 MB reicht bis ~15k User (~30 KB/User)</td></tr><tr><td><strong>Resend Free</strong></td><td class="r"><strong>€ 0</strong></td><td>3.000 E-Mails/Monat reicht bis ~15k</td></tr><tr><td><strong>Domain .de</strong></td><td class="r"><strong>€ 1,25</strong></td><td>€ 15/Jahr. Hetzner/IONOS.</td></tr></table></div>
-</div>
-<div class="tier-box tier-b">
-  <div class="tier-head">⚠️ Stufe 2 · 15.000–19.999 User <span style="font-size:12px;font-weight:400">€ 42,25 / Monat (+€ 23)</span></div>
-  <div class="tier-bd"><table style="margin:8px 0 0"><tr><td><strong>+ Supabase Pro</strong></td><td class="r"><strong>+€ 23,00</strong></td><td>500 MB Grenze gesprengt. 100k MAU inkl. Reicht bis 100k User.</td></tr></table></div>
-</div>
-<div class="tier-box tier-c">
-  <div class="tier-head">⚠️ Stufe 3 · Ab 20.000 User <span style="font-size:12px;font-weight:400">€ 60,25 / Monat (+€ 18) · Bleibt bis 100k</span></div>
-  <div class="tier-bd"><table style="margin:8px 0 0"><tr><td><strong>+ Resend Starter</strong></td><td class="r"><strong>+€ 18,00</strong></td><td>$ 20 · 50k E-Mails/Monat. Ab ~20k User nötig. Kein weiterer Sprung bis 100k erwartet.</td></tr></table></div>
-</div>
-
-<!-- ═══════════════════════════ MARKETING ═══════════════════════════ -->
-<h2><span class="ico" style="background:#fce7f3">📣</span> 3. Marketing, Ads &amp; Social Media — Strategie &amp; Impact pro Szenario</h2>
-
-<p>Marketing ist der <strong>größte bewegliche Kostenfaktor</strong> — und gleichzeitig der größte Wachstumshebel. Im WORST Case frisst er bis zu 25 % der Revenue. Im BEST Case weniger als 1 %. Der Unterschied liegt nicht im Budget — sondern in der organischen Reichweite.</p>
-
-<div class="mkt-grid">
-  <div class="mkt-card">
-    <div class="mkt-tag bw">🔴 WORST — Paid-Heavy</div>
-    <h4>Organic funktioniert kaum</h4>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-r"></div><div>TikTok/Instagram Posts performen schlecht. Organische Reichweite &lt; 5k Views/Post.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-r"></div><div>Paid Ads nötig für jeden neuen User. CPM ~€ 12–15 (DE, Schüler 15–18J).</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-r"></div><div>Influencer-Posts performen unter Erwartung. CAC ~€ 6–15 pro neuem User.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-r"></div><div>Kein Word-of-Mouth. Kein Viral-Koeffizient. Jeder User kostet Geld.</div></div>
-    <table style="margin-top:10px;font-size:11px">
-      <tr><th>User</th><th class="r">Mkt-Budget/Mo</th><th class="r">Als % Revenue</th></tr>
-      <tr><td>5k</td><td class="num r">€ 60</td><td class="r">5,0 %</td></tr>
-      <tr><td>10k</td><td class="num r">€ 180</td><td class="r">7,5 %</td></tr>
-      <tr><td>25k</td><td class="num r">€ 760</td><td class="r">12,7 %</td></tr>
-      <tr><td>50k</td><td class="num r">€ 2.360</td><td class="r">19,7 %</td></tr>
-      <tr><td>100k</td><td class="num r">€ 6.060</td><td class="r" style="color:#ef4444"><strong>25,3 %</strong></td></tr>
-    </table>
+<div class="sg">
+  <div class="sc w"><div class="sh w">🔴 WORST<span class="ss">8% Conv · €2,99 · dau 15% · coachPct 15%</span></div>
+    <div class="sb">
+      <div class="sr"><span class="sl">Rev/User/Mo</span><span class="sv sv-r">€ 0,2392</span></div>
+      <div class="sr"><span class="sl">Coach Msgs/Mo</span><span class="sv sv-r">5,4</span></div>
+      <div class="sr"><span class="sl">Coach-Kosten/User</span><span class="sv sv-r">€ 0,0702</span></div>
+      <div class="sr"><span class="sl">Briefing-Kosten/User</span><span class="sv sv-r">€ 0,0009</span></div>
+      <div class="sr"><span class="sl">Claude % Revenue</span><span class="sv sv-r">29,7 %</span></div>
+      <div class="sr"><span class="sl">Mkt-Anteil</span><span class="sv sv-r">Paid-Ads-Heavy</span></div>
+    </div>
   </div>
-  <div class="mkt-card">
-    <div class="mkt-tag bm">🟡 MID — Organic + Paid Mix</div>
-    <h4>Build-in-Public funktioniert solide</h4>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-m"></div><div>Regelmäßige TikTok/Instagram Posts. ~30–100k Views/Monat organisch gesamt.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-m"></div><div>Paid Ads ergänzen organisch. CPM ~€ 8. Canva Pro für Ad-Creatives (€13/Mo).</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-m"></div><div>1–2 Micro-Influencer/Monat ab 15k. ~150–300 Signups/Post à €80–150.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-m"></div><div>CAC-Mix: ~€ 2–6. Social Scheduling-Tool ab 40k User (€ 18/Mo).</div></div>
-    <table style="margin-top:10px;font-size:11px">
-      <tr><th>User</th><th class="r">Mkt-Budget/Mo</th><th class="r">Als % Revenue</th></tr>
-      <tr><td>5k</td><td class="num r">€ 30</td><td class="r">1,0 %</td></tr>
-      <tr><td>10k</td><td class="num r">€ 93</td><td class="r">1,6 %</td></tr>
-      <tr><td>25k</td><td class="num r">€ 413</td><td class="r">2,8 %</td></tr>
-      <tr><td>50k</td><td class="num r">€ 1.283</td><td class="r">4,3 %</td></tr>
-      <tr><td>100k</td><td class="num r">€ 3.033</td><td class="r" style="color:#d97706"><strong>5,1 %</strong></td></tr>
-    </table>
+  <div class="sc m"><div class="sh m">🟡 MID<span class="ss">15% Conv · €4,00 · dau 20% · coachPct 25%</span></div>
+    <div class="sb">
+      <div class="sr"><span class="sl">Rev/User/Mo</span><span class="sv sv-m">€ 0,6000</span></div>
+      <div class="sr"><span class="sl">Coach Msgs/Mo</span><span class="sv sv-m">9,0</span></div>
+      <div class="sr"><span class="sl">Coach-Kosten/User</span><span class="sv sv-m">€ 0,1170</span></div>
+      <div class="sr"><span class="sl">Briefing-Kosten/User</span><span class="sv sv-m">€ 0,0025</span></div>
+      <div class="sr"><span class="sl">Claude % Revenue</span><span class="sv sv-m">19,9 %</span></div>
+      <div class="sr"><span class="sl">Mkt-Anteil</span><span class="sv sv-m">Organic + Paid</span></div>
+    </div>
   </div>
-  <div class="mkt-card">
-    <div class="mkt-tag bb">🟢 BEST — Organic-First, Viral</div>
-    <h4>Build-in-Public zündet — echte Reichweite</h4>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-g"></div><div>1–2 Viral-Posts/Monat. Je 200k–1M Views. ~1.000–5.000 Signups/Post.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-g"></div><div>Paid Ads nur als Booster für virale Posts. CPM ~€ 5 durch besseres Targeting.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-g"></div><div>Word-of-Mouth in Schulen (k-Faktor ~0,3). Freunde sehen App bei Mitschüler.</div></div>
-    <div class="mkt-item"><div class="mkt-dot mkt-dot-g"></div><div>CAC effektiv ~€ 0–2. LTV/CAC-Ratio: praktisch unendlich für Organic.</div></div>
-    <table style="margin-top:10px;font-size:11px">
-      <tr><th>User</th><th class="r">Mkt-Budget/Mo</th><th class="r">Als % Revenue</th></tr>
-      <tr><td>5k</td><td class="num r">€ 10</td><td class="r">0,1 %</td></tr>
-      <tr><td>10k</td><td class="num r">€ 30</td><td class="r">0,2 %</td></tr>
-      <tr><td>25k</td><td class="num r">€ 190</td><td class="r">0,5 %</td></tr>
-      <tr><td>50k</td><td class="num r">€ 600</td><td class="r">0,8 %</td></tr>
-      <tr><td>100k</td><td class="num r">€ 1.500</td><td class="r" style="color:#16a34a"><strong>1,0 %</strong></td></tr>
-    </table>
+  <div class="sc b"><div class="sh b">🟢 BEST<span class="ss">25% Conv · €5,99 · dau 35% · coachPct 40%</span></div>
+    <div class="sb">
+      <div class="sr"><span class="sl">Rev/User/Mo</span><span class="sv sv-g">€ 1,4975</span></div>
+      <div class="sr"><span class="sl">Coach Msgs/Mo</span><span class="sv sv-g">21,0</span></div>
+      <div class="sr"><span class="sl">Coach-Kosten/User</span><span class="sv sv-g">€ 0,2730</span></div>
+      <div class="sr"><span class="sl">Briefing-Kosten/User</span><span class="sv sv-g">€ 0,0069</span></div>
+      <div class="sr"><span class="sl">Claude % Revenue</span><span class="sv sv-g">18,7 %</span></div>
+      <div class="sr"><span class="sl">Mkt-Anteil</span><span class="sv sv-g">Viral / kein Paid</span></div>
+    </div>
   </div>
 </div>
 
-<h3>CAC-Vergleich: Organic vs. Paid — Schätzwerte für DE · 15–18-jährige Zielgruppe</h3>
-<table>
-  <thead><tr><th>Kanal</th><th class="r">Reach / Post</th><th class="r">Signups (Schätzung)</th><th class="r">Kosten</th><th class="r">CAC</th><th>Szenario</th></tr></thead>
-  <tbody>
-    <tr><td><strong>Viraler TikTok (1M Views)</strong></td><td class="num r">1.000.000</td><td class="num r">~3.000 (0,3 %)</td><td class="num r">€ 0</td><td class="num r" style="color:#16a34a"><strong>€ 0,00</strong></td><td><span class="badge bb">BEST</span></td></tr>
-    <tr><td><strong>Micro-Influencer 20k · €50/Post</strong></td><td class="num r">~4.000 real</td><td class="num r">~30 (5 % → 15 % LP)</td><td class="num r">€ 50</td><td class="num r" style="color:#16a34a"><strong>€ 1,67</strong></td><td><span class="badge bb">BEST/MID</span></td></tr>
-    <tr><td><strong>Schule Word-of-Mouth (k=0,3)</strong></td><td class="num r">Freundeskreis</td><td class="num r">viral (30 % der User)</td><td class="num r">€ 0</td><td class="num r" style="color:#16a34a"><strong>€ 0,00</strong></td><td><span class="badge bb">BEST</span></td></tr>
-    <tr><td><strong>Instagram Ads (CPM €8)</strong></td><td class="num r">€ 1.000 = 125k Impr.</td><td class="num r">~150 (0,5 % CTR · 15 % LP)</td><td class="num r">€ 1.000</td><td class="num r" style="color:#d97706"><strong>€ 6,67</strong></td><td><span class="badge bm">MID</span></td></tr>
-    <tr><td><strong>TikTok Ads (CPM €12) · kein Organic</strong></td><td class="num r">€ 1.000 = 83k Impr.</td><td class="num r">~83 (0,3 % CTR · 10 % LP)</td><td class="num r">€ 1.000</td><td class="num r" style="color:#ef4444"><strong>€ 12,05</strong></td><td><span class="badge bw">WORST</span></td></tr>
-  </tbody>
-</table>
-<p style="font-size:11px;color:#94a3b8;margin-top:4px">CTR = Click-Through-Rate. LP = Landing-Page-Conversion. Schätzwerte — variieren stark je Kampagne, Creative, Saison. Nicht garantiert.</p>
+<!-- 2. INFRASTRUKTUR -->
+<h2><span class="ico" style="background:#f1f5f9">🏗️</span> 2. Infrastruktur</h2>
+<div class="tier ta"><div class="tier-h">Stufe 0 · &lt;1.000 User <span style="font-weight:400;font-size:11px">€ 1,25 / Monat</span></div>
+  <div class="tier-b">Vercel Hobby (€0) · Supabase Free 500MB (€0) · Resend Free 3k Mails (€0) · Domain .de €1,25</div>
+</div>
+<div class="tier tb"><div class="tier-h">⚠️ Stufe 1 · 1.000–14.999 User <span style="font-weight:400;font-size:11px">€ 19,25 / Monat (+€18)</span></div>
+  <div class="tier-b">+ Vercel Pro €18/Mo (Commercial Use, 1TB Bandwidth, Cron-Jobs)</div>
+</div>
+<div class="tier tc"><div class="tier-h">⚠️ Stufe 2 · 15.000–19.999 User <span style="font-weight:400;font-size:11px">€ 42,25 / Monat (+€23)</span></div>
+  <div class="tier-b">+ Supabase Pro €23/Mo (500MB DB gesprengt, 100k MAU)</div>
+</div>
+<div class="tier td_"><div class="tier-h">⚠️ Stufe 3 · 20.000+ User <span style="font-weight:400;font-size:11px">€ 60,25 / Monat — bis 100k stabil</span></div>
+  <div class="tier-b">+ Resend Starter €18/Mo (50k E-Mails/Mo)</div>
+</div>
 
-<div class="callout blue">
-  <div class="callout-i">💡</div>
-  <div class="callout-b">
-    <strong>Ein einziger viraler Post schlägt 3 Monate Paid-Spending im WORST Case</strong>
-    <p>1M TikTok-Views × 0,3 % = 3.000 Signups zu €0. Gleiches Ergebnis per Paid-Ads (CPM €12): 1M Impressions = €12.000. ROI: unendlich vs. negativ ohne starken Funnel. Der entscheidende Hebel ist nicht das Budget — es ist Content-Qualität und Authentizität. Build-in-Public ("schaut wie ich als 17-jähriger eine App baut") ist genau das was diese Zielgruppe anspricht.</p>
+<!-- 3. APP STORE LAUNCH -->
+<h2><span class="ico" style="background:#f3e8ff">📱</span> 3. App Store Launch-Kosten</h2>
+
+<div class="co red">
+  <div class="co-i">🔞</div>
+  <div class="co-b">
+    <strong>Beide Stores erfordern 18+ für Developer-Accounts — du bist 17</strong>
+    <p>Apple Developer Program und Google Play Developer verlangen ein volljähriges Konto. Optionen: (1) Elternteil eröffnet den Account auf ihren Namen, du arbeitest darunter, (2) du wartest bis zu deinem 18. Geburtstag. Beta-Launch Ende August 2026 — das ist knapp. Kläre das jetzt, wenn du native iOS-App zum Launch willst. <strong>PWA (Homescreen) funktioniert ohne Store-Account.</strong></p>
   </div>
 </div>
 
-<hr>
-
-<!-- ═══════════════════════════ GROSSE TABELLE ═══════════════════════════ -->
-<h2><span class="ico" style="background:#e0f2fe">📊</span> 4. Vollständige Skalierungstabelle — alle 30 Datenpunkte</h2>
-
-<p style="margin-bottom:12px">Alle Zahlen mit Node.js berechnet. 3 Zeilen pro User-Stufe (W / M / B). ⚠️-Markierung = Infra-Sprung.</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>User</th>
-      <th>Szenario</th>
-      <th class="r">Premium-<br>User</th>
-      <th class="r">Claude<br>/Monat</th>
-      <th class="r">Infra<br>/Monat</th>
-      <th class="r">Ops<br>gesamt</th>
-      <th class="r">Marketing<br>/Monat</th>
-      <th class="r">Revenue<br>/Monat</th>
-      <th class="r">Netto-<br>gewinn</th>
-      <th class="r">Marge</th>
-    </tr>
-  </thead>
-  <tbody>
-
-    <!-- 5.000 -->
-    <tr class="group-header"><td colspan="10"><strong>5.000 User</strong> · Infra Stufe 1 (€ 19,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">400</td><td class="num r">€ 61,55</td><td class="num r">€ 19,25</td><td class="num r">€ 80,80</td><td class="num r">€ 60</td><td class="num r">€ 1.196</td><td class="num r" style="color:#16a34a"><strong>€ 1.055</strong></td><td class="num r"><strong>88,2 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">750</td><td class="num r">€ 107,64</td><td class="num r">€ 19,25</td><td class="num r">€ 126,89</td><td class="num r">€ 30</td><td class="num r">€ 3.000</td><td class="num r" style="color:#16a34a"><strong>€ 2.843</strong></td><td class="num r"><strong>94,8 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">1.250</td><td class="num r">€ 256,68</td><td class="num r">€ 19,25</td><td class="num r">€ 275,93</td><td class="num r">€ 10</td><td class="num r">€ 7.488</td><td class="num r" style="color:#16a34a"><strong>€ 7.202</strong></td><td class="num r"><strong>96,2 %</strong></td></tr>
-
-    <!-- 10.000 -->
-    <tr class="group-header"><td colspan="10"><strong>10.000 User</strong> · Infra Stufe 1 (€ 19,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">800</td><td class="num r">€ 123,10</td><td class="num r">€ 19,25</td><td class="num r">€ 142,35</td><td class="num r">€ 180</td><td class="num r">€ 2.392</td><td class="num r" style="color:#16a34a"><strong>€ 2.070</strong></td><td class="num r"><strong>86,5 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">1.500</td><td class="num r">€ 215,28</td><td class="num r">€ 19,25</td><td class="num r">€ 234,53</td><td class="num r">€ 93</td><td class="num r">€ 6.000</td><td class="num r" style="color:#16a34a"><strong>€ 5.672</strong></td><td class="num r"><strong>94,5 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">2.500</td><td class="num r">€ 513,36</td><td class="num r">€ 19,25</td><td class="num r">€ 532,61</td><td class="num r">€ 30</td><td class="num r">€ 14.975</td><td class="num r" style="color:#16a34a"><strong>€ 14.412</strong></td><td class="num r"><strong>96,2 %</strong></td></tr>
-
-    <!-- 15.000 ⚠️ Infra-Sprung Supabase Pro -->
-    <tr class="group-header infra-jump"><td colspan="10"><strong>15.000 User</strong> ⚠️ Infra-Sprung: Supabase Pro ab hier (+€ 23) → Stufe 2 (€ 42,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">1.200</td><td class="num r">€ 184,64</td><td class="num r">€ 42,25</td><td class="num r">€ 226,89</td><td class="num r">€ 380</td><td class="num r">€ 3.588</td><td class="num r" style="color:#16a34a"><strong>€ 2.981</strong></td><td class="num r"><strong>83,1 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">2.250</td><td class="num r">€ 322,92</td><td class="num r">€ 42,25</td><td class="num r">€ 365,17</td><td class="num r">€ 203</td><td class="num r">€ 9.000</td><td class="num r" style="color:#16a34a"><strong>€ 8.432</strong></td><td class="num r"><strong>93,7 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">3.750</td><td class="num r">€ 770,04</td><td class="num r">€ 42,25</td><td class="num r">€ 812,29</td><td class="num r">€ 80</td><td class="num r">€ 22.463</td><td class="num r" style="color:#16a34a"><strong>€ 21.570</strong></td><td class="num r"><strong>96,0 %</strong></td></tr>
-
-    <!-- 20.000 ⚠️ Infra-Sprung Resend -->
-    <tr class="group-header infra-jump2"><td colspan="10"><strong>20.000 User</strong> ⚠️ Infra-Sprung: Resend Starter ab hier (+€ 18) → Stufe 3 (€ 60,25) · Bleibt bis 100k</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">1.600</td><td class="num r">€ 246,19</td><td class="num r">€ 60,25</td><td class="num r">€ 306,44</td><td class="num r">€ 560</td><td class="num r">€ 4.784</td><td class="num r" style="color:#16a34a"><strong>€ 3.918</strong></td><td class="num r"><strong>81,9 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">3.000</td><td class="num r">€ 430,56</td><td class="num r">€ 60,25</td><td class="num r">€ 490,81</td><td class="num r">€ 303</td><td class="num r">€ 12.000</td><td class="num r" style="color:#16a34a"><strong>€ 11.206</strong></td><td class="num r"><strong>93,4 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">5.000</td><td class="num r">€ 1.026,72</td><td class="num r">€ 60,25</td><td class="num r">€ 1.086,97</td><td class="num r">€ 130</td><td class="num r">€ 29.950</td><td class="num r" style="color:#16a34a"><strong>€ 28.733</strong></td><td class="num r"><strong>95,9 %</strong></td></tr>
-
-    <!-- 25.000 -->
-    <tr class="group-header"><td colspan="10"><strong>25.000 User</strong> · Infra Stufe 3 (€ 60,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">2.000</td><td class="num r">€ 307,74</td><td class="num r">€ 60,25</td><td class="num r">€ 367,99</td><td class="num r">€ 760</td><td class="num r">€ 5.980</td><td class="num r" style="color:#16a34a"><strong>€ 4.852</strong></td><td class="num r"><strong>81,1 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">3.750</td><td class="num r">€ 538,20</td><td class="num r">€ 60,25</td><td class="num r">€ 598,45</td><td class="num r">€ 413</td><td class="num r">€ 15.000</td><td class="num r" style="color:#16a34a"><strong>€ 13.989</strong></td><td class="num r"><strong>93,3 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">6.250</td><td class="num r">€ 1.283,40</td><td class="num r">€ 60,25</td><td class="num r">€ 1.343,65</td><td class="num r">€ 190</td><td class="num r">€ 37.438</td><td class="num r" style="color:#16a34a"><strong>€ 35.904</strong></td><td class="num r"><strong>95,9 %</strong></td></tr>
-
-    <!-- 30.000 -->
-    <tr class="group-header"><td colspan="10"><strong>30.000 User</strong> · Infra Stufe 3 (€ 60,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">2.400</td><td class="num r">€ 369,29</td><td class="num r">€ 60,25</td><td class="num r">€ 429,54</td><td class="num r">€ 960</td><td class="num r">€ 7.176</td><td class="num r" style="color:#16a34a"><strong>€ 5.786</strong></td><td class="num r"><strong>80,6 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">4.500</td><td class="num r">€ 645,84</td><td class="num r">€ 60,25</td><td class="num r">€ 706,09</td><td class="num r">€ 513</td><td class="num r">€ 18.000</td><td class="num r" style="color:#16a34a"><strong>€ 16.781</strong></td><td class="num r"><strong>93,2 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">7.500</td><td class="num r">€ 1.540,08</td><td class="num r">€ 60,25</td><td class="num r">€ 1.600,33</td><td class="num r">€ 250</td><td class="num r">€ 44.925</td><td class="num r" style="color:#16a34a"><strong>€ 43.075</strong></td><td class="num r"><strong>95,9 %</strong></td></tr>
-
-    <!-- 40.000 -->
-    <tr class="group-header"><td colspan="10"><strong>40.000 User</strong> · Infra Stufe 3 (€ 60,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">3.200</td><td class="num r">€ 492,38</td><td class="num r">€ 60,25</td><td class="num r">€ 552,63</td><td class="num r">€ 1.560</td><td class="num r">€ 9.568</td><td class="num r" style="color:#16a34a"><strong>€ 7.455</strong></td><td class="num r"><strong>77,9 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">6.000</td><td class="num r">€ 861,12</td><td class="num r">€ 60,25</td><td class="num r">€ 921,37</td><td class="num r">€ 833</td><td class="num r">€ 24.000</td><td class="num r" style="color:#16a34a"><strong>€ 22.246</strong></td><td class="num r"><strong>92,7 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">10.000</td><td class="num r">€ 2.053,44</td><td class="num r">€ 60,25</td><td class="num r">€ 2.113,69</td><td class="num r">€ 400</td><td class="num r">€ 59.900</td><td class="num r" style="color:#16a34a"><strong>€ 57.386</strong></td><td class="num r"><strong>95,8 %</strong></td></tr>
-
-    <!-- 50.000 -->
-    <tr class="group-header"><td colspan="10"><strong>50.000 User</strong> · Infra Stufe 3 (€ 60,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">4.000</td><td class="num r">€ 615,48</td><td class="num r">€ 60,25</td><td class="num r">€ 675,73</td><td class="num r">€ 2.360</td><td class="num r">€ 11.960</td><td class="num r" style="color:#16a34a"><strong>€ 8.924</strong></td><td class="num r"><strong>74,6 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">7.500</td><td class="num r">€ 1.076,40</td><td class="num r">€ 60,25</td><td class="num r">€ 1.136,65</td><td class="num r">€ 1.283</td><td class="num r">€ 30.000</td><td class="num r" style="color:#16a34a"><strong>€ 27.580</strong></td><td class="num r"><strong>91,9 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">12.500</td><td class="num r">€ 2.566,80</td><td class="num r">€ 60,25</td><td class="num r">€ 2.627,05</td><td class="num r">€ 600</td><td class="num r">€ 74.875</td><td class="num r" style="color:#16a34a"><strong>€ 71.648</strong></td><td class="num r"><strong>95,7 %</strong></td></tr>
-
-    <!-- 75.000 -->
-    <tr class="group-header"><td colspan="10"><strong>75.000 User</strong> · Infra Stufe 3 (€ 60,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">6.000</td><td class="num r">€ 923,22</td><td class="num r">€ 60,25</td><td class="num r">€ 983,47</td><td class="num r">€ 4.060</td><td class="num r">€ 17.940</td><td class="num r" style="color:#16a34a"><strong>€ 12.897</strong></td><td class="num r"><strong>71,9 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">11.250</td><td class="num r">€ 1.614,60</td><td class="num r">€ 60,25</td><td class="num r">€ 1.674,85</td><td class="num r">€ 2.033</td><td class="num r">€ 45.000</td><td class="num r" style="color:#16a34a"><strong>€ 41.292</strong></td><td class="num r"><strong>91,8 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">18.750</td><td class="num r">€ 3.850,20</td><td class="num r">€ 60,25</td><td class="num r">€ 3.910,45</td><td class="num r">€ 1.000</td><td class="num r">€ 112.313</td><td class="num r" style="color:#16a34a"><strong>€ 107.402</strong></td><td class="num r"><strong>95,6 %</strong></td></tr>
-
-    <!-- 100.000 -->
-    <tr class="group-header"><td colspan="10"><strong>100.000 User</strong> · Infra Stufe 3 (€ 60,25)</td></tr>
-    <tr class="row-w"><td></td><td><span class="badge bw">WORST</span></td><td class="num r">8.000</td><td class="num r">€ 1.230,96</td><td class="num r">€ 60,25</td><td class="num r">€ 1.291,21</td><td class="num r">€ 6.060</td><td class="num r">€ 23.920</td><td class="num r" style="color:#16a34a"><strong>€ 16.569</strong></td><td class="num r"><strong>69,3 %</strong></td></tr>
-    <tr class="row-m"><td></td><td><span class="badge bm">MID</span></td><td class="num r">15.000</td><td class="num r">€ 2.152,80</td><td class="num r">€ 60,25</td><td class="num r">€ 2.213,05</td><td class="num r">€ 3.033</td><td class="num r">€ 60.000</td><td class="num r" style="color:#16a34a"><strong>€ 54.754</strong></td><td class="num r"><strong>91,3 %</strong></td></tr>
-    <tr class="row-b"><td></td><td><span class="badge bb">BEST</span></td><td class="num r">25.000</td><td class="num r">€ 5.133,60</td><td class="num r">€ 60,25</td><td class="num r">€ 5.193,85</td><td class="num r">€ 1.500</td><td class="num r">€ 149.750</td><td class="num r" style="color:#16a34a"><strong>€ 143.056</strong></td><td class="num r"><strong>95,5 %</strong></td></tr>
-
-  </tbody>
-</table>
-
-<hr>
-
-<!-- ═══════════════════════════ KPIs ═══════════════════════════ -->
-<h2><span class="ico" style="background:#f3e8ff">🎯</span> 5. Szenario-Vergleich bei 100.000 Usern</h2>
-
-<div class="kpi-row">
-  <div class="kpi-box">
-    <div class="kpi-lbl">Revenue / Monat</div>
-    <div class="kpi-val" style="color:#ef4444;font-size:16px">€ 23.920</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">WORST</div>
-    <div class="kpi-val" style="color:#d97706;font-size:16px">€ 60.000</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">MID</div>
-    <div class="kpi-val" style="color:#16a34a;font-size:16px">€ 149.750</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0">BEST</div>
+<div class="store-grid">
+  <div class="store-card">
+    <div class="store-icon">🍎</div>
+    <div class="store-title">Apple App Store</div>
+    <div class="store-row"><span>Developer Program</span><span><strong>$99/Jahr = €91/Jahr = €7,58/Mo (ongoing)</strong></span></div>
+    <div class="store-row"><span>IAP-Cut (Small Business &lt;$1M)</span><span><strong>15 %</strong> von jedem Abo</span></div>
+    <div class="store-row"><span>IAP-Cut (Standard / über $1M)</span><span>30 %</span></div>
+    <div class="store-row"><span>App Review Vorlaufzeit</span><span>1–3 Tage, plane 1 Woche ein</span></div>
+    <div class="store-row"><span>Testflight Beta</span><span>Bis 10.000 Tester, kostenlos</span></div>
+    <div class="store-row"><span>PWA ohne App Store</span><span>Kein Account nötig ✓</span></div>
   </div>
-  <div class="kpi-box">
-    <div class="kpi-lbl">Nettogewinn / Monat</div>
-    <div class="kpi-val" style="color:#ef4444;font-size:16px">€ 16.569</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">WORST</div>
-    <div class="kpi-val" style="color:#d97706;font-size:16px">€ 54.754</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">MID</div>
-    <div class="kpi-val" style="color:#16a34a;font-size:16px">€ 143.056</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0">BEST</div>
-  </div>
-  <div class="kpi-box">
-    <div class="kpi-lbl">Nettomarge</div>
-    <div class="kpi-val" style="color:#ef4444;font-size:16px">69,3 %</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">WORST</div>
-    <div class="kpi-val" style="color:#d97706;font-size:16px">91,3 %</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">MID</div>
-    <div class="kpi-val" style="color:#16a34a;font-size:16px">95,5 %</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0">BEST</div>
-  </div>
-  <div class="kpi-box">
-    <div class="kpi-lbl">Marketing als % Revenue</div>
-    <div class="kpi-val" style="color:#ef4444;font-size:16px">25,3 %</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">WORST</div>
-    <div class="kpi-val" style="color:#d97706;font-size:16px">5,1 %</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0 6px">MID</div>
-    <div class="kpi-val" style="color:#16a34a;font-size:16px">1,0 %</div>
-    <div style="font-size:9.5px;color:#94a3b8;margin:1px 0">BEST</div>
+  <div class="store-card">
+    <div class="store-icon">🤖</div>
+    <div class="store-title">Google Play Store</div>
+    <div class="store-row"><span>Developer Account</span><span><strong>$25 = €23 einmalig (once)</strong></span></div>
+    <div class="store-row"><span>IAP-Cut (Subscriptions &lt;$1M)</span><span><strong>15 %</strong> von jedem Abo</span></div>
+    <div class="store-row"><span>IAP-Cut (Standard / über $1M)</span><span>30 %</span></div>
+    <div class="store-row"><span>App Review Vorlaufzeit</span><span>1–3 Tage</span></div>
+    <div class="store-row"><span>Interne Tests / Open Beta</span><span>Unbegrenzte Tester</span></div>
+    <div class="store-row"><span>PWA ohne Play Store</span><span>Kein Account nötig ✓</span></div>
   </div>
 </div>
 
-<h3>Marge-Entwicklung — wie sie sich über Skalierung verändert</h3>
-<table>
-  <thead><tr><th>User</th><th class="r">WORST Marge</th><th class="r">MID Marge</th><th class="r">BEST Marge</th><th class="r">Revenue-Spread WORST → BEST</th></tr></thead>
-  <tbody>
-    <tr><td>5.000</td><td class="num r" style="color:#ef4444">88,2 %</td><td class="num r">94,8 %</td><td class="num r" style="color:#16a34a">96,2 %</td><td class="num r">× 6,3</td></tr>
-    <tr><td>10.000</td><td class="num r" style="color:#ef4444">86,5 %</td><td class="num r">94,5 %</td><td class="num r" style="color:#16a34a">96,2 %</td><td class="num r">× 6,3</td></tr>
-    <tr><td>20.000</td><td class="num r" style="color:#ef4444">81,9 %</td><td class="num r">93,4 %</td><td class="num r" style="color:#16a34a">95,9 %</td><td class="num r">× 6,3</td></tr>
-    <tr><td>30.000</td><td class="num r" style="color:#ef4444">80,6 %</td><td class="num r">93,2 %</td><td class="num r" style="color:#16a34a">95,9 %</td><td class="num r">× 6,3</td></tr>
-    <tr><td>50.000</td><td class="num r" style="color:#ef4444">74,6 %</td><td class="num r">91,9 %</td><td class="num r" style="color:#16a34a">95,7 %</td><td class="num r">× 6,3</td></tr>
-    <tr style="font-weight:700;border-top:2px solid #e2e8f0"><td>100.000</td><td class="num r" style="color:#ef4444">69,3 %</td><td class="num r" style="color:#d97706">91,3 %</td><td class="num r" style="color:#16a34a">95,5 %</td><td class="num r">× 6,3</td></tr>
-  </tbody>
-</table>
-
-<div class="callout green">
-  <div class="callout-i">💡</div>
-  <div class="callout-b">
-    <strong>Revenue-Spread ist konstant ×6,3 — auf jeder Skalierungsstufe</strong>
-    <p>BEST macht immer 6,3× mehr Revenue als WORST — bei 5k und bei 100k. Das Verhältnis ist fixiert durch die Parameter-Annahmen, nicht durch die User-Zahl. Was sich verändert ist der absolute Betrag: Bei 5k ist die Lücke €6.292/Monat. Bei 100k ist es €125.830/Monat. Gleiches prozentuales Upside, massiv größerer absoluter Impact bei Skalierung.</p>
+<div class="co blue">
+  <div class="co-i">📊</div>
+  <div class="co-b">
+    <strong>Revenue-Impact App Store-Cut bei 50% Store-Mix und 15% Cut</strong>
+    <p>1k MID (€600/Mo Rev): −€45/Mo · 10k MID (€6.000): −€450/Mo · 50k MID (€30.000): −€2.250/Mo · <strong>100k MID (€60.000): −€4.500/Mo</strong> — das ist mehr als alle Infra-Kosten zusammen. Jeder Web-User der direkt zahlt statt über App Store spart dir 15% Revenue. PWA-first ist nicht nur einfacher zu launchen, es ist auch finanziell die richtige Strategie.</p>
   </div>
 </div>
 
 <hr>
 
-<!-- ═══════════════════════════ MARKETING HEBEL ═══════════════════════════ -->
-<h2><span class="ico" style="background:#fce7f3">🚀</span> 6. Der Marketing-Hebel — warum Organic alles verändert</h2>
+<!-- 4. FRÜHE PHASE -->
+<h2><span class="ico" style="background:#fef3c7">🌱</span> 4. Frühe Phase — 5 bis 1.000 User</h2>
 
-<p>Marketing-Budget als Anteil vom Revenue — der wichtigste Effizienz-Vergleich:</p>
-
-<div class="lev-bar-wrap">
-  <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Breite der Balken = Marketing als % von Revenue. Skaliert auf max. 240px = 25 %.</div>
-
-  <div style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:6px">5k User:</div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">WORST · 5k</div><div class="lev-bar lev-bar-w" style="width:48px">5,0 %</div></div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">MID · 5k</div><div class="lev-bar lev-bar-m" style="width:10px">1 %</div></div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">BEST · 5k</div><div class="lev-bar lev-bar-b" style="width:5px">0,1 %</div></div>
-
-  <div style="font-size:11px;font-weight:700;color:#0f172a;margin:12px 0 6px">50k User:</div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">WORST · 50k</div><div class="lev-bar lev-bar-w" style="width:189px">19,7 %</div></div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">MID · 50k</div><div class="lev-bar lev-bar-m" style="width:41px">4,3 %</div></div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">BEST · 50k</div><div class="lev-bar lev-bar-b" style="width:8px">0,8 %</div></div>
-
-  <div style="font-size:11px;font-weight:700;color:#0f172a;margin:12px 0 6px">100k User:</div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">WORST · 100k</div><div class="lev-bar lev-bar-w" style="width:240px">25,3 %</div></div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">MID · 100k</div><div class="lev-bar lev-bar-m" style="width:49px">5,1 %</div></div>
-  <div class="lev-bar-row"><div class="lev-bar-lbl">BEST · 100k</div><div class="lev-bar lev-bar-b" style="width:10px">1,0 %</div></div>
-</div>
-
-<div class="callout red">
-  <div class="callout-i">🔴</div>
-  <div class="callout-b">
-    <strong>WORST Case: Marketing frisst die Marge progressiv auf</strong>
-    <p>Bei 5k Usern sind 88 % Marge noch ok. Aber bei 100k sinkt sie auf 69 % — obwohl die Ops-Kosten nur 5 % von Revenue sind. Der Rest wird von Marketing aufgefressen. Ursache: kein Organic = jeder neue User kostet Geld. Bei 100k Usern: €6.060/Monat für Marketing vs. €1.291 für Ops. Marketing ist 4,7× teurer als der gesamte Infra+Claude-Stack.</p>
+<div class="co yellow">
+  <div class="co-i">⚠️</div>
+  <div class="co-b">
+    <strong>WORST braucht mehr User als in v5 um die Gewinnschwelle zu erreichen</strong>
+    <p>Mit Sonnet-Coach ist die Gewinnschwelle im WORST Case (mit Paid-Ads) erst bei ~250–500 Usern. Ohne Marketing-Budget (Beta-Phase realistisch) liegt sie bei ~10 Usern. MID und BEST sind schon ab 5 Usern im Plus. Das zeigt: Coach ist die dominante Kostenvariable — deshalb ist Prompt Caching der wichtigste kurzfristige Hebel.</p>
   </div>
 </div>
 
-<div class="callout green">
-  <div class="callout-i">🟢</div>
-  <div class="callout-b">
-    <strong>BEST Case: LTV / CAC = praktisch unendlich bei Organic-Content</strong>
-    <p>Premium-User LTV bei 12 Monaten Ø-Churn: 12 × €5,99 = €71,88. CAC bei organischem TikTok: ~€0. Das bedeutet: jeder User den Organic bringt ist 100 % Gewinn (abzüglich API + Infra). Bei 1M Views × 0,3 % Conversion × 25 % Premium-Rate: 750 neue Premium-User × €71,88 LTV = €53.910 Lifetime-Revenue aus einem einzigen Post zu €0 Kosten.</p>
+<div class="sec-lbl">Infra Stufe 0 (€1,25/Mo) · 5 bis 999 User</div>
+
+<table>
+<thead><tr>
+  <th>N</th><th>Szenario</th><th class="r">Prem.</th>
+  <th class="r">Briefing<br>Haiku</th><th class="r">Coach<br>Sonnet</th><th class="r">Claude Σ</th>
+  <th class="r">Infra</th><th class="r">Ops Σ</th><th class="r">Marketing</th>
+  <th class="r">Revenue</th><th class="r">Netto</th><th class="r">Marge</th>
+</tr></thead>
+<tbody>
+
+<tr class="gh"><td colspan="12"><strong>5 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">0,4</td><td class="num r">€ 0,00</td><td class="num r">€ 0,35</td><td class="num r">€ 0,36</td><td class="num r">€ 1,25</td><td class="num r">€ 1,61</td><td class="num r">€ 0</td><td class="num r">€ 1,20</td><td class="num r neg">−€ 0,41</td><td class="r neg">−34 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">0,8</td><td class="num r">€ 0,01</td><td class="num r">€ 0,59</td><td class="num r">€ 0,60</td><td class="num r">€ 1,25</td><td class="num r">€ 1,85</td><td class="num r">€ 0</td><td class="num r">€ 3,00</td><td class="num r pos"><strong>€ 1,15</strong></td><td class="r">38,3 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">1,3</td><td class="num r">€ 0,03</td><td class="num r">€ 1,37</td><td class="num r">€ 1,40</td><td class="num r">€ 1,25</td><td class="num r">€ 2,65</td><td class="num r">€ 0</td><td class="num r">€ 7,49</td><td class="num r pos"><strong>€ 4,84</strong></td><td class="r">64,6 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>10 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">0,8</td><td class="num r">€ 0,01</td><td class="num r">€ 0,70</td><td class="num r">€ 0,71</td><td class="num r">€ 1,25</td><td class="num r">€ 1,96</td><td class="num r">€ 5</td><td class="num r">€ 2,39</td><td class="num r neg">−€ 4,57</td><td class="r neg">—</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">1,5</td><td class="num r">€ 0,02</td><td class="num r">€ 1,17</td><td class="num r">€ 1,20</td><td class="num r">€ 1,25</td><td class="num r">€ 2,45</td><td class="num r">€ 0</td><td class="num r">€ 6,00</td><td class="num r pos"><strong>€ 3,56</strong></td><td class="r">59,3 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">2,5</td><td class="num r">€ 0,07</td><td class="num r">€ 2,73</td><td class="num r">€ 2,80</td><td class="num r">€ 1,25</td><td class="num r">€ 4,05</td><td class="num r">€ 0</td><td class="num r">€ 14,98</td><td class="num r pos"><strong>€ 10,93</strong></td><td class="r">73,0 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>25 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">2,0</td><td class="num r">€ 0,02</td><td class="num r">€ 1,76</td><td class="num r">€ 1,78</td><td class="num r">€ 1,25</td><td class="num r">€ 3,03</td><td class="num r">€ 10</td><td class="num r">€ 5,98</td><td class="num r neg">−€ 7,05</td><td class="r neg">—</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">3,8</td><td class="num r">€ 0,06</td><td class="num r">€ 2,93</td><td class="num r">€ 2,99</td><td class="num r">€ 1,25</td><td class="num r">€ 4,24</td><td class="num r">€ 0</td><td class="num r">€ 15,00</td><td class="num r pos"><strong>€ 10,76</strong></td><td class="r">71,7 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">6,3</td><td class="num r">€ 0,17</td><td class="num r">€ 6,83</td><td class="num r">€ 7,00</td><td class="num r">€ 1,25</td><td class="num r">€ 8,25</td><td class="num r">€ 0</td><td class="num r">€ 37,44</td><td class="num r pos"><strong>€ 29,19</strong></td><td class="r">77,9 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>50 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">4,0</td><td class="num r">€ 0,04</td><td class="num r">€ 3,51</td><td class="num r">€ 3,56</td><td class="num r">€ 1,25</td><td class="num r">€ 4,81</td><td class="num r">€ 15</td><td class="num r">€ 11,96</td><td class="num r neg">−€ 7,85</td><td class="r neg">—</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">7,5</td><td class="num r">€ 0,12</td><td class="num r">€ 5,85</td><td class="num r">€ 5,97</td><td class="num r">€ 1,25</td><td class="num r">€ 7,22</td><td class="num r">€ 5</td><td class="num r">€ 30,00</td><td class="num r pos"><strong>€ 17,78</strong></td><td class="r">59,3 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">12,5</td><td class="num r">€ 0,35</td><td class="num r">€ 13,65</td><td class="num r">€ 14,00</td><td class="num r">€ 1,25</td><td class="num r">€ 15,25</td><td class="num r">€ 0</td><td class="num r">€ 74,88</td><td class="num r pos"><strong>€ 59,63</strong></td><td class="r">79,6 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>100 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">8,0</td><td class="num r">€ 0,09</td><td class="num r">€ 7,02</td><td class="num r">€ 7,11</td><td class="num r">€ 1,25</td><td class="num r">€ 8,36</td><td class="num r">€ 25</td><td class="num r">€ 23,92</td><td class="num r neg">−€ 9,44</td><td class="r neg">—</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">15,0</td><td class="num r">€ 0,25</td><td class="num r">€ 11,70</td><td class="num r">€ 11,95</td><td class="num r">€ 1,25</td><td class="num r">€ 13,20</td><td class="num r">€ 10</td><td class="num r">€ 60,00</td><td class="num r pos"><strong>€ 36,80</strong></td><td class="r">61,3 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">25,0</td><td class="num r">€ 0,69</td><td class="num r">€ 27,30</td><td class="num r">€ 27,99</td><td class="num r">€ 1,25</td><td class="num r">€ 29,24</td><td class="num r">€ 0</td><td class="num r">€ 149,75</td><td class="num r pos"><strong>€ 120,51</strong></td><td class="r">80,5 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>250 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">20,0</td><td class="num r">€ 0,22</td><td class="num r">€ 17,55</td><td class="num r">€ 17,78</td><td class="num r">€ 1,25</td><td class="num r">€ 19,03</td><td class="num r">€ 35</td><td class="num r">€ 59,80</td><td class="num r pos"><strong>€ 5,77</strong></td><td class="r">9,7 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">37,5</td><td class="num r">€ 0,62</td><td class="num r">€ 29,25</td><td class="num r">€ 29,88</td><td class="num r">€ 1,25</td><td class="num r">€ 31,13</td><td class="num r">€ 15</td><td class="num r">€ 150,00</td><td class="num r pos"><strong>€ 103,87</strong></td><td class="r">69,2 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">62,5</td><td class="num r">€ 1,73</td><td class="num r">€ 68,25</td><td class="num r">€ 69,98</td><td class="num r">€ 1,25</td><td class="num r">€ 71,23</td><td class="num r">€ 0</td><td class="num r">€ 374,38</td><td class="num r pos"><strong>€ 303,15</strong></td><td class="r">81,0 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>500 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">40,0</td><td class="num r">€ 0,44</td><td class="num r">€ 35,10</td><td class="num r">€ 35,54</td><td class="num r">€ 1,25</td><td class="num r">€ 36,79</td><td class="num r">€ 45</td><td class="num r">€ 119,60</td><td class="num r pos"><strong>€ 37,81</strong></td><td class="r">31,6 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">75,0</td><td class="num r">€ 1,24</td><td class="num r">€ 58,50</td><td class="num r">€ 59,74</td><td class="num r">€ 1,25</td><td class="num r">€ 60,99</td><td class="num r">€ 20</td><td class="num r">€ 300,00</td><td class="num r pos"><strong>€ 219,01</strong></td><td class="r">73,0 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">125,0</td><td class="num r">€ 3,45</td><td class="num r">€ 136,50</td><td class="num r">€ 139,95</td><td class="num r">€ 1,25</td><td class="num r">€ 141,20</td><td class="num r">€ 0</td><td class="num r">€ 748,75</td><td class="num r pos"><strong>€ 607,55</strong></td><td class="r">81,1 %</td></tr>
+
+</tbody>
+</table>
+
+<!-- 5. WACHSTUMSPHASE -->
+<h2><span class="ico" style="background:#e0f2fe">📈</span> 5. Wachstumsphase — 1.000 bis 100.000 User</h2>
+<div class="sec-lbl">⚠️ Infra-Sprünge bei 1k / 15k / 20k gelb markiert</div>
+
+<table>
+<thead><tr>
+  <th>N</th><th>Szenario</th><th class="r">Prem.</th>
+  <th class="r">Briefing<br>Haiku</th><th class="r">Coach<br>Sonnet</th><th class="r">Claude Σ</th>
+  <th class="r">Infra</th><th class="r">Ops Σ</th><th class="r">Marketing</th>
+  <th class="r">Revenue</th><th class="r">Netto</th><th class="r">Marge</th>
+</tr></thead>
+<tbody>
+
+<tr class="gh gi"><td colspan="12">⚠️ <strong>1.000 User</strong> — Infra-Sprung → Vercel Pro → €19,25/Mo</td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">80</td><td class="num r">€ 0,88</td><td class="num r">€ 70,20</td><td class="num r">€ 71,08</td><td class="num r">€ 19,25</td><td class="num r">€ 90,33</td><td class="num r">€ 55</td><td class="num r">€ 239</td><td class="num r pos"><strong>€ 93,87</strong></td><td class="r">39,2 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">150</td><td class="num r">€ 2,48</td><td class="num r">€ 117,00</td><td class="num r">€ 119,48</td><td class="num r">€ 19,25</td><td class="num r">€ 138,73</td><td class="num r">€ 25</td><td class="num r">€ 600</td><td class="num r pos"><strong>€ 436,27</strong></td><td class="r">72,7 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">250</td><td class="num r">€ 6,90</td><td class="num r">€ 273,00</td><td class="num r">€ 279,90</td><td class="num r">€ 19,25</td><td class="num r">€ 299,15</td><td class="num r">€ 5</td><td class="num r">€ 1.498</td><td class="num r pos"><strong>€ 1.193,35</strong></td><td class="r">79,7 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>2.500 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">200</td><td class="num r">€ 2,20</td><td class="num r">€ 175,50</td><td class="num r">€ 177,70</td><td class="num r">€ 19,25</td><td class="num r">€ 196,95</td><td class="num r">€ 60</td><td class="num r">€ 598</td><td class="num r pos"><strong>€ 341,05</strong></td><td class="r">57,0 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">375</td><td class="num r">€ 6,20</td><td class="num r">€ 292,50</td><td class="num r">€ 298,70</td><td class="num r">€ 19,25</td><td class="num r">€ 317,95</td><td class="num r">€ 25</td><td class="num r">€ 1.500</td><td class="num r pos"><strong>€ 1.157,05</strong></td><td class="r">77,1 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">625</td><td class="num r">€ 17,25</td><td class="num r">€ 682,50</td><td class="num r">€ 699,75</td><td class="num r">€ 19,25</td><td class="num r">€ 719,00</td><td class="num r">€ 10</td><td class="num r">€ 3.744</td><td class="num r pos"><strong>€ 3.014,75</strong></td><td class="r">80,5 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>5.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">400</td><td class="num r">€ 4,40</td><td class="num r">€ 351,00</td><td class="num r">€ 355,40</td><td class="num r">€ 19,25</td><td class="num r">€ 374,65</td><td class="num r">€ 60</td><td class="num r">€ 1.196</td><td class="num r pos"><strong>€ 761,35</strong></td><td class="r">63,7 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">750</td><td class="num r">€ 12,40</td><td class="num r">€ 585,00</td><td class="num r">€ 597,40</td><td class="num r">€ 19,25</td><td class="num r">€ 616,65</td><td class="num r">€ 30</td><td class="num r">€ 3.000</td><td class="num r pos"><strong>€ 2.353,35</strong></td><td class="r">78,4 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">1.250</td><td class="num r">€ 34,50</td><td class="num r">€ 1.365,00</td><td class="num r">€ 1.399,50</td><td class="num r">€ 19,25</td><td class="num r">€ 1.418,75</td><td class="num r">€ 10</td><td class="num r">€ 7.488</td><td class="num r pos"><strong>€ 6.058,75</strong></td><td class="r">80,9 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>10.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">800</td><td class="num r">€ 8,80</td><td class="num r">€ 702,00</td><td class="num r">€ 710,80</td><td class="num r">€ 19,25</td><td class="num r">€ 730,05</td><td class="num r">€ 180</td><td class="num r">€ 2.392</td><td class="num r pos"><strong>€ 1.481,95</strong></td><td class="r">61,9 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">1.500</td><td class="num r">€ 24,80</td><td class="num r">€ 1.170,00</td><td class="num r">€ 1.194,80</td><td class="num r">€ 19,25</td><td class="num r">€ 1.214,05</td><td class="num r">€ 93</td><td class="num r">€ 6.000</td><td class="num r pos"><strong>€ 4.692,95</strong></td><td class="r">78,2 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">2.500</td><td class="num r">€ 69,00</td><td class="num r">€ 2.730,00</td><td class="num r">€ 2.799,00</td><td class="num r">€ 19,25</td><td class="num r">€ 2.818,25</td><td class="num r">€ 30</td><td class="num r">€ 14.975</td><td class="num r pos"><strong>€ 12.126,75</strong></td><td class="r">81,0 %</td></tr>
+
+<tr class="gh gi"><td colspan="12">⚠️ <strong>15.000 User</strong> — Infra-Sprung → Supabase Pro → €42,25/Mo</td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">1.200</td><td class="num r">€ 13,20</td><td class="num r">€ 1.053,00</td><td class="num r">€ 1.066,20</td><td class="num r">€ 42,25</td><td class="num r">€ 1.108,45</td><td class="num r">€ 380</td><td class="num r">€ 3.588</td><td class="num r pos"><strong>€ 2.099,55</strong></td><td class="r">58,5 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">2.250</td><td class="num r">€ 37,20</td><td class="num r">€ 1.755,00</td><td class="num r">€ 1.792,20</td><td class="num r">€ 42,25</td><td class="num r">€ 1.834,45</td><td class="num r">€ 203</td><td class="num r">€ 9.000</td><td class="num r pos"><strong>€ 6.962,55</strong></td><td class="r">77,4 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">3.750</td><td class="num r">€ 103,50</td><td class="num r">€ 4.095,00</td><td class="num r">€ 4.198,50</td><td class="num r">€ 42,25</td><td class="num r">€ 4.240,75</td><td class="num r">€ 80</td><td class="num r">€ 22.463</td><td class="num r pos"><strong>€ 18.141,75</strong></td><td class="r">80,8 %</td></tr>
+
+<tr class="gh gi"><td colspan="12">⚠️ <strong>20.000 User</strong> — Infra-Sprung → Resend Starter → €60,25/Mo (bis 100k stabil)</td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">1.600</td><td class="num r">€ 17,60</td><td class="num r">€ 1.404,00</td><td class="num r">€ 1.421,60</td><td class="num r">€ 60,25</td><td class="num r">€ 1.481,85</td><td class="num r">€ 560</td><td class="num r">€ 4.784</td><td class="num r pos"><strong>€ 2.742,15</strong></td><td class="r">57,3 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">3.000</td><td class="num r">€ 49,60</td><td class="num r">€ 2.340,00</td><td class="num r">€ 2.389,60</td><td class="num r">€ 60,25</td><td class="num r">€ 2.449,85</td><td class="num r">€ 303</td><td class="num r">€ 12.000</td><td class="num r pos"><strong>€ 9.247,15</strong></td><td class="r">77,1 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">5.000</td><td class="num r">€ 138,00</td><td class="num r">€ 5.460,00</td><td class="num r">€ 5.598,00</td><td class="num r">€ 60,25</td><td class="num r">€ 5.658,25</td><td class="num r">€ 130</td><td class="num r">€ 29.950</td><td class="num r pos"><strong>€ 24.161,75</strong></td><td class="r">80,7 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>25.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">2.000</td><td class="num r">€ 22,00</td><td class="num r">€ 1.755,00</td><td class="num r">€ 1.777,00</td><td class="num r">€ 60,25</td><td class="num r">€ 1.837,25</td><td class="num r">€ 760</td><td class="num r">€ 5.980</td><td class="num r pos"><strong>€ 3.382,75</strong></td><td class="r">56,6 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">3.750</td><td class="num r">€ 62,00</td><td class="num r">€ 2.925,00</td><td class="num r">€ 2.987,00</td><td class="num r">€ 60,25</td><td class="num r">€ 3.047,25</td><td class="num r">€ 413</td><td class="num r">€ 15.000</td><td class="num r pos"><strong>€ 11.539,75</strong></td><td class="r">76,9 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">6.250</td><td class="num r">€ 172,50</td><td class="num r">€ 6.825,00</td><td class="num r">€ 6.997,50</td><td class="num r">€ 60,25</td><td class="num r">€ 7.057,75</td><td class="num r">€ 190</td><td class="num r">€ 37.438</td><td class="num r pos"><strong>€ 30.189,75</strong></td><td class="r">80,6 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>40.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">3.200</td><td class="num r">€ 35,20</td><td class="num r">€ 2.808,00</td><td class="num r">€ 2.843,20</td><td class="num r">€ 60,25</td><td class="num r">€ 2.903,45</td><td class="num r">€ 1.560</td><td class="num r">€ 9.568</td><td class="num r pos"><strong>€ 5.104,55</strong></td><td class="r">53,3 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">6.000</td><td class="num r">€ 99,20</td><td class="num r">€ 4.680,00</td><td class="num r">€ 4.779,20</td><td class="num r">€ 60,25</td><td class="num r">€ 4.839,45</td><td class="num r">€ 833</td><td class="num r">€ 24.000</td><td class="num r pos"><strong>€ 18.327,55</strong></td><td class="r">76,4 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">10.000</td><td class="num r">€ 276,00</td><td class="num r">€ 10.920,00</td><td class="num r">€ 11.196,00</td><td class="num r">€ 60,25</td><td class="num r">€ 11.256,25</td><td class="num r">€ 400</td><td class="num r">€ 59.900</td><td class="num r pos"><strong>€ 48.243,75</strong></td><td class="r">80,5 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>50.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">4.000</td><td class="num r">€ 44,00</td><td class="num r">€ 3.510,00</td><td class="num r">€ 3.554,00</td><td class="num r">€ 60,25</td><td class="num r">€ 3.614,25</td><td class="num r">€ 2.360</td><td class="num r">€ 11.960</td><td class="num r pos"><strong>€ 5.985,75</strong></td><td class="r">50,0 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">7.500</td><td class="num r">€ 124,00</td><td class="num r">€ 5.850,00</td><td class="num r">€ 5.974,00</td><td class="num r">€ 60,25</td><td class="num r">€ 6.034,25</td><td class="num r">€ 1.283</td><td class="num r">€ 30.000</td><td class="num r pos"><strong>€ 22.682,75</strong></td><td class="r">75,6 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">12.500</td><td class="num r">€ 345,00</td><td class="num r">€ 13.650,00</td><td class="num r">€ 13.995,00</td><td class="num r">€ 60,25</td><td class="num r">€ 14.055,25</td><td class="num r">€ 600</td><td class="num r">€ 74.875</td><td class="num r pos"><strong>€ 60.219,75</strong></td><td class="r">80,4 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>75.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">6.000</td><td class="num r">€ 66,00</td><td class="num r">€ 5.265,00</td><td class="num r">€ 5.331,00</td><td class="num r">€ 60,25</td><td class="num r">€ 5.391,25</td><td class="num r">€ 4.060</td><td class="num r">€ 17.940</td><td class="num r pos"><strong>€ 8.488,75</strong></td><td class="r">47,3 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">11.250</td><td class="num r">€ 186,00</td><td class="num r">€ 8.775,00</td><td class="num r">€ 8.961,00</td><td class="num r">€ 60,25</td><td class="num r">€ 9.021,25</td><td class="num r">€ 2.033</td><td class="num r">€ 45.000</td><td class="num r pos"><strong>€ 33.945,75</strong></td><td class="r">75,4 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">18.750</td><td class="num r">€ 517,50</td><td class="num r">€ 20.475,00</td><td class="num r">€ 20.992,50</td><td class="num r">€ 60,25</td><td class="num r">€ 21.052,75</td><td class="num r">€ 1.000</td><td class="num r">€ 112.313</td><td class="num r pos"><strong>€ 90.259,75</strong></td><td class="r">80,4 %</td></tr>
+
+<tr class="gh"><td colspan="12"><strong>100.000 User</strong></td></tr>
+<tr class="rw"><td></td><td><span class="bw">WORST</span></td><td class="num r">8.000</td><td class="num r">€ 88,00</td><td class="num r">€ 7.020,00</td><td class="num r">€ 7.108,00</td><td class="num r">€ 60,25</td><td class="num r">€ 7.168,25</td><td class="num r">€ 6.060</td><td class="num r">€ 23.920</td><td class="num r pos"><strong>€ 10.691,75</strong></td><td class="r">44,7 %</td></tr>
+<tr class="rm"><td></td><td><span class="bm">MID</span></td><td class="num r">15.000</td><td class="num r">€ 248,00</td><td class="num r">€ 11.700,00</td><td class="num r">€ 11.948,00</td><td class="num r">€ 60,25</td><td class="num r">€ 12.008,25</td><td class="num r">€ 3.033</td><td class="num r">€ 60.000</td><td class="num r pos"><strong>€ 44.958,75</strong></td><td class="r">74,9 %</td></tr>
+<tr class="rb"><td></td><td><span class="bb">BEST</span></td><td class="num r">25.000</td><td class="num r">€ 690,00</td><td class="num r">€ 27.300,00</td><td class="num r">€ 27.990,00</td><td class="num r">€ 60,25</td><td class="num r">€ 28.050,25</td><td class="num r">€ 1.500</td><td class="num r">€ 149.750</td><td class="num r pos"><strong>€ 120.199,75</strong></td><td class="r">80,3 %</td></tr>
+
+</tbody>
+</table>
+
+<hr>
+
+<!-- 6. WANN AUF MAX? -->
+<h2><span class="ico" style="background:#faf5ff">🚀</span> 6. Wann auf MAX? — Model-Upgrade-Roadmap</h2>
+
+<div class="co purple">
+  <div class="co-i">⚡</div>
+  <div class="co-b">
+    <strong>Sofort-Maßnahme: Prompt Caching in route.ts — 2 Zeilen, −47% Coach-Kosten dauerhaft</strong>
+    <p>System-Prompt + Tools werden bei jeder Coach-Anfrage neu bezahlt (~2.800 Token = €0,0077/Msg). Mit <code>cache_control: {type: "ephemeral"}</code> am Nachrichten-Array werden diese gecacht: Cache-Write (1. Msg einer Session) kostet 25%, alle weiteren lesen den Cache für 10%. Bei 4-Msg-Session: −47%. Das ist die höchste ROI-Maßnahme in diesem Dokument. Kein Qualitätsverlust, kein Risk.</p>
+  </div>
+</div>
+
+<table class="upg">
+<thead><tr>
+  <th style="width:22%">Upgrade</th>
+  <th style="width:30%">Was ändert sich</th>
+  <th style="width:22%">Kosten-Impact</th>
+  <th style="width:26%">Empfehlung &amp; Wann</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td><strong>Prompt Caching aktivieren</strong><br><small style="color:#64748b">Coach route.ts: cache_control auf system</small></td>
+  <td>2.800 gecachte Input-Tokens (System + Tools) ab 2. Nachricht nur 10% des Preises<br><small>2–3 Zeilen Code, kein Model-Wechsel, kein Qualitäts-Impact</small></td>
+  <td><strong style="color:#16a34a">−47 % Coach-Kosten</strong><br><small>€0,013 → ~€0,007/Msg im Ø<br>100k MID: −€4.100/Mo</small></td>
+  <td><span class="tag-now">JETZT SOFORT</span><br>Vor Beta. Reiner Gewinn ohne Downside.</td>
+</tr>
+<tr>
+  <td><strong>Briefing Haiku → Sonnet</strong><br><small style="color:#64748b">Qualitäts-Upgrade für tägliche Zusammenfassung</small></td>
+  <td>Briefing ist einfacher Kontext ohne Tools (~1k Tokens)<br>Haiku: €0,00184/Call · Sonnet: €0,00552/Call</td>
+  <td><strong style="color:#d97706">+3× Briefing-Kosten</strong><br><small>Aber: nur ~1% von Claude-Gesamt<br>N=1.000: +€2,60/Mo</small></td>
+  <td><span class="tag-later">AB N=1.000</span><br>Wenn Briefing-Qualität Feedback-Thema wird. Finanziell irrelevant.</td>
+</tr>
+<tr>
+  <td><strong>Coach bleibt Sonnet 4.6</strong><br><small style="color:#64748b">Aktuell korrekt in route.ts</small></td>
+  <td>Sonnet meistert komplexes Tool-Use mit 16 Tools + langem Context gut.<br>Haiku würde hier merklich schlechtere Tool-Entscheidungen treffen.</td>
+  <td><strong style="color:#2563eb">Kein Handlungsbedarf</strong></td>
+  <td><span class="tag-cur">AKTUELL ✓</span><br>So lassen. Richtige Entscheidung.</td>
+</tr>
+<tr>
+  <td><strong>Coach Sonnet → Haiku downgraden</strong><br><small style="color:#64748b">Sparmaßnahme</small></td>
+  <td>Haiku mit realem Kontext: ~€0,005/Msg statt €0,013<br>Problem: Haiku + 16 Tools + langer Kontext = häufigere Fehler bei Tool-Auswahl, ungenauere Antworten</td>
+  <td><strong style="color:#16a34a">−62 % Coach-Kosten</strong><br><small>100k WORST: +€3.000/Mo extra Marge</small></td>
+  <td><span class="tag-no">NICHT EMPFOHLEN</span><br>Coach ist das differenzierende Feature — Qualitätsverlust nicht wert. Nur bei akutem Cash-Problem.</td>
+</tr>
+<tr>
+  <td><strong>Coach Sonnet → Opus 4.8</strong><br><small style="color:#64748b">Pro-Max-Tier Upgrade</small></td>
+  <td>Opus ≈ 5× Sonnet-Preis<br>100k BEST: Claude steigt von €27.990 auf ~€139.000/Mo<br>Margin collapse ohne separates Tier</td>
+  <td><strong style="color:#ef4444">+400 % Coach-Kosten</strong><br><small>Nur tragbar als €9,99+ Pro-Max-Tier</small></td>
+  <td><span class="tag-later">AB V1.0+ MIT PRO MAX</span><br>Wenn Premium-Segment existiert und bereit ist €9,99+ zu zahlen. Nicht vor 5k Premium-Usern.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="co green">
+  <div class="co-i">✅</div>
+  <div class="co-b">
+    <strong>Optimierter Stack nach Prompt Caching: Netto-Verbesserung bei 100k MID ~€4.100/Mo</strong>
+    <p>Haiku Briefing (bleibt) + Sonnet Coach (bleibt) + Prompt Caching (neu). Coach: ~€0,007/Msg statt €0,013. Neue per-User-Kosten: WORST €0,039 (16,3% Rev) · MID €0,065 (10,8%) · BEST €0,153 (10,2%). Margen nähern sich deutlich den v5-Werten an — bei gleicher Qualität.</p>
   </div>
 </div>
 
 <hr>
 
-<!-- ═══════════════════════════ RISIKEN ═══════════════════════════ -->
-<h2><span class="ico" style="background:#fee2e2">⚠️</span> 7. Risiken &amp; Schutzmaßnahmen</h2>
+<!-- 7. FAZIT -->
+<h2><span class="ico" style="background:#dcfce7">🎯</span> 7. Fazit — 100.000 User</h2>
 
-<table>
-  <thead><tr><th>Risiko</th><th>Schlimmster Fall</th><th>Im Szenario</th><th>Schutz</th><th>Status</th></tr></thead>
-  <tbody>
-    <tr><td><strong>Briefing ohne Cache</strong></td><td>Mehrfach-Calls/User/Tag</td><td><span class="badge bw">WORST</span></td><td>briefing_cache · unique (user_id, datum)</td><td><span class="badge bb">✅ Impl.</span></td></tr>
-    <tr><td><strong>Bot spammt Coach-Route</strong></td><td>API-Kosten unbegrenzt</td><td><span class="badge bw">WORST</span></td><td>Rate Limit 20 Msgs/Stunde/User</td><td><span class="badge bw">⚠️ Offen</span></td></tr>
-    <tr><td><strong>Viraler Moment 50k Signups</strong></td><td>API-Kosten unkontrolliert</td><td><span class="badge bb">BEST</span></td><td>Anthropic Hard Limit (gesetzt)</td><td><span class="badge bb">✅ Gesetzt</span></td></tr>
-    <tr><td><strong>Marketing-Spirale (kein Organic)</strong></td><td>Marge 69 % bei 100k</td><td><span class="badge bw">WORST</span></td><td>Build-in-Public priorisieren</td><td><span class="badge bm">⚠️ Fokus</span></td></tr>
-    <tr><td><strong>0 % Conversion (kein PMF)</strong></td><td>Revenue €0, Ops laufen</td><td>Alle</td><td>Ops = €19–60/Monat. Kein Ruin.</td><td><span class="badge bb">✅ Akzeptabel</span></td></tr>
-    <tr><td><strong>Infra-Sprünge überraschen</strong></td><td>+€41/Monat unerwartet</td><td>Alle</td><td>Hier dokumentiert. Positives Problem.</td><td><span class="badge bb">✅ Bekannt</span></td></tr>
-  </tbody>
-</table>
-
-<hr>
-
-<!-- ═══════════════════════════ FAZIT ═══════════════════════════ -->
-<h2><span class="ico" style="background:#dcfce7">🎯</span> 8. Fazit &amp; Handlungsempfehlung</h2>
-
-<div class="callout green">
-  <div class="callout-i">💡</div>
-  <div class="callout-b">
-    <strong>Alle drei Szenarien sind profitabel — auf jeder Skalierungsstufe</strong>
-    <p>Selbst im WORST CASE (8 % Conversion, €2,99, paid-only Marketing) liegt der Nettogewinn bei 100k Usern bei €16.569/Monat. Es gibt kein realistisches Szenario in dem Project X Schulden macht — außer null User und null Revenue. Die Kostenbasis ist so niedrig (Ops < 3 % von Revenue im MID Case), dass das Modell strukturell stabil ist.</p>
+<div class="kpi">
+  <div class="kb">
+    <div class="kl">WORST · ohne Caching</div>
+    <div class="kv" style="color:#ef4444">€ 10.692</div>
+    <div class="ks">Netto/Mo · 44,7 % Marge</div>
+  </div>
+  <div class="kb">
+    <div class="kl">MID · ohne Caching</div>
+    <div class="kv" style="color:#d97706">€ 44.959</div>
+    <div class="ks">Netto/Mo · 74,9 % Marge</div>
+  </div>
+  <div class="kb">
+    <div class="kl">BEST · ohne Caching</div>
+    <div class="kv" style="color:#16a34a">€ 120.200</div>
+    <div class="ks">Netto/Mo · 80,3 % Marge</div>
+  </div>
+</div>
+<div class="kpi" style="margin-top:8px">
+  <div class="kb" style="border-color:#c084fc">
+    <div class="kl">WORST · mit Caching</div>
+    <div class="kv" style="color:#7c3aed">~ € 14.800</div>
+    <div class="ks">~+€4.100 durch Caching · ~61 % Marge</div>
+  </div>
+  <div class="kb" style="border-color:#c084fc">
+    <div class="kl">MID · mit Caching</div>
+    <div class="kv" style="color:#7c3aed">~ € 49.100</div>
+    <div class="ks">~+€4.100 durch Caching · ~82 % Marge</div>
+  </div>
+  <div class="kb" style="border-color:#c084fc">
+    <div class="kl">BEST · mit Caching</div>
+    <div class="kv" style="color:#7c3aed">~ € 127.500</div>
+    <div class="ks">~+€7.300 durch Caching · ~85 % Marge</div>
   </div>
 </div>
 
-<h3>Die 3 wichtigsten Hebel — in Reihenfolge</h3>
-<table>
-  <thead><tr><th>Rang</th><th>Hebel</th><th>Impact auf Gewinn bei 25k Usern</th><th>Was tun</th></tr></thead>
-  <tbody>
-    <tr><td><strong>1.</strong></td><td><strong>Organic-Content-Qualität</strong></td><td>Marketing von €760 auf €190 = +€570/Mo + Marge steigt von 81 % auf 96 %</td><td>Konsequent Build-in-Public. Echter Content, keine Werbung. 1 Post/Tag reicht.</td></tr>
-    <tr><td><strong>2.</strong></td><td><strong>Premium-Conversion (8 % → 15 %)</strong></td><td>Revenue von €5.980 auf €15.000 = +€9.020/Monat</td><td>Onboarding schärfen. Briefing + Coach als klaren Mehrwert erlebbar machen.</td></tr>
-    <tr><td><strong>3.</strong></td><td><strong>Preis (€2,99 → €4,00)</strong></td><td>Beitrag: relativ gering vs. Conversion-Hebel</td><td>Erst erhöhen wenn Conversion stabil. Conversion vor Preis im Early Stage.</td></tr>
-  </tbody>
-</table>
-
-<div class="callout yellow">
-  <div class="callout-i">📌</div>
-  <div class="callout-b">
-    <strong>Noch offene Baustelle: Coach Rate Limit (Schicht 5 des Cost-Protection-Plans)</strong>
-    <p>Alle anderen Schutzmaßnahmen implementiert (Hard Limit ✅, Cache-First ✅, max_tokens ✅, On-Demand ✅). Nur das Coach Rate Limit fehlt noch. Aufwand ~2h. Verhindert API-Abuse durch Einzelpersonen oder Bots. Im WORST Case Szenario besonders kritisch.</p>
+<div class="co blue" style="margin-top:14px">
+  <div class="co-i">📌</div>
+  <div class="co-b">
+    <strong>3 Dinge. In dieser Reihenfolge. Jetzt.</strong>
+    <p><strong>1. Prompt Caching in route.ts implementieren</strong> — 30 Minuten Arbeit, −47% Coach-Kosten dauerhaft. Bei 100k spart das €4.100–€7.300/Mo. <strong>2. Apple Developer Account-Frage klären</strong> — du bist 17, beide Stores brauchen 18+. Mit Elternteil klären bevor Beta-Launch Ende August. <strong>3. Rate Limit im Coach</strong> — 20 Nachrichten/Stunde pro User als Kostenschutz gegen Missbrauch. ~2h Aufwand, unbegrenzte Downside-Protection.</p>
   </div>
 </div>
 
 <div class="footer">
-  <span>Project X · v4 · Best / Mid / Worst Case · Intern · Nepomuk Polonius · 10.06.2026</span>
-  <span>API-Preise: docs.anthropic.com · Infra: vercel.com + supabase.com + resend.com · Alle Berechnungen mit Node.js verifiziert</span>
+  <span>Project X · v6 · Sonnet 4.6 Coach (verifiziert) · Haiku 4.5 Briefing · App Store + Model Upgrade · 10.06.2026</span>
+  <span>Preise: Haiku $1/$5 · Sonnet $3/$15 per MTok I/O · $1=€0,92 · Quelle: docs.anthropic.com</span>
 </div>
 
 </div>

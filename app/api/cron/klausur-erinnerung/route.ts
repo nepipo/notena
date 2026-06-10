@@ -21,11 +21,14 @@ function wann(tage: number): string {
 
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get("Authorization");
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // CRON_SECRET muss immer gesetzt sein — fehlt er, Route sofort sperren
+  if (!secret) {
+    console.error("[cron/klausur-erinnerung] CRON_SECRET nicht gesetzt — Route gesperrt.");
+    return NextResponse.json({ error: "Nicht konfiguriert" }, { status: 503 });
+  }
+  const auth = req.headers.get("Authorization");
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {

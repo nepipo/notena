@@ -36,7 +36,8 @@ function tageBis(iso: string): number {
 export async function baueCoachKontext(): Promise<CoachKontext> {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
-  const userId = auth?.claims?.sub ?? "";
+  const userId = auth?.claims?.sub;
+  if (!userId) throw new Error("Nicht angemeldet.");
 
   const { data: profil } = await supabase
     .from("nutzer_profil")

@@ -116,7 +116,7 @@ export function PushToggle() {
     <div className="flex flex-wrap items-center gap-3">
       <button
         onClick={status === "subscribed" ? unsubscribe : subscribe}
-        className="flex items-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold transition-all"
+        className="flex items-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold transition-[transform,background-color,border-color,color] duration-150 active:scale-[0.97]"
         style={
           status === "subscribed"
             ? {
@@ -143,7 +143,7 @@ export function PushToggle() {
         <button
           onClick={handleTestPush}
           disabled={pending}
-          className="flex items-center gap-1.5 rounded-xl border border-border bg-surface-2 px-3 py-2.5 font-mono text-xs text-text-dim transition-colors hover:text-foreground disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-xl border border-border bg-surface-2 px-3 py-2.5 font-mono text-xs text-text-dim transition-[transform,color,opacity] duration-150 hover:text-foreground active:scale-[0.97] disabled:opacity-50"
         >
           {pending ? <Loader2 className="size-3 animate-spin" /> : null}
           Test senden

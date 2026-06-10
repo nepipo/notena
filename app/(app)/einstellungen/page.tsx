@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { updatePraeferenzen } from "@/lib/actions/schule";
+import { signOut, deleteAccount } from "@/app/auth/actions";
 import { PushToggle } from "@/components/push-toggle";
 import { KlausurErinnerungConfig } from "@/components/einstellungen/klausur-erinnerung-config";
 import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung";
@@ -11,12 +12,14 @@ import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
 import { ThemeToggle } from "@/components/einstellungen/theme-toggle";
 import { AccentPicker } from "@/components/einstellungen/accent-picker";
 import { BriefingToggle } from "@/components/einstellungen/briefing-toggle";
+import { BundeslandSelector } from "@/components/einstellungen/bundesland-selector";
+import { ProfilForm } from "@/components/profil-form";
+import { DeleteAccountButton } from "@/components/delete-account-button";
+import { Button } from "@/components/ui/button";
 import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 import type { GewichtungConfig } from "@/lib/grades/types";
 import type { Theme, AccentColor } from "@/lib/actions/theme";
-import { signOut } from "@/app/auth/actions";
-import { Button } from "@/components/ui/button";
 
 export default async function EinstellungenPage() {
   const supabase = await createClient();
@@ -24,8 +27,14 @@ export default async function EinstellungenPage() {
   const theme = (cookieStore.get("project-x-theme")?.value ?? "dark") as Theme;
   const accent = (cookieStore.get("project-x-accent")?.value ?? "blue") as AccentColor;
 
+  const { data: authData } = await supabase.auth.getClaims();
+  const email = typeof authData?.claims?.email === "string" ? authData.claims.email : "";
+
   const [{ data: profil }, { data: fachRows }] = await Promise.all([
-    supabase.from("nutzer_profil").select("eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage").single(),
+    supabase
+      .from("nutzer_profil")
+      .select("name, klasse, schule, eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland")
+      .single(),
     supabase.from("schule_fach").select("*").order("name"),
   ]);
 
@@ -34,6 +43,7 @@ export default async function EinstellungenPage() {
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
   const briefingAktiv = profil?.briefing_aktiv !== false;
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
+  const bundesland = (profil as Record<string, unknown> | null)?.bundesland as string | null ?? null;
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -46,9 +56,27 @@ export default async function EinstellungenPage() {
         <h1 className="text-4xl font-extrabold leading-none">Einstellungen.</h1>
       </header>
 
-      {/* ── DARSTELLUNG ───────────────────────────────────── */}
+      {/* ── PROFIL ────────────────────────────────────────── */}
       <section
         className="animate-fade-up rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Profil
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Angemeldet als <span className="font-mono text-foreground">{email}</span>
+        </p>
+        <ProfilForm
+          initialName={profil?.name ?? ""}
+          initialKlasse={profil?.klasse ?? null}
+          initialSchule={profil?.schule ?? ""}
+        />
+      </section>
+
+      {/* ── DARSTELLUNG ───────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.02s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
@@ -79,6 +107,15 @@ export default async function EinstellungenPage() {
             Wechsle das Halbjahr um vergangene Noten einzusehen oder das neue anzufangen.
           </p>
           <HalbjahrWechsler current={halbjahr} />
+        </div>
+        <div className="mt-5 border-t border-border pt-5">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-sm font-semibold">Bundesland</p>
+          </div>
+          <p className="mb-3 text-xs text-text-mute">
+            Wird für den Ferien-Countdown genutzt.
+          </p>
+          <BundeslandSelector initialValue={bundesland} />
         </div>
       </section>
 
@@ -208,29 +245,10 @@ export default async function EinstellungenPage() {
         </p>
       </section>
 
-      {/* ── ACCOUNT ───────────────────────────────────────── */}
-      <section
-        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
-        style={{ background: "var(--card-grad)", animationDelay: "0.35s" }}
-      >
-        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
-          Account
-        </div>
-        <p className="mt-1 mb-4 text-sm text-text-dim">
-          Profil-Details (Name, Klasse, Schule) änderst du unter{" "}
-          <Link href="/profil" className="text-brand hover:underline">Profil</Link>.
-        </p>
-        <form action={signOut}>
-          <Button type="submit" variant="outline" className="border-border bg-surface-2 hover:bg-surface-3">
-            Abmelden
-          </Button>
-        </form>
-      </section>
-
       {/* ── RECHTLICHES ───────────────────────────────────── */}
       <section
         className="animate-fade-up mt-4 rounded-3xl border border-border p-5"
-        style={{ background: "var(--card-grad)", animationDelay: "0.4s" }}
+        style={{ background: "var(--card-grad)", animationDelay: "0.36s" }}
       >
         <div className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
           Rechtliches
@@ -238,6 +256,34 @@ export default async function EinstellungenPage() {
         <div className="flex flex-wrap gap-4 font-mono text-sm text-text-dim">
           <Link href="/datenschutz" className="transition-colors hover:text-brand">Datenschutzerklärung</Link>
           <Link href="/impressum" className="transition-colors hover:text-brand">Impressum</Link>
+        </div>
+      </section>
+
+      {/* ── ACCOUNT ───────────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.4s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Account
+        </div>
+        <p className="mt-2 mb-4 text-sm text-text-dim">
+          Angemeldet als <span className="font-mono text-foreground">{email}</span>
+        </p>
+        <form action={signOut}>
+          <Button type="submit" variant="outline" className="border-border bg-surface-2 hover:bg-surface-3">
+            Abmelden
+          </Button>
+        </form>
+
+        <div className="mt-6 border-t border-border/40 pt-6">
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-destructive/70">
+            Gefahrenzone
+          </div>
+          <p className="mt-2 text-sm text-text-dim">
+            Löscht dein Konto und alle deine Daten unwiderruflich.
+          </p>
+          <DeleteAccountButton deleteAction={deleteAccount} />
         </div>
       </section>
     </main>

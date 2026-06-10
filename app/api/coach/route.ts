@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { COACH_TOOLS, type ToolName } from "@/lib/coach/tools";
 import { baueCoachKontext } from "@/lib/coach/context";
+import { checkRateLimit } from "@/lib/coach/rate-limiter";
 import type { KlausurRow, NoteRow } from "@/lib/grades/db";
 import type { FachRow } from "@/lib/grades/db";
 import type { HausaufgabeRow, StundeRow } from "@/lib/stundenplan/types";
@@ -124,13 +125,37 @@ function findSnapshot(
   }
 }
 
+// ── Limits ─────────────────────────────────────────────────────────────
+const MAX_BODY_BYTES = 50_000;   // 50 KB — verhindert Payload-Flooding
+const MAX_MESSAGES   = 40;       // max. Verlauf — begrenzt Token-Kosten pro Request
+const MAX_MSG_LENGTH = 2_000;    // max. Zeichen pro Nachricht
+
 // ── Route Handler ──────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
+  // Body-Size-Check vor dem Parsen
+  const contentLength = req.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+    return Response.json({ error: "Anfrage zu groß" }, { status: 413 });
+  }
+
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   if (!auth?.claims?.sub) {
     return Response.json({ error: "Nicht eingeloggt" }, { status: 401 });
+  }
+
+  const userId = auth.claims.sub;
+  const rateLimit = checkRateLimit(userId);
+  if (!rateLimit.allowed) {
+    const resetIn = Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60_000);
+    return Response.json(
+      {
+        error: `Du hast das Limit von 20 Nachrichten pro Stunde erreicht. In etwa ${resetIn} Minute${resetIn === 1 ? "" : "n"} kannst du wieder schreiben.`,
+        resetAt: rateLimit.resetAt.toISOString(),
+      },
+      { status: 429 },
+    );
   }
 
   const body = await req.json() as { messages: ClientMessage[] };
@@ -138,15 +163,43 @@ export async function POST(req: Request) {
     return Response.json({ error: "Keine Nachrichten" }, { status: 400 });
   }
 
+  // Verlauf kappen — nur die letzten MAX_MESSAGES behalten
+  if (body.messages.length > MAX_MESSAGES) {
+    body.messages = body.messages.slice(-MAX_MESSAGES);
+  }
+
+  // Einzelne Nachrichten auf MAX_MSG_LENGTH kürzen
+  body.messages = body.messages.map((m) => {
+    if (m.role === "user" && typeof m.content === "string" && m.content.length > MAX_MSG_LENGTH) {
+      return { ...m, content: m.content.slice(0, MAX_MSG_LENGTH) };
+    }
+    return m;
+  });
+
   const kontext = await baueCoachKontext();
   const fachMap = new Map(kontext.raw.faecher.map((f) => [f.id, f.name]));
   const fachName = (id: string) => fachMap.get(id) ?? id;
 
+  // Prompt Caching: system-prompt + tools werden bei Anthropic serverseitig gecacht.
+  // Cache-Write (erste Msg der Session): 25% des Input-Preises für diese Tokens.
+  // Cache-Read (alle weiteren Msgs): 10% — spart ~47% der Coach-Kosten pro Session.
+  const cachedTools = COACH_TOOLS.map((tool, i) =>
+    i === COACH_TOOLS.length - 1
+      ? { ...tool, cache_control: { type: "ephemeral" as const } }
+      : tool
+  );
+
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
-    system: kontext.systemPrompt,
-    tools: COACH_TOOLS,
+    system: [
+      {
+        type: "text",
+        text: kontext.systemPrompt,
+        cache_control: { type: "ephemeral" },
+      },
+    ],
+    tools: cachedTools,
     tool_choice: { type: "any" },
     messages: toAnthropicMessages(body.messages),
   });

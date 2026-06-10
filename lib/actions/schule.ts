@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { GewichtungConfig, Kategorie } from "@/lib/grades/types";
+import { dbError, UpdateFachSchema } from "@/lib/validation";
 
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
@@ -31,13 +32,13 @@ export async function addFach(
       .insert({ user_id: userId, name: trimmed, halbjahr, niveau })
       .select("id")
       .single();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/einstellungen");
     return { ok: true, id: data.id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -50,14 +51,14 @@ export async function removeFach(fachId: string): Promise<ActionResult> {
       .delete()
       .eq("id", fachId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/stundenplan");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -82,12 +83,12 @@ export async function addNote(
       bezeichnung: bezeichnung?.trim() || null,
       gewicht: gewicht ?? 1,
     }).select("id").single();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     return { ok: true, id: data.id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -114,12 +115,12 @@ export async function updateNote(
       })
       .eq("id", noteId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -132,12 +133,12 @@ export async function removeNote(noteId: string): Promise<ActionResult> {
       .delete()
       .eq("id", noteId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -154,22 +155,26 @@ export async function updateFach(
     gewichtung_config?: GewichtungConfig | null;
   },
 ): Promise<ActionResult> {
+  const parsed = UpdateFachSchema.safeParse(updates);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
     const { error } = await supabase
       .from("schule_fach")
-      .update(updates)
+      .update(parsed.data)
       .eq("id", fachId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/stundenplan");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -190,13 +195,13 @@ export async function addKlausur(
       datum,
       fach_id: fachId ?? null,
     });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -209,13 +214,13 @@ export async function removeKlausur(klausurId: string): Promise<ActionResult> {
       .delete()
       .eq("id", klausurId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -229,12 +234,12 @@ export async function updatePraeferenzen(
       .from("nutzer_profil")
       .update({ eingabe_modus: eingabeModus })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -257,11 +262,11 @@ export async function completeOnboarding(
         onboarding_abgeschlossen: true,
       })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -273,13 +278,13 @@ export async function setHalbjahr(hj: string): Promise<ActionResult> {
       .from("nutzer_profil")
       .update({ aktuelles_halbjahr: hj })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -315,7 +320,7 @@ export async function neuesHalbjahr(
         halbjahr: neuesHj,
       }));
       const { error } = await supabase.from("schule_fach").insert(rows);
-      if (error) return { ok: false, error: error.message };
+      if (error) return { ok: false, error: dbError(error) };
     }
 
     const { error: profilError } = await supabase
@@ -328,7 +333,7 @@ export async function neuesHalbjahr(
     revalidatePath("/noten");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -340,12 +345,12 @@ export async function setBriefingAktiv(aktiv: boolean): Promise<ActionResult> {
       .from("nutzer_profil")
       .update({ briefing_aktiv: aktiv })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -359,11 +364,11 @@ export async function saveDefaultGewichtung(
       .from("nutzer_profil")
       .update({ default_gewichtung: config })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -379,12 +384,12 @@ export async function applyGewichtungAufAlleFaecher(
       .update({ gewichtung_config: config })
       .eq("user_id", userId)
       .eq("halbjahr", halbjahr);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/noten");
     revalidatePath("/dashboard");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -407,12 +412,12 @@ export async function updateProfil(
         schule: schule.trim() || null,
       })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/profil");
     revalidatePath("/dashboard");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -424,12 +429,12 @@ export async function saveBundesland(bundesland: string | null): Promise<ActionR
       .from("nutzer_profil")
       .update({ bundesland: bundesland || null })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -468,7 +473,7 @@ export async function loescheHalbjahr(hj: string): Promise<ActionResult> {
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -482,10 +487,10 @@ export async function setKlausurErinnerungTage(
       .from("nutzer_profil")
       .update({ klausur_erinnerung_tage: tage })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -507,12 +512,12 @@ export async function updateKlausur(
       .update(patch)
       .eq("id", klausurId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }

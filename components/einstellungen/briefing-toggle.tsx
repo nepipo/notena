@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { setBriefingAktiv } from "@/lib/actions/schule";
+import { Switch } from "@/components/ui/switch";
 
 export function BriefingToggle({ initial }: { initial: boolean }) {
   const [aktiv, setAktiv] = useState(initial);
@@ -32,20 +33,7 @@ export function BriefingToggle({ initial }: { initial: boolean }) {
             : "Die Briefing-Karte wird ausgeblendet."}
         </p>
       </div>
-      <button
-        onClick={toggle}
-        disabled={isPending}
-        aria-pressed={aktiv}
-        className={`relative h-6 w-11 shrink-0 overflow-hidden rounded-full border-2 transition-colors duration-200 disabled:opacity-50 ${
-          aktiv ? "border-brand bg-brand" : "border-border bg-surface-3"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 size-4 rounded-full bg-white shadow transition-transform duration-200 ${
-            aktiv ? "translate-x-5" : "translate-x-0.5"
-          }`}
-        />
-      </button>
+      <Switch checked={aktiv} onCheckedChange={toggle} disabled={isPending} />
     </div>
   );
 }

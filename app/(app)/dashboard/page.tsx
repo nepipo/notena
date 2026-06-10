@@ -5,6 +5,7 @@ import { BriefingKarte } from "@/components/dashboard/briefing-karte";
 import { CoachChat } from "@/components/dashboard/coach-chat";
 import { GrussText } from "@/components/dashboard/gruss-text";
 import { FerienCountdown } from "@/components/dashboard/ferien-countdown";
+import { SchnittKarte } from "@/components/dashboard/schnitt-karte";
 import {
   assembleFaecher,
   type FachRow,
@@ -15,7 +16,7 @@ import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { fmtZeit, type StundeRow } from "@/lib/stundenplan/types";
-import { ArrowRight, ClipboardList } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", {
@@ -113,37 +114,15 @@ export default async function DashboardPage() {
       </Suspense>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        {/* Gesamtschnitt */}
-        <section
-          className="lift animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
-          style={{
-            background: "var(--hero-grad)",
-            borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
-            animationDelay: "0.05s",
-          }}
-        >
-          <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
-            Gesamtschnitt
-          </div>
-          <div className="mt-3 flex items-end">
-            <span
-              className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[88px]"
-              style={{ color: schnittFarbe(gesamt) }}
-            >
-              {fmt(gesamt)}
-            </span>
-            <span className="mb-2 ml-1 text-2xl font-medium text-text-mute">/15</span>
-          </div>
-          {gesamt !== null && (
-            <div className="mt-2 font-mono text-sm text-text-dim">
-              Note {punkteZuNote(gesamt)} · {faecher.length} Fächer
-            </div>
-          )}
-        </section>
+        <SchnittKarte
+          gesamt={gesamt}
+          faecherAnzahl={faecher.length}
+          animationDelay="0.05s"
+        />
 
         {/* Nächste Klausur */}
         <section
-          className="lift animate-fade-up rounded-[28px] border border-border p-8"
+          className="lift animate-fade-up card-glow rounded-3xl border border-border p-8"
           style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
@@ -160,9 +139,10 @@ export default async function DashboardPage() {
               </div>
             </div>
           ) : (
-            <p className="mt-3 font-mono text-sm text-text-mute">
-              Kein Termin eingetragen.
-            </p>
+            <div className="mt-3">
+              <p className="font-display text-2xl font-extrabold text-text-dim">Alles frei.</p>
+              <p className="mt-1 font-mono text-sm text-text-mute">Kein Termin eingetragen.</p>
+            </div>
           )}
         </section>
       </div>
@@ -172,7 +152,7 @@ export default async function DashboardPage() {
         {/* Aufgaben */}
         <Link
           href="/aufgaben"
-          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
@@ -184,13 +164,13 @@ export default async function DashboardPage() {
           <div className="mt-1 font-mono text-xs text-text-dim">
             {naechste ? `Klausur in ${tageBis(naechste.datum)} Tagen` : "Keine Klausur geplant"}
           </div>
-          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
 
         {/* What-If */}
         <Link
           href="/what-if"
-          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.2s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
@@ -204,13 +184,13 @@ export default async function DashboardPage() {
               ? `${gesamtNoten} Noten · fiktive Note eintragen`
               : "Noten eintragen & durchrechnen"}
           </div>
-          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
 
         {/* Stundenplan */}
         <Link
           href="/stundenplan"
-          className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
@@ -242,7 +222,7 @@ export default async function DashboardPage() {
               </div>
             </>
           )}
-          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+          <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
 
         {/* Ferien-Countdown */}
@@ -251,7 +231,7 @@ export default async function DashboardPage() {
         </Suspense>
       </div>
 
-      {/* KI-Coach — ganz unten */}
+      {/* KI-Coach */}
       <div className="mt-4">
         <CoachChat />
       </div>

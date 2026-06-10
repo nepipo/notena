@@ -116,6 +116,13 @@ export async function addEntfall(stundeId: string, datum: string): Promise<Actio
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+    const { data: stunde } = await supabase
+      .from("stundenplan_stunde")
+      .select("id")
+      .eq("id", stundeId)
+      .eq("user_id", userId)
+      .single();
+    if (!stunde) return { ok: false, error: "Stunde nicht gefunden." };
     const { error } = await supabase
       .from("stundenplan_entfall")
       .upsert({ user_id: userId, stunde_id: stundeId, datum }, { onConflict: "stunde_id,datum", ignoreDuplicates: true });

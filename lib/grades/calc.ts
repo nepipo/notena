@@ -11,9 +11,6 @@ import {
   DEFAULT_GEWICHTUNG_CONFIG,
 } from "./types";
 
-const ALLE_KATEGORIEN: Kategorie[] = [
-  "klausur", "test", "muendlich", "referat", "hausaufgabe", "sonstige",
-];
 
 export function clampPunkte(punkte: number): number {
   if (Number.isNaN(punkte)) return 0;
@@ -58,41 +55,46 @@ function resolveConfig(config?: GewichtungConfig): GewichtungConfig {
 }
 
 /**
- * Fach-Schnitt mit vollständiger Gewichtungskonfiguration.
- * - Jede Kategorie hat ein eigenes Gewicht.
- * - Kategorien ohne Noten werden ignoriert und die Gewichte renormalisiert.
- * - Klausur-Dynamik: wenn klausurDynamisch, wächst das Klausur-Gewicht mit
- *   jeder Klausur (klausurPro × Anzahl, gedeckelt bei klausurMax).
+ * Fach-Schnitt: Alle Kategorien werden via kategorieZurGruppe in "klausur"
+ * oder "muendlich" eingruppiert, dann mit den Gruppengewichten aus config
+ * kombiniert. Fehlende Gruppen werden renormalisiert.
+ * Klausur-Dynamik: wächst klausurDynamisch, wächst das Klausur-Gewicht mit
+ * jeder Klausur (klausurPro × Anzahl, gedeckelt bei klausurMax).
  */
 export function fachSchnitt(noten: Note[], config?: GewichtungConfig): number | null {
+  if (noten.length === 0) return null;
   const c = resolveConfig(config);
+
+  const gruppen: Record<"klausur" | "muendlich", { sum: number; gew: number }> = {
+    klausur: { sum: 0, gew: 0 },
+    muendlich: { sum: 0, gew: 0 },
+  };
+
+  for (const n of noten) {
+    const gruppe = kategorieZurGruppe(n.kategorie);
+    const g = n.gewicht ?? 1;
+    gruppen[gruppe].sum += clampPunkte(n.punkte) * g;
+    gruppen[gruppe].gew += g;
+  }
+
   let summe = 0;
   let gewSum = 0;
 
-  for (const kat of ALLE_KATEGORIEN) {
-    const katNoten = noten.filter((n) => n.kategorie === kat);
-    if (katNoten.length === 0) continue;
-
-    let katSumme = 0;
-    let katGew = 0;
-    for (const n of katNoten) {
-      const g = n.gewicht ?? 1;
-      katSumme += clampPunkte(n.punkte) * g;
-      katGew += g;
-    }
-    if (katGew === 0) continue;
-
-    const katSchnitt = katSumme / katGew;
+  for (const gruppe of ["klausur", "muendlich"] as const) {
+    const { sum, gew } = gruppen[gruppe];
+    if (gew === 0) continue;
+    const schnitt = sum / gew;
 
     let effGew: number;
-    if (kat === "klausur" && c.klausurDynamisch) {
-      effGew = Math.min(katNoten.length, c.klausurMax) * c.klausurPro;
+    if (gruppe === "klausur" && c.klausurDynamisch) {
+      const anzahl = noten.filter((n) => n.kategorie === "klausur").length;
+      effGew = Math.min(anzahl, c.klausurMax) * c.klausurPro;
     } else {
-      effGew = c[kat as keyof Pick<GewichtungConfig, Kategorie>] as number;
+      effGew = c[gruppe];
     }
 
     if (effGew <= 0) continue;
-    summe += katSchnitt * effGew;
+    summe += schnitt * effGew;
     gewSum += effGew;
   }
 

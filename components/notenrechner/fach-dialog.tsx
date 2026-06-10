@@ -160,11 +160,11 @@ export function FachDialog({
               ))}
             </div>
 
-            {/* Klausur-Dynamik */}
+            {/* Steigendes Klausur-Gewicht */}
             <div className="mt-4 rounded-xl border border-border bg-surface-2 p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-sans text-sm font-semibold">Klausur-Dynamik</div>
+                  <div className="font-sans text-sm font-semibold">Steigendes Klausur-Gewicht</div>
                   <div className="font-mono text-[11px] text-text-mute">
                     Klausur-Gewicht wächst mit jeder Klausur (bis zum Cap)
                   </div>

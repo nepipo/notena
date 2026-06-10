@@ -7,7 +7,6 @@ import {
   Calculator,
   CalendarDays,
   ClipboardList,
-  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,7 +21,6 @@ const TABS: Tab[] = [
   { href: "/noten", label: "Noten", icon: Calculator },
   { href: "/stundenplan", label: "Stundenplan", icon: CalendarDays },
   { href: "/aufgaben", label: "Aufgaben", icon: ClipboardList },
-  { href: "/einstellungen", label: "Einstellungen", icon: Settings },
 ];
 
 function istAktiv(pathname: string, href: string): boolean {
@@ -116,32 +114,47 @@ export function AppNav({ initiale }: { initiale: string }) {
       </header>
 
       {/* Bottom-Tab-Bar (Handy/iPad) */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-surface-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-        {TABS.map((t) => {
-          const aktiv = istAktiv(pathname, t.href);
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.href}
-              href={t.href}
-              className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 font-mono text-[9px] transition-colors ${
-                aktiv ? "text-brand" : "text-text-mute hover:text-text-dim"
-              }`}
-            >
-              {aktiv && (
-                <span
-                  className="absolute -top-px left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-brand"
-                  style={{
-                    boxShadow: "0 0 12px var(--brand), 0 0 4px var(--brand)",
-                  }}
-                />
-              )}
-              <Icon className={`size-5 transition-transform ${aktiv ? "scale-110" : ""}`} />
-              <span className="leading-none">{t.label.split("-")[0]}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      {(() => {
+        const activeIndex = TABS.findIndex((t) => istAktiv(pathname, t.href));
+        const tabPct = 100 / TABS.length;
+        const indicatorCenter = activeIndex >= 0
+          ? (activeIndex + 0.5) * tabPct
+          : -100;
+
+        return (
+          <nav className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-surface-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+            {/* Gleitender Indikator — ein einziges Element das sich zwischen Tabs bewegt */}
+            <span
+              className="pointer-events-none absolute -top-px h-0.5 w-8 rounded-full bg-brand transition-transform duration-300"
+              style={{
+                left: 0,
+                transform: `translateX(calc(${indicatorCenter}vw - 16px))`,
+                transitionTimingFunction: "var(--ease-spring)",
+                boxShadow: "0 0 12px var(--brand), 0 0 4px var(--brand)",
+              }}
+            />
+            {TABS.map((t) => {
+              const aktiv = istAktiv(pathname, t.href);
+              const Icon = t.icon;
+              return (
+                <Link
+                  key={t.href}
+                  href={t.href}
+                  className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 font-mono text-[9px] transition-colors duration-200 ${
+                    aktiv ? "text-brand" : "text-text-mute hover:text-text-dim"
+                  }`}
+                >
+                  <Icon
+                    className={`size-5 transition-transform duration-300 ${aktiv ? "scale-110" : ""}`}
+                    style={{ transitionTimingFunction: "var(--ease-spring)" }}
+                  />
+                  <span className="leading-none">{t.label.split("-")[0]}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        );
+      })()}
     </>
   );
 }

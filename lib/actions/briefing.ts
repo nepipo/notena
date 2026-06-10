@@ -110,11 +110,11 @@ export async function holeBriefing(): Promise<string | null> {
 
   const [{ data: fachRows }, { data: noteRows }, { data: klausurRows }, { data: haRows }, { data: stundeRows }] =
     await Promise.all([
-      supabase.from("schule_fach").select("*").eq("halbjahr", halbjahr),
-      supabase.from("schule_note").select("fach_id, punkte, kategorie, gewicht"),
-      supabase.from("schule_klausur").select("*").gte("datum", heute),
-      supabase.from("hausaufgabe").select("*").eq("erledigt", false),
-      supabase.from("stundenplan_stunde").select("*").eq("wochentag", new Date().getDay() || 7),
+      supabase.from("schule_fach").select("*").eq("user_id", userId).eq("halbjahr", halbjahr),
+      supabase.from("schule_note").select("fach_id, punkte, kategorie, gewicht").eq("user_id", userId),
+      supabase.from("schule_klausur").select("*").eq("user_id", userId).gte("datum", heute).order("datum").limit(10),
+      supabase.from("hausaufgabe").select("*").eq("user_id", userId).eq("erledigt", false),
+      supabase.from("stundenplan_stunde").select("*").eq("user_id", userId).eq("wochentag", new Date().getDay() || 7),
     ]);
 
   const faecher = assembleFaecher(
@@ -141,13 +141,27 @@ export async function holeBriefing(): Promise<string | null> {
   const msg = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 200,
-    system: `Du schreibst das tägliche Briefing für einen 17-jährigen Gymnasiasten in der 11. Klasse.
+    system: `Du schreibst das tägliche Morgen-Briefing für ${name}, 17, Gymnasium ${halbjahr}.
 
-Ton: wie ein älterer Freund der dir direkt sagt was Sache ist — kein Coach-Speak, keine Motivations-Floskeln. Natürlich, knapp, menschlich.
-Stil: normale Sätze, kein Aufzählungs-Bullshit. Keine Emojis. Keine Phrasen wie "Fokus liegt auf" oder "es gilt".
-Inhalt: nur was wirklich aus den Daten hervorgeht — nichts erfinden oder aufbauschen. Wenn nichts ansteht, sag das entspannt.
+Stil: Wie die ersten 2–3 Sätze einer Morgen-Nachricht von einem Kumpel der deine Schulwoche kennt.
+Kein "Guten Morgen!" am Anfang. Keine Aufzählungen. Keine Emojis. Keine Motivationsfloskeln.
+Schreib wie jemand der tippt, nicht wie jemand der eine Meldung verfasst.
+
+Priorität was du erwähnst (in dieser Reihenfolge, nur was wirklich zutrifft):
+1. Klausuren in ≤ 3 Tagen → immer, konkret ("Mathe morgen" nicht "bald eine Klausur")
+2. Hausaufgaben fällig heute oder morgen → nur wenn vorhanden
+3. Stundenplan heute → nur wenn ungewöhnlich viel oder wenig
+4. Gesamtschnitt → nur wenn bemerkenswert oder sich was verändert hat
+
+Wenn nichts Besonderes ansteht: kurz und entspannt sagen dass gerade Ruhe ist.
+Nichts erfinden oder aufbauschen. Nur was aus den Daten hervorgeht.
+
 Länge: 2–3 Sätze, maximal.
-Sprache: Deutsch, du-Form.`,
+Sprache: Deutsch, du-Form.
+
+VERBOTEN: "Es gilt" · "Fokus liegt auf" · "Guten Morgen!" · "Bleib motiviert" · "Heute steht an" · Bullet-Points
+GUT: "Mathe-Klausur übermorgen — hast du die Formeln drauf? Ansonsten gerade alles ruhig."
+SCHLECHT: "Es gilt heute besonders auf die anstehende Mathematik-Klausur zu achten."`,
     messages: [{ role: "user", content: kontext }],
   });
 
