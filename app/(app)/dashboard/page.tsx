@@ -80,18 +80,18 @@ export default async function DashboardPage() {
     .select("*", { count: "exact", head: true })
     .eq("erledigt", false);
 
-  // Alle Fächer (ohne Halbjahr-Filter) für Stundenplan-Widget-Namen
+  // Alle Fächer (ohne Halbjahr-Filter) für Stundenplan-Widget — RLS reicht, kein user_id-Filter
   const { data: alleFachRows } = await supabase
     .from("schule_fach")
-    .select("id, name")
-    .eq("user_id", userId);
+    .select("id, name, farbe")
+    .order("name");
 
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],
     (noteRows ?? []) as NoteRow[],
   );
   const gesamt = gesamtSchnittGerundet(faecher);
-  const fachName = new Map((alleFachRows ?? []).map((f) => [f.id, f.name]));
+  const fachInfo = new Map((alleFachRows ?? []).map((f) => [f.id, { name: f.name as string, farbe: f.farbe as string | null }]));
   const naechste = ((klausurRows ?? []) as KlausurRow[])[0] ?? null;
   const heutigeStunden = (stundeRows ?? []) as StundeRow[];
   const gesamtNoten = faecher.reduce((s, f) => s + f.noten.length, 0);
@@ -132,8 +132,8 @@ export default async function DashboardPage() {
             <div className="mt-3">
               <div className="font-display text-2xl font-extrabold">{naechste.titel}</div>
               <div className="mt-1 font-mono text-sm text-text-dim">
-                {naechste.fach_id && fachName.get(naechste.fach_id)
-                  ? `${fachName.get(naechste.fach_id)} · `
+                {naechste.fach_id && fachInfo.get(naechste.fach_id)?.name
+                  ? `${fachInfo.get(naechste.fach_id)?.name} · `
                   : ""}
                 in {tageBis(naechste.datum)} Tagen
               </div>
@@ -199,13 +199,24 @@ export default async function DashboardPage() {
           {heutigeStunden.length > 0 ? (
             <div className="mt-2 space-y-1.5">
               {heutigeStunden.map((s) => {
-                const name = s.fach_id ? (fachName.get(s.fach_id) ?? "Stunde") : "Stunde";
+                const info = s.fach_id ? fachInfo.get(s.fach_id) : null;
+                const name = info?.name ?? s.bezeichnung ?? "–";
+                const farbe = info?.farbe ?? null;
                 return (
                   <div key={s.id} className="flex items-center gap-2">
                     <span className="w-[72px] shrink-0 font-mono text-[10px] text-text-mute tabular-nums">
                       {fmtZeit(s.zeit_start)}–{fmtZeit(s.zeit_end)}
                     </span>
-                    <span className="truncate font-display text-sm font-bold leading-tight">
+                    {farbe && (
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ background: farbe }}
+                      />
+                    )}
+                    <span
+                      className="truncate font-display text-sm font-bold leading-tight"
+                      style={{ color: farbe ?? undefined }}
+                    >
                       {name}
                     </span>
                   </div>
