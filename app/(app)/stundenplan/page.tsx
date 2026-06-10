@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StundenplanBoard } from "@/components/stundenplan/stundenplan-board";
 import type { StundeRow, HausaufgabeRow, EntfallRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
+import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 
 const WOCHENTAGE = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
@@ -13,9 +14,16 @@ export default async function StundenplanPage() {
   const vonDatum = new Date(heute); vonDatum.setDate(heute.getDate() - 56);
   const bisDatum = new Date(heute); bisDatum.setDate(heute.getDate() + 56);
 
-  const [{ data: stundeRows }, { data: fachRows }, { data: haRows }, { data: klausurRows }, { data: entfallRows }] =
+  const { data: profil } = await supabase
+    .from("nutzer_profil")
+    .select("aktuelles_halbjahr")
+    .single();
+  const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+
+  const [{ data: stundeRows }, { data: alleFachRows }, { data: haRows }, { data: klausurRows }, { data: entfallRows }] =
     await Promise.all([
       supabase.from("stundenplan_stunde").select("*").order("wochentag").order("zeit_start"),
+      // All faecher (for color/display of existing stunden referencing old halbjahre)
       supabase.from("schule_fach").select("*").order("name"),
       supabase.from("hausaufgabe").select("*").order("faellig_am"),
       supabase.from("schule_klausur").select("*").order("datum"),
@@ -23,6 +31,11 @@ export default async function StundenplanPage() {
         .gte("datum", vonDatum.toISOString().slice(0, 10))
         .lte("datum", bisDatum.toISOString().slice(0, 10)),
     ]);
+
+  // Only current halbjahr faecher for the dropdown (avoids duplicates across halbjahre)
+  const fachRows = (alleFachRows ?? []).filter(
+    (f) => f.halbjahr === halbjahr || f.halbjahr === null,
+  );
 
   const stunden = (stundeRows ?? []) as StundeRow[];
   const heuteWochentag = heute.getDay(); // 0=So…6=Sa
@@ -52,7 +65,8 @@ export default async function StundenplanPage() {
 
       <StundenplanBoard
         stunden={stunden}
-        faecher={(fachRows ?? []) as FachRow[]}
+        faecher={fachRows as FachRow[]}
+        alleFaecher={(alleFachRows ?? []) as FachRow[]}
         hausaufgaben={(haRows ?? []) as HausaufgabeRow[]}
         klausuren={(klausurRows ?? []) as KlausurRow[]}
         entfaelle={(entfallRows ?? []) as EntfallRow[]}

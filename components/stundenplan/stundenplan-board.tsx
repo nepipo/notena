@@ -171,17 +171,19 @@ function StundeFormFelder({
 export function StundenplanBoard({
   stunden,
   faecher,
+  alleFaecher,
   hausaufgaben,
   klausuren,
   entfaelle,
 }: {
   stunden: StundeRow[];
-  faecher: FachRow[];
+  faecher: FachRow[];        // Aktuelles Halbjahr → nur für Dropdown
+  alleFaecher: FachRow[];    // Alle Halbjahre → für Farb/Name-Anzeige bestehender Stunden
   hausaufgaben: HausaufgabeRow[];
   klausuren: KlausurRow[];
   entfaelle: EntfallRow[];
 }) {
-  const fachMap = new Map(faecher.map((f) => [f.id, f]));
+  const fachMap = new Map(alleFaecher.map((f) => [f.id, f]));
   const angereichert: StundeAngereichert[] = stunden.map((s) => ({
     ...s,
     fach: s.fach_id ? fachMap.get(s.fach_id) : undefined,
