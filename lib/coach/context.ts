@@ -55,11 +55,11 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
     { data: haRows },
     { data: stundeRows },
   ] = await Promise.all([
-    supabase.from("schule_fach").select("*").eq("halbjahr", halbjahr).order("created_at"),
-    supabase.from("schule_note").select("*"),
-    supabase.from("schule_klausur").select("*").gte("datum", heute).order("datum").limit(10),
-    supabase.from("hausaufgabe").select("*").eq("erledigt", false).order("faellig_am").limit(20),
-    supabase.from("stundenplan_stunde").select("*").order("wochentag").order("zeit_start"),
+    supabase.from("schule_fach").select("*").eq("user_id", userId).eq("halbjahr", halbjahr).order("created_at"),
+    supabase.from("schule_note").select("*").eq("user_id", userId),
+    supabase.from("schule_klausur").select("*").eq("user_id", userId).gte("datum", heute).order("datum").limit(10),
+    supabase.from("hausaufgabe").select("*").eq("user_id", userId).eq("erledigt", false).order("faellig_am").limit(20),
+    supabase.from("stundenplan_stunde").select("*").eq("user_id", userId).order("wochentag").order("zeit_start"),
   ]);
 
   const faecher = assembleFaecher(
