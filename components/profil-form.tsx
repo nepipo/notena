@@ -36,10 +36,7 @@ export function ProfilForm({
   }
 
   return (
-    <section
-      className="animate-fade-up space-y-4 rounded-3xl border border-border p-6"
-      style={{ background: "var(--card-grad)", animationDelay: "0.05s" }}
-    >
+    <div className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -76,6 +73,6 @@ export function ProfilForm({
       <Button onClick={speichern} disabled={pending} className="font-display font-bold">
         Speichern
       </Button>
-    </section>
+    </div>
   );
 }

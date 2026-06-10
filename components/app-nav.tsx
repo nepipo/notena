@@ -92,12 +92,12 @@ export function AppNav({ initiale }: { initiale: string }) {
             })}
           </nav>
 
-          {/* Profil-Avatar */}
+          {/* Einstellungen-Avatar */}
           <Link
-            href="/profil"
-            title="Profil"
+            href="/einstellungen"
+            title="Einstellungen & Profil"
             className={`relative flex size-9 items-center justify-center rounded-full font-display text-sm font-extrabold text-white transition-transform hover:scale-110 ${
-              istAktiv(pathname, "/profil")
+              istAktiv(pathname, "/einstellungen")
                 ? "ring-2 ring-brand ring-offset-2 ring-offset-background"
                 : ""
             }`}
