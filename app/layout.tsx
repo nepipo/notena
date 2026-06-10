@@ -29,6 +29,22 @@ export const metadata: Metadata = {
   title: "Project X — Dein Schul-Cockpit",
   description:
     "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
+  metadataBase: new URL("https://project-x-seven-tawny.vercel.app"),
+  openGraph: {
+    title: "Project X — Dein Schul-Cockpit",
+    description:
+      "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
+    type: "website",
+    locale: "de_DE",
+    url: "https://project-x-seven-tawny.vercel.app",
+    siteName: "Project X",
+  },
+  twitter: {
+    card: "summary",
+    title: "Project X — Dein Schul-Cockpit",
+    description:
+      "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

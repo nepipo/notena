@@ -65,18 +65,6 @@ export default async function Home() {
         />
       </div>
 
-      <style>{`
-        @keyframes glow-drift {
-          from { transform: translateX(-50%) translateY(0px); }
-          to   { transform: translateX(-50%) translateY(40px); }
-        }
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .anim { opacity: 0; animation: fade-up 0.6s ease forwards; }
-      `}</style>
-
       {/* ── HERO ──────────────────────────────────────────── */}
       <div className="flex flex-col items-center text-center">
         {/* Eyebrow */}
@@ -180,7 +168,7 @@ export default async function Home() {
           {SCHRITTE.map(({ nr, icon: Icon, label, desc }) => (
             <div
               key={nr}
-              className="group flex gap-4 rounded-2xl border border-border p-5 text-left transition-all duration-200 hover:border-brand/30"
+              className="group flex gap-4 rounded-2xl border border-border p-5 text-left transition-[border-color] duration-200 hover:border-brand/30"
               style={{ background: "var(--surface-2)" }}
             >
               <div className="flex shrink-0 flex-col items-center gap-2">
@@ -249,7 +237,7 @@ export default async function Home() {
           {FEATURES.map(({ icon: Icon, label, desc }) => (
             <div
               key={label}
-              className="group rounded-2xl border border-border p-5 text-left transition-all hover:border-brand/30"
+              className="group rounded-2xl border border-border p-5 text-left transition-[border-color] duration-200 hover:border-brand/30"
               style={{ background: "var(--surface-2)" }}
             >
               <div

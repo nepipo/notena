@@ -69,7 +69,7 @@ export function AppNav({ initiale }: { initiale: string }) {
                 <Link
                   key={t.href}
                   href={t.href}
-                  className={`group relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-sans text-sm font-medium transition-all duration-200 ${
+                  className={`group relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-sans text-sm font-medium transition-[transform,background-color,color,box-shadow] duration-200 ${
                     aktiv
                       ? "text-black"
                       : "text-text-dim hover:scale-[1.04] hover:text-foreground"
