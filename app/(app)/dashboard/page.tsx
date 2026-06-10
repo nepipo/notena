@@ -208,20 +208,24 @@ export default async function DashboardPage() {
           style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
-            Stundenplan
+            Heute · {heutigeStunden.length > 0 ? `${heutigeStunden.length} Stunde${heutigeStunden.length !== 1 ? "n" : ""}` : "Stundenplan"}
           </div>
           {heutigeStunden.length > 0 ? (
-            <>
-              <div className="mt-2 font-display text-xl font-extrabold leading-tight">
-                {heutigeStunden[0].fach_id
-                  ? (fachName.get(heutigeStunden[0].fach_id) ?? "Stunde")
-                  : "Stunde"}
-              </div>
-              <div className="mt-1 font-mono text-xs text-text-dim">
-                {fmtZeit(heutigeStunden[0].zeit_start)} – {fmtZeit(heutigeStunden[0].zeit_end)}
-                {heutigeStunden.length > 1 && ` · +${heutigeStunden.length - 1} weitere`}
-              </div>
-            </>
+            <div className="mt-2 space-y-1.5">
+              {heutigeStunden.map((s) => {
+                const name = s.fach_id ? (fachName.get(s.fach_id) ?? "Stunde") : "Stunde";
+                return (
+                  <div key={s.id} className="flex items-center gap-2">
+                    <span className="w-[72px] shrink-0 font-mono text-[10px] text-text-mute tabular-nums">
+                      {fmtZeit(s.zeit_start)}–{fmtZeit(s.zeit_end)}
+                    </span>
+                    <span className="truncate font-display text-sm font-bold leading-tight">
+                      {name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <>
               <div className="mt-2 font-display text-xl font-extrabold leading-tight text-text-dim">
