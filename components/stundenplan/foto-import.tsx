@@ -94,6 +94,13 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
     if (files.length === 0) return;
     e.target.value = "";
 
+    const MAX_FILE_MB = 20;
+    const tooBig = files.filter((f) => f.size > MAX_FILE_MB * 1024 * 1024);
+    if (tooBig.length > 0) {
+      toast.error(`Bild zu groß (max. ${MAX_FILE_MB} MB): ${tooBig.map((f) => f.name).join(", ")}`);
+      return;
+    }
+
     startParsing(async () => {
       try {
         const ergebnisse = await Promise.all(

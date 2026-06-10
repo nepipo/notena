@@ -32,11 +32,21 @@ export type ParseResult =
   | { ok: true; stunden: ParsedStunde[]; neueFachNamen: string[]; hatAbWochen: boolean }
   | { ok: false; error: string };
 
+const VALID_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
+// 6 MB unkomprimiert → base64 ≈ 8 MB → ~8_000_000 Zeichen
+const MAX_BASE64_CHARS = 8_000_000;
+
 export async function parseStundenplanFoto(
   imageBase64: string,
   mimeType: string,
   faecher: FachRow[],
 ): Promise<ParseResult> {
+  if (!VALID_MIME_TYPES.has(mimeType)) {
+    return { ok: false, error: "Ungültiger Bildtyp. Erlaubt: JPEG, PNG, GIF, WebP." };
+  }
+  if (imageBase64.length > MAX_BASE64_CHARS) {
+    return { ok: false, error: "Bild zu groß. Bitte ein kleineres oder komprimierteres Foto verwenden." };
+  }
   try {
     const fachListe = faecher.length > 0
       ? faecher.map((f) => f.name).join(", ")
@@ -133,9 +143,15 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
   }
 }
 
+const MAX_STUNDEN_IMPORT = 100;
+
 export async function importStunden(
   stunden: ParsedStunde[],
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (stunden.length === 0) return { ok: false, error: "Keine Stunden zum Importieren." };
+  if (stunden.length > MAX_STUNDEN_IMPORT) {
+    return { ok: false, error: `Zu viele Stunden (max. ${MAX_STUNDEN_IMPORT}).` };
+  }
   try {
     const supabase = await createClient();
     const { data: claimsData } = await supabase.auth.getClaims();

@@ -5,6 +5,21 @@ import { createClient } from "@/lib/supabase/server";
 import type { GewichtungConfig, Kategorie } from "@/lib/grades/types";
 import { dbError, UpdateFachSchema } from "@/lib/validation";
 
+async function audit(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  aktion: string,
+  entityId?: string,
+  entityData?: Record<string, unknown>,
+): Promise<void> {
+  // Fehler beim Logging blockieren nie die eigentliche Operation
+  try {
+    await supabase.from("audit_log").insert({ user_id: userId, aktion, entity_id: entityId ?? null, entity_data: entityData ?? null });
+  } catch {
+    // ignorieren
+  }
+}
+
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -46,12 +61,15 @@ export async function removeFach(fachId: string): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+    // Snapshot vor dem Löschen (inkl. Name für Audit-Lesbarkeit)
+    const { data: snap } = await supabase.from("schule_fach").select("name, halbjahr, niveau").eq("id", fachId).single();
     const { error } = await supabase
       .from("schule_fach")
       .delete()
       .eq("id", fachId)
       .eq("user_id", userId);
     if (error) return { ok: false, error: dbError(error) };
+    await audit(supabase, userId, "fach_loeschen", fachId, snap ?? undefined);
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/stundenplan");
@@ -209,12 +227,14 @@ export async function removeKlausur(klausurId: string): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+    const { data: snap } = await supabase.from("schule_klausur").select("titel, datum, fach_id").eq("id", klausurId).single();
     const { error } = await supabase
       .from("schule_klausur")
       .delete()
       .eq("id", klausurId)
       .eq("user_id", userId);
     if (error) return { ok: false, error: dbError(error) };
+    await audit(supabase, userId, "klausur_loeschen", klausurId, snap ?? undefined);
     revalidatePath("/dashboard");
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
@@ -327,7 +347,7 @@ export async function neuesHalbjahr(
       .from("nutzer_profil")
       .update({ aktuelles_halbjahr: neuesHj })
       .eq("id", userId);
-    if (profilError) return { ok: false, error: profilError.message };
+    if (profilError) return { ok: false, error: dbError(profilError) };
 
     revalidatePath("/dashboard");
     revalidatePath("/noten");
@@ -444,13 +464,18 @@ export async function loescheHalbjahr(hj: string): Promise<ActionResult> {
     const userId = await requireUserId();
     const supabase = await createClient();
 
+    // Snapshot: wie viele Fächer/Noten werden gelöscht (für Audit)
+    const { data: faecherSnap } = await supabase.from("schule_fach").select("id, name").eq("user_id", userId).eq("halbjahr", hj);
+    const { count: noteCount } = await supabase.from("schule_note").select("id", { count: "exact", head: true }).eq("user_id", userId).in("fach_id", (faecherSnap ?? []).map((f) => f.id));
+
     // Fächer löschen — Noten kaskadieren automatisch (ON DELETE CASCADE)
     const { error: faecherError } = await supabase
       .from("schule_fach")
       .delete()
       .eq("user_id", userId)
       .eq("halbjahr", hj);
-    if (faecherError) return { ok: false, error: faecherError.message };
+    if (faecherError) return { ok: false, error: dbError(faecherError) };
+    await audit(supabase, userId, "halbjahr_loeschen", hj, { halbjahr: hj, faecher: faecherSnap?.length ?? 0, noten: noteCount ?? 0 });
 
     // Falls das gelöschte HJ das aktive war → auf vorheriges wechseln
     const { data: profil } = await supabase
@@ -465,7 +490,7 @@ export async function loescheHalbjahr(hj: string): Promise<ActionResult> {
         .from("nutzer_profil")
         .update({ aktuelles_halbjahr: vorherigesHalbjahr(hj) })
         .eq("id", userId);
-      if (profilError) return { ok: false, error: profilError.message };
+      if (profilError) return { ok: false, error: dbError(profilError) };
     }
 
     revalidatePath("/dashboard");

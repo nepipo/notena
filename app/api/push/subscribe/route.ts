@@ -12,6 +12,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Ungültige Subscription-Daten" }, { status: 400 });
   }
 
+  // Endpoint muss eine gültige HTTPS-URL sein
+  try {
+    const url = new URL(endpoint);
+    if (url.protocol !== "https:") throw new Error("Kein HTTPS");
+  } catch {
+    return NextResponse.json({ error: "Ungültige Endpoint-URL" }, { status: 400 });
+  }
+
   const { error } = await supabase.from("push_subscription").upsert(
     { user_id: auth.claims.sub, endpoint, p256dh: keys.p256dh, auth_key: keys.auth },
     { onConflict: "user_id,endpoint" },
