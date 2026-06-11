@@ -2,7 +2,7 @@
 
 *Diese Datei wird in jeden Claude-Code-Chat dieses Projekts geladen. Sie definiert die Marschrichtung.*
 
-**Stand:** 05.06.2026
+**Stand:** 11.06.2026
 **Arbeitstitel:** Project X (finaler Name kommt vor Launch)
 
 ### Fortschritt
@@ -120,7 +120,7 @@
 - **Woche 9–10:** Briefing + KI Coach (Daily Briefing, Chat mit Claude, Insights)
 - **Woche 11–12:** Beta-Launch Prep (Sign-up Flow, Onboarding-Polish, Landing Page, Marketing-Material)
 
-→ **Closed Beta:** Ende August 2026, 5–20 echte User aus Nepomuks Umfeld
+→ **Closed Beta:** Ende August 2026, erste echte User aus Nepomuks Umfeld — aber die App ist von Tag 1 für 100.000 User gebaut.
 
 ---
 
@@ -140,7 +140,62 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 - **Supabase:** Neues Projekt `project-x` im existierenden Supabase-Account (komplett getrennte DB, eigene Auth)
 - **Briefing-Docs:** Liegen auf `~/Desktop/project-x/` — werden im Repo als `docs/` referenziert aber nicht direkt verschoben (Plan-Ordner ≠ Bau-Ordner)
 
-## 10. Onboarding-Flow (First-Login)
+## 10. Skalierungsziel & Security-Standards (nicht verhandelbar)
+
+**Die App wird gebaut für bis zu 100.000 User — von Tag 1.**
+
+Das ist keine Aspirationsaussage. Es ist ein technischer Constraint. Auch wenn die Closed Beta mit 10 Leuten startet, gilt: Jede Entscheidung — DB-Schema, Auth, Queries, API-Design, Security — wird so getroffen als ob morgen 100k Schüler gleichzeitig einloggen.
+
+---
+
+### Was das konkret bedeutet
+
+**Datenbank / Supabase**
+- RLS auf JEDER Tabelle, die User-Daten enthält — immer, keine Ausnahmen
+- Keine `SELECT *` auf großen Tabellen — immer nur die Felder die gebraucht werden
+- Indexes auf alle Felder die in `WHERE`-Clauses oder Joins auftauchen (user_id, fach_id, created_at etc.)
+- Migrations werden sorgfältig geschrieben — kein `ALTER TABLE` ohne Nachdenken über Lock-Zeiten
+- Kein Client-seitiges Filtern von Daten die nie hätten geladen werden sollen — immer serverseitig filtern
+
+**Auth & Session**
+- Supabase Auth ist State of the Art — aber zusätzlich: Rate-Limiting auf Login-Endpunkt (Supabase hat das eingebaut, muss aktiviert sein)
+- Leaked-Password-Protection in Supabase Auth aktivieren (steht noch offen)
+- JWTs nie im LocalStorage, immer Supabase's HttpOnly-Cookie-Mechanismus
+- Sensible Aktionen (Passwort ändern, Account löschen) brauchen Re-Auth
+
+**API-Sicherheit**
+- Alle API-Routen validieren Input mit zod — kein blindes `req.body` vertrauen
+- Keine API-Route gibt mehr zurück als der eingeloggte User sehen darf
+- User-IDs nie aus dem Request-Body nehmen — immer aus der verifizierten Session
+- CSRF-Schutz durch SameSite-Cookies (Supabase default)
+
+**Frontend**
+- Keine sensiblen Daten im URL-State (Query-Params, Hash)
+- Kein Inline-Script, kein `dangerouslySetInnerHTML` ohne explizite Sanitierung
+- Fehler-Messages an den User dürfen keine internen Details verraten (Stack-Traces, DB-Errors)
+
+**Kosten bei Scale**
+- Vor jedem Feature das Claude API calls macht: Kostenrechnung bei 100k DAU (Daily Active Users)
+- Vor jedem Supabase-Feature: Prüfen ob es im Free/Pro Tier noch skaliert oder ob Vercel/Supabase-Upgrade nötig wird
+- Vercel Serverless Functions haben Timeout-Limits — bei AI-Features auf Streaming oder Edge-Functions achten
+
+**Code-Qualität**
+- Keine N+1 Queries — wenn ein Feature X Items lädt, sollte es 1 Query sein, nicht X Queries in einer Loop
+- Error-Handling an allen System-Boundaries (API-Calls, DB-Calls, externe Services)
+
+---
+
+### Was ich NICHT will
+
+- Micro-Optimierungen die keinen User-Impact haben (kein premature performance tuning)
+- Over-Engineering für hypothetische Features
+- Security-Theater (zod auf Daten die sowieso aus der verifizierten Session kommen)
+
+**Der Punkt ist:** Richtig bauen von Anfang an. Nicht: "Wir machen das Production-ready wenn wir groß sind." Einmal falsch gebaut → schwer umzubauen wenn 50k User drauf sind.
+
+---
+
+## 11. Onboarding-Flow (First-Login)
 
 **Trigger:** Direkt nach dem ersten erfolgreichen Login — erkennbar am Flag `onboarding_completed = false` in `nutzer_profil`.
 
@@ -176,7 +231,7 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 
 ---
 
-## 11. Einstellungen — Roadmap & Todo-Liste
+## 12. Einstellungen — Roadmap & Todo-Liste
 
 *Referenz: beste Apps (Notion, Todoist, Duolingo, Spotify, Apple Health) + Schul-Apps (iDoceo, myHomework, Additio, Stundenplan+). Stand: 06.06.2026*
 
@@ -296,7 +351,7 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 
 ---
 
-## 12. Pro-Plan & Monetarisierung — TODO: Noch komplett zu planen, besprechen & umsetzen
+## 13. Pro-Plan & Monetarisierung — TODO: Noch komplett zu planen, besprechen & umsetzen
 
 > **Status: OFFEN** — Noch nicht geplant, nicht besprochen, nicht implementiert. Muss vor v1.0 vollständig durchdacht und gebaut werden.
 
