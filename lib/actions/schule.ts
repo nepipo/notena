@@ -50,6 +50,7 @@ export async function addFach(
     if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
+    revalidatePath("/stundenplan");
     revalidatePath("/einstellungen");
     return { ok: true, id: data.id };
   } catch (e) {

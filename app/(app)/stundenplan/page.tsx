@@ -32,10 +32,8 @@ export default async function StundenplanPage() {
         .lte("datum", bisDatum.toISOString().slice(0, 10)),
     ]);
 
-  // Only current halbjahr faecher for the dropdown (avoids duplicates across halbjahre)
-  const fachRows = (alleFachRows ?? []).filter(
-    (f) => f.halbjahr === halbjahr || f.halbjahr === null,
-  );
+  // All faecher for dropdown — Stundenplan is not halbjahr-specific
+  const fachRows = alleFachRows ?? [];
 
   const stunden = (stundeRows ?? []) as StundeRow[];
   const heuteWochentag = heute.getDay(); // 0=So…6=Sa

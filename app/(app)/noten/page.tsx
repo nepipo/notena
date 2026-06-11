@@ -26,11 +26,11 @@ export default async function NotenPage() {
 
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
-  // Fächer + Noten für aktuelles Halbjahr
+  // Fächer + Noten für aktuelles Halbjahr (inkl. null-Halbjahr für Foto-Import-Fächer)
   const { data: fachRows } = await supabase
     .from("schule_fach")
     .select("*")
-    .eq("halbjahr", halbjahr)
+    .or(`halbjahr.eq.${halbjahr},halbjahr.is.null`)
     .order("created_at", { ascending: true });
 
   // Verfügbare Halbjahre (distinct) über ALLE Fächer des Users

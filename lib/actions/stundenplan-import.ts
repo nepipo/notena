@@ -3,6 +3,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -158,6 +159,13 @@ export async function importStunden(
     const userId = claimsData?.claims?.sub;
     if (typeof userId !== "string") throw new Error("Nicht angemeldet.");
 
+    const { data: profil } = await supabase
+      .from("nutzer_profil")
+      .select("aktuelles_halbjahr")
+      .eq("id", userId)
+      .single();
+    const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+
     // Neue Fächer anlegen
     const neueFachNamen = [
       ...new Set(stunden.filter((s) => s.isNew && !s.fachId).map((s) => s.fachName)),
@@ -170,7 +178,7 @@ export async function importStunden(
         name,
         farbe: FACH_FARBEN[i % FACH_FARBEN.length],
         niveau: "grund",
-        halbjahr: null,
+        halbjahr,
         fach_gewicht: 1,
         gewicht_klausur: 50,
         gewicht_muendlich: 50,
