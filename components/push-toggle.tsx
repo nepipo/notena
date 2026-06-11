@@ -24,17 +24,19 @@ export function PushToggle() {
   const [pending, start] = useTransition();
 
   useEffect(() => {
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      setStatus("unsupported");
-      return;
-    }
-    if (Notification.permission === "denied") {
-      setStatus("denied");
-      return;
-    }
-    navigator.serviceWorker.register("/sw.js").then(async (reg) => {
-      const sub = await reg.pushManager.getSubscription();
-      setStatus(sub ? "subscribed" : "unsubscribed");
+    Promise.resolve().then(() => {
+      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        setStatus("unsupported");
+        return;
+      }
+      if (Notification.permission === "denied") {
+        setStatus("denied");
+        return;
+      }
+      navigator.serviceWorker.register("/sw.js").then(async (reg) => {
+        const sub = await reg.pushManager.getSubscription();
+        setStatus(sub ? "subscribed" : "unsubscribed");
+      });
     });
   }, []);
 

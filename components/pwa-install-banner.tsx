@@ -28,32 +28,38 @@ export function PwaInstallBanner() {
   }, [pathname]);
 
   useEffect(() => {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (isStandalone) return;
+    let cleanup: (() => void) | undefined;
 
-    if (localStorage.getItem(DISMISSED_KEY)) return;
+    Promise.resolve().then(() => {
+      const isStandalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (navigator as Navigator & { standalone?: boolean }).standalone === true;
+      if (isStandalone) return;
 
-    const navCount = parseInt(sessionStorage.getItem(NAV_COUNT_KEY) ?? "0", 10);
-    if (navCount < SHOW_AFTER) return;
+      if (localStorage.getItem(DISMISSED_KEY)) return;
 
-    const isIos =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
-    if (isIos) {
-      setMode("ios");
-      setVisible(true);
-      return;
-    }
+      const navCount = parseInt(sessionStorage.getItem(NAV_COUNT_KEY) ?? "0", 10);
+      if (navCount < SHOW_AFTER) return;
 
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setMode("chrome");
-      setVisible(true);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+      const isIos =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
+      if (isIos) {
+        setMode("ios");
+        setVisible(true);
+        return;
+      }
+
+      const handler = (e: Event) => {
+        e.preventDefault();
+        setDeferredPrompt(e as BeforeInstallPromptEvent);
+        setMode("chrome");
+        setVisible(true);
+      };
+      window.addEventListener("beforeinstallprompt", handler);
+      cleanup = () => window.removeEventListener("beforeinstallprompt", handler);
+    });
+
+    return () => cleanup?.();
   }, []);
 
   function dismiss() {
@@ -99,7 +105,7 @@ export function PwaInstallBanner() {
           <p className="font-display text-sm font-bold">Als App installieren</p>
           {mode === "ios" ? (
             <p className="mt-0.5 font-mono text-[11px] text-text-dim">
-              Tippe <span className="font-bold text-brand">Teilen</span> → „Zum Home-Bildschirm"
+              Tippe <span className="font-bold text-brand">Teilen</span> → „Zum Home-Bildschirm&quot;
             </p>
           ) : (
             <p className="mt-0.5 font-mono text-[11px] text-text-dim">

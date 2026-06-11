@@ -686,7 +686,7 @@ export function StundenplanBoard({
       {stunden.length === 0 && (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <CalendarDays className="size-10 text-text-mute" />
-          <p className="font-mono text-sm text-text-dim">Trag deine erste Stunde ein — Klick auf "+ Stunde" oben.</p>
+          <p className="font-mono text-sm text-text-dim">Trag deine erste Stunde ein — Klick auf &quot;+ Stunde&quot; oben.</p>
         </div>
       )}
 

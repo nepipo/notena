@@ -8,7 +8,7 @@ import {
   addKlausur, updateKlausur, removeKlausur,
 } from "@/lib/actions/schule";
 import {
-  addHausaufgabe, updateHausaufgabe, removeHausaufgabe, toggleErledigt,
+  addHausaufgabe, removeHausaufgabe, toggleErledigt,
 } from "@/lib/actions/hausaufgaben";
 import {
   addStunde, updateStunde, removeStunde,
@@ -260,18 +260,20 @@ export function CoachChat() {
 
   // Persisted state nach Mount laden
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as {
-          uiMessages: (UiMsg & { kind: "text" })[];
-          apiMessages: ClientMessage[];
-        };
-        if (saved.uiMessages?.length) setUiMessages(saved.uiMessages);
-        if (saved.apiMessages?.length) setApiMessages(saved.apiMessages);
-      }
-    } catch { /* ignore */ }
-    setHydrated(true);
+    Promise.resolve().then(() => {
+      try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw) as {
+            uiMessages: (UiMsg & { kind: "text" })[];
+            apiMessages: ClientMessage[];
+          };
+          if (saved.uiMessages?.length) setUiMessages(saved.uiMessages);
+          if (saved.apiMessages?.length) setApiMessages(saved.apiMessages);
+        }
+      } catch { /* ignore */ }
+      setHydrated(true);
+    });
   }, []);
 
   // State bei jeder Änderung speichern (nur text-Nachrichten, keine ephemeren)

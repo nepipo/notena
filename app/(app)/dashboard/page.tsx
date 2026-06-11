@@ -13,17 +13,9 @@ import {
   type KlausurRow,
 } from "@/lib/grades/db";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
-import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
-import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
+import { gesamtSchnittGerundet } from "@/lib/grades/calc";
 import { fmtZeit, type StundeRow } from "@/lib/stundenplan/types";
 import { ArrowRight } from "lucide-react";
-
-function fmt(n: number | null): string {
-  return n === null ? "–" : n.toLocaleString("de-DE", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
 
 function tageBis(iso: string): number {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);

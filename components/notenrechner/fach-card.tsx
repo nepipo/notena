@@ -111,14 +111,15 @@ function SchnittVerlauf({ noten }: { noten: Note[] }) {
   const TOTAL_W = noten.length * (BAR_W + GAP) - GAP;
 
   // Laufender Schnitt
-  let summe = 0;
-  let gew = 0;
-  const laufend: number[] = noten.map((n) => {
-    const g = n.gewicht ?? 1;
-    summe += n.punkte * g;
-    gew += g;
-    return summe / gew;
-  });
+  const laufend = noten.reduce<{ pts: number[]; summe: number; gew: number }>(
+    ({ pts, summe, gew }, n) => {
+      const g = n.gewicht ?? 1;
+      const newSumme = summe + n.punkte * g;
+      const newGew = gew + g;
+      return { pts: [...pts, newSumme / newGew], summe: newSumme, gew: newGew };
+    },
+    { pts: [], summe: 0, gew: 0 },
+  ).pts;
 
   const avgPoints = laufend
     .map((avg, i) => `${i * (BAR_W + GAP) + BAR_W / 2},${H - (avg / 15) * H}`)

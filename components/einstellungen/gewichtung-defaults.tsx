@@ -183,7 +183,7 @@ export function GewichtungDefaults({
         </Button>
       </div>
       <p className="font-mono text-[10px] text-text-mute">
-        "Auf alle Fächer anwenden" überschreibt die individuelle Gewichtung aller Fächer im aktuellen Halbjahr ({aktuellesHalbjahr}).
+        &quot;Auf alle Fächer anwenden&quot; überschreibt die individuelle Gewichtung aller Fächer im aktuellen Halbjahr ({aktuellesHalbjahr}).
       </p>
     </div>
   );

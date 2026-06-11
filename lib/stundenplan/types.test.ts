@@ -3,7 +3,6 @@ import {
   wochentagAusDatum,
   filterStunden,
   pausenZwischen,
-  tageBis,
   hexToRgba,
   fmtZeit,
   type StundeRow,

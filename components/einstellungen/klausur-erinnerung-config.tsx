@@ -16,11 +16,12 @@ export function KlausurErinnerungConfig({ initial }: { initial: number[] }) {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setPushAktiv(false);
-      return;
-    }
-    navigator.serviceWorker.ready.then(async (reg) => {
+    Promise.resolve().then(async () => {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        setPushAktiv(false);
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
       setPushAktiv(!!sub);
     });
