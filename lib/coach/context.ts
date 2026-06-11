@@ -49,22 +49,52 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
   const heute = new Date().toISOString().slice(0, 10);
 
+  // Fächer zuerst — brauchen wir die IDs für den Noten-Filter
+  const { data: fachRows } = await supabase
+    .from("schule_fach")
+    .select("id, user_id, name, farbe, niveau, halbjahr, fach_gewicht, gewicht_klausur, gewicht_muendlich, gewicht_sonstige, gewichtung_config, ausgeschlossen, created_at")
+    .eq("user_id", userId)
+    .eq("halbjahr", halbjahr)
+    .order("created_at");
+
+  const fachIds = (fachRows ?? []).map((f) => f.id);
+
+  const nextWeek = (() => { const d = new Date(heute); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })();
+
   const [
-    { data: fachRows },
     { data: noteRows },
     { data: klausurRows },
     { data: haRows },
     { data: stundeRows },
     { data: entfallRows },
   ] = await Promise.all([
-    supabase.from("schule_fach").select("*").eq("user_id", userId).eq("halbjahr", halbjahr).order("created_at"),
-    supabase.from("schule_note").select("*").eq("user_id", userId),
-    supabase.from("schule_klausur").select("*").eq("user_id", userId).gte("datum", heute).order("datum").limit(10),
-    supabase.from("hausaufgabe").select("*").eq("user_id", userId).eq("erledigt", false).order("faellig_am").limit(20),
-    supabase.from("stundenplan_stunde").select("*").eq("user_id", userId).order("wochentag").order("zeit_start"),
-    supabase.from("stundenplan_entfall").select("*").eq("user_id", userId)
+    fachIds.length
+      ? supabase.from("schule_note")
+          .select("id, user_id, fach_id, punkte, kategorie, gewicht, bezeichnung, datum, created_at")
+          .in("fach_id", fachIds)
+      : Promise.resolve({ data: [] as NoteRow[], error: null }),
+    supabase.from("schule_klausur")
+      .select("id, user_id, fach_id, titel, datum, vorbereitung_prozent, notiz, created_at")
+      .eq("user_id", userId)
       .gte("datum", heute)
-      .lte("datum", (() => { const d = new Date(heute); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })()),
+      .order("datum")
+      .limit(10),
+    supabase.from("hausaufgabe")
+      .select("id, user_id, fach_id, beschreibung, faellig_am, erledigt, created_at")
+      .eq("user_id", userId)
+      .eq("erledigt", false)
+      .order("faellig_am")
+      .limit(20),
+    supabase.from("stundenplan_stunde")
+      .select("id, user_id, fach_id, bezeichnung, wochentag, zeit_start, zeit_end, raum, lehrer, woche_typ")
+      .eq("user_id", userId)
+      .order("wochentag")
+      .order("zeit_start"),
+    supabase.from("stundenplan_entfall")
+      .select("stunde_id")
+      .eq("user_id", userId)
+      .gte("datum", heute)
+      .lte("datum", nextWeek),
   ]);
 
   const faecher = assembleFaecher(
