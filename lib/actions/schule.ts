@@ -302,6 +302,7 @@ export async function setHalbjahr(hj: string): Promise<ActionResult> {
     if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/noten");
+    revalidatePath("/stundenplan");
     revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
@@ -352,6 +353,8 @@ export async function neuesHalbjahr(
 
     revalidatePath("/dashboard");
     revalidatePath("/noten");
+    revalidatePath("/stundenplan");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: dbError(e) };
