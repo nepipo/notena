@@ -90,8 +90,8 @@ export function FachDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 max-h-[92dvh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-border bg-surface-1 p-6 shadow-2xl">
+        <Dialog.Backdrop className="dialog-backdrop-anim fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
+        <Dialog.Popup className="dialog-popup-anim fixed left-1/2 top-1/2 z-50 max-h-[92dvh] w-[calc(100vw-2rem)] max-w-md overflow-y-auto rounded-3xl border border-border bg-surface-1 p-6 shadow-2xl">
           <Dialog.Title className="font-display text-xl font-extrabold">
             {fach.name} konfigurieren
           </Dialog.Title>

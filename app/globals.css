@@ -369,7 +369,7 @@
 
 /* ===================== ANIMATIONEN ===================== */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes typing-dot {
@@ -388,8 +388,8 @@
   to   { transform: translateX(-50%) translateY(40px); }
 }
 
-.animate-fade-up { animation: fade-up 0.7s both; }
-.anim { opacity: 0; animation: fade-up 0.6s ease forwards; }
+.animate-fade-up { animation: fade-up 0.5s var(--ease-out) both; }
+.anim { opacity: 0; animation: fade-up 0.5s var(--ease-out) forwards; }
 
 /* Subtile Licht-Kante beim Hover — nur auf Pointer-Geräten (kein Touch) */
 .card-glow {
@@ -406,7 +406,7 @@
     transparent
   );
   opacity: 0;
-  transition: opacity 350ms ease;
+  transition: opacity 250ms ease;
   pointer-events: none;
   border-radius: inherit;
 }
@@ -414,12 +414,46 @@
   .card-glow:hover::after { opacity: 1; }
 }
 
-/* Hover-Lift für Karten: hebt an + Glow-Schatten beim Drüberfahren */
+/* Hover-Lift für Karten — kein Bounce, nur auf Pointer-Geräten */
 .lift {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
+  transition: transform 200ms var(--ease-out), box-shadow 200ms ease, border-color 200ms ease;
 }
-.lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 44px color-mix(in srgb, var(--brand) 22%, transparent);
-  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px color-mix(in srgb, var(--brand) 20%, transparent);
+    border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+}
+
+/* Emil Kowalski: scale(0.97) auf :active = sofortiges taktiles Feedback */
+@layer base {
+  button:not([disabled]) {
+    transition: transform 160ms var(--ease-out);
+  }
+  button:not([disabled]):active {
+    transform: scale(0.97);
+  }
+}
+
+/* Base UI Dialog — Entry/Exit Animationen */
+.dialog-backdrop-anim {
+  transition: opacity 220ms ease;
+}
+.dialog-backdrop-anim[data-starting-style],
+.dialog-backdrop-anim[data-ending-style] {
+  opacity: 0 !important;
+}
+
+.dialog-popup-anim {
+  transform: translate(-50%, -50%);
+  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+.dialog-popup-anim[data-starting-style] {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 14px)) scale(0.97);
+}
+.dialog-popup-anim[data-ending-style] {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 14px)) scale(0.97);
 }
