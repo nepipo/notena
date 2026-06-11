@@ -112,7 +112,7 @@ export async function updateStunde(
   }
 }
 
-export async function addEntfall(stundeId: string, datum: string): Promise<ActionResult> {
+export async function addEntfall(stundeId: string, datum: string, typ: "entfall" | "krank" = "entfall"): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -125,7 +125,7 @@ export async function addEntfall(stundeId: string, datum: string): Promise<Actio
     if (!stunde) return { ok: false, error: "Stunde nicht gefunden." };
     const { error } = await supabase
       .from("stundenplan_entfall")
-      .upsert({ user_id: userId, stunde_id: stundeId, datum }, { onConflict: "stunde_id,datum", ignoreDuplicates: true });
+      .upsert({ user_id: userId, stunde_id: stundeId, datum, typ }, { onConflict: "stunde_id,datum" });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/stundenplan");
     return { ok: true };
@@ -152,7 +152,7 @@ export async function removeEntfall(stundeId: string, datum: string): Promise<Ac
   }
 }
 
-export async function addTagEntfall(datum: string): Promise<ActionResult> {
+export async function addTagEntfall(datum: string, typ: "entfall" | "krank" = "entfall"): Promise<ActionResult> {
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -165,10 +165,10 @@ export async function addTagEntfall(datum: string): Promise<ActionResult> {
       .eq("user_id", userId)
       .eq("wochentag", wochentag);
     if (!stundenHeute?.length) return { ok: true };
-    const rows = stundenHeute.map((s) => ({ user_id: userId, stunde_id: s.id, datum }));
+    const rows = stundenHeute.map((s) => ({ user_id: userId, stunde_id: s.id, datum, typ }));
     const { error } = await supabase
       .from("stundenplan_entfall")
-      .upsert(rows, { onConflict: "stunde_id,datum", ignoreDuplicates: true });
+      .upsert(rows, { onConflict: "stunde_id,datum" });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/stundenplan");
     return { ok: true };

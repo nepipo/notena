@@ -151,13 +151,14 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
         .join("\n")
     : "Keine offenen";
 
-  const entfallStundeIds = new Set((entfallRows ?? []).map((e: { stunde_id: string }) => e.stunde_id));
+  const entfallTypMap = new Map((entfallRows ?? []).map((e: { stunde_id: string; typ?: string }) => [e.stunde_id, e.typ ?? "entfall"]));
 
   const stundenStr = (stundeRows ?? []).length
     ? (stundeRows as StundeRow[])
         .map(
           (s) => {
-            const entfallHinweis = entfallStundeIds.has(s.id) ? " ⚠️ ENTFALL diese Woche" : "";
+            const eTyp = entfallTypMap.get(s.id);
+            const entfallHinweis = eTyp === "krank" ? " 🤒 KRANK diese Woche" : eTyp === "entfall" ? " ⚠️ ENTFALL diese Woche" : "";
             const fachName = s.fach_id ? fachMap.get(s.fach_id) : (s.bezeichnung ?? null);
             return `- [id:${s.id}] ${wochentagName(s.wochentag)} ${s.zeit_start.slice(0, 5)}–${s.zeit_end.slice(0, 5)}${fachName ? ` · ${fachName}` : ""}${s.raum ? ` · Raum ${s.raum}` : ""}${s.lehrer ? ` · ${s.lehrer}` : ""}${entfallHinweis}`;
           },

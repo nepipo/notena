@@ -16,6 +16,7 @@ export interface EntfallRow {
   user_id: string;
   stunde_id: string;
   datum: string; // "YYYY-MM-DD"
+  typ: "entfall" | "krank";
   created_at: string;
 }
 

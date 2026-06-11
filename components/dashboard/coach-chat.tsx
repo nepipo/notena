@@ -243,7 +243,11 @@ async function executeTool(
 
 // ── Hauptkomponente ────────────────────────────────────────────────────
 
-const STORAGE_KEY = "coach-chat-v1";
+const STORAGE_KEY = "coach-chat-v2";
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export function CoachChat() {
   const [uiMessages, setUiMessages] = useState<UiMsg[]>([
@@ -258,18 +262,23 @@ export function CoachChat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Persisted state nach Mount laden
+  // Persisted state nach Mount laden — bleibt bis Tagesende
   useEffect(() => {
     Promise.resolve().then(() => {
       try {
-        const raw = sessionStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const saved = JSON.parse(raw) as {
+            date: string;
             uiMessages: (UiMsg & { kind: "text" })[];
             apiMessages: ClientMessage[];
           };
-          if (saved.uiMessages?.length) setUiMessages(saved.uiMessages);
-          if (saved.apiMessages?.length) setApiMessages(saved.apiMessages);
+          if (saved.date === todayStr() && saved.uiMessages?.length) {
+            setUiMessages(saved.uiMessages);
+            if (saved.apiMessages?.length) setApiMessages(saved.apiMessages);
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+          }
         }
       } catch { /* ignore */ }
       setHydrated(true);
@@ -281,7 +290,7 @@ export function CoachChat() {
     if (!hydrated) return;
     try {
       const persistable = uiMessages.filter((m): m is UiMsg & { kind: "text" } => m.kind === "text");
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ uiMessages: persistable, apiMessages }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayStr(), uiMessages: persistable, apiMessages }));
     } catch { /* ignore */ }
   }, [uiMessages, apiMessages, hydrated]);
 
