@@ -115,7 +115,7 @@ export default function OnboardingPage() {
             return (
               <div
                 key={s}
-                className="h-1 flex-1 rounded-full transition-all duration-500"
+                className="h-1 flex-1 rounded-full transition-[background-color] duration-500"
                 style={{
                   background:
                     step >= s
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
                 <button
                   key={k}
                   onClick={() => setKlasse(k)}
-                  className={`flex-1 rounded-2xl border py-4 font-display text-xl font-extrabold transition-all ${
+                  className={`flex-1 rounded-2xl border py-4 font-display text-xl font-extrabold transition-[border-color,background-color,color,box-shadow] ${
                     klasse === k
                       ? "border-brand bg-brand/10 text-brand shadow-[0_0_20px_color-mix(in_srgb,var(--brand)_25%,transparent)]"
                       : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"
@@ -227,7 +227,7 @@ export default function OnboardingPage() {
                   key={fach}
                   onClick={() => toggleVorschlag(fach)}
                   disabled={isPendingFach}
-                  className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-all disabled:opacity-60 ${
+                  className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-[border-color,background-color,color] disabled:opacity-60 ${
                     ausgewaehlt
                       ? "border-brand bg-brand text-black"
                       : "border-border bg-surface-2 text-foreground hover:border-brand/40 hover:bg-surface-3"
@@ -353,7 +353,7 @@ export default function OnboardingPage() {
               <button
                 key={m}
                 onClick={() => setEingabeModus(m)}
-                className={`rounded-2xl border p-5 text-left transition-all ${
+                className={`rounded-2xl border p-5 text-left transition-[border-color,background-color,box-shadow] ${
                   eingabeModus === m
                     ? "border-brand bg-brand/10 shadow-[0_0_24px_color-mix(in_srgb,var(--brand)_15%,transparent)]"
                     : "border-border bg-surface-2 hover:bg-surface-3"

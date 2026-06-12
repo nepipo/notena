@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { StundenplanBoard } from "@/components/stundenplan/stundenplan-board";
 import type { StundeRow, HausaufgabeRow, EntfallRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
-import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 
 const WOCHENTAGE = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
@@ -13,12 +12,6 @@ export default async function StundenplanPage() {
   const heute = new Date();
   const vonDatum = new Date(heute); vonDatum.setDate(heute.getDate() - 56);
   const bisDatum = new Date(heute); bisDatum.setDate(heute.getDate() + 56);
-
-  const { data: profil } = await supabase
-    .from("nutzer_profil")
-    .select("aktuelles_halbjahr")
-    .single();
-  const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
   const [{ data: stundeRows }, { data: alleFachRows }, { data: haRows }, { data: klausurRows }, { data: entfallRows }] =
     await Promise.all([

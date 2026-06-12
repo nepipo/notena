@@ -183,7 +183,7 @@ export function AufgabenListe({
             <button
               key={t}
               onClick={() => setTab(t)}
-              className="rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide transition-all"
+              className="rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide transition-[background-color,color,box-shadow]"
               style={
                 tab === t
                   ? { background: "var(--surface-1)", color: "var(--foreground)", boxShadow: "0 1px 4px rgba(0,0,0,.3)" }
@@ -200,7 +200,7 @@ export function AufgabenListe({
             setFormTyp(tab === "klausuren" ? "klausur" : "ha");
             setShowForm((v) => !v);
           }}
-          className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 font-display text-sm font-bold transition-all hover:border-brand hover:text-brand"
+          className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 font-display text-sm font-bold transition-[border-color,color] hover:border-brand hover:text-brand"
           style={{ background: "var(--surface-2)" }}
         >
           <Plus className={`size-3.5 transition-transform ${showForm ? "rotate-45" : ""}`} />
@@ -213,7 +213,7 @@ export function AufgabenListe({
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setAktiverFach("alle")}
-            className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-all"
+            className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color,border-color]"
             style={
               aktiverFach === "alle"
                 ? { background: "rgba(29,161,255,.18)", color: "var(--brand)", border: "1px solid rgba(29,161,255,.35)" }
@@ -229,7 +229,7 @@ export function AufgabenListe({
               <button
                 key={f.id}
                 onClick={() => setAktiverFach(aktiv ? "alle" : f.id)}
-                className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-all"
+                className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color,border-color]"
                 style={
                   aktiv
                     ? { background: hexToRgba(farbe, 0.2), color: farbe, border: `1px solid ${hexToRgba(farbe, 0.4)}` }
@@ -251,14 +251,14 @@ export function AufgabenListe({
             <div className="mb-3 flex gap-1 w-fit rounded-lg border border-border p-0.5" style={{ background: "var(--surface-2)" }}>
               <button
                 onClick={() => setFormTyp("ha")}
-                className="rounded-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-all"
+                className="rounded-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color]"
                 style={formTyp === "ha" ? { background: "var(--surface-1)", color: "var(--foreground)" } : { color: "var(--text-mute)" }}
               >
                 Hausaufgabe
               </button>
               <button
                 onClick={() => setFormTyp("klausur")}
-                className="rounded-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-all"
+                className="rounded-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color]"
                 style={formTyp === "klausur" ? { background: "var(--surface-1)", color: "var(--foreground)" } : { color: "var(--text-mute)" }}
               >
                 Klausur
@@ -398,7 +398,7 @@ function AufgabeItemRow({
     const isUeberfaellig = tage < 0 && !ha.erledigt;
     return (
       <div
-        className="group flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 transition-all hover:border-border"
+        className="group flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 transition-[border-color,background-color,opacity] hover:border-border"
         style={{
           background: "var(--surface-2)",
           opacity: dimmed ? 0.5 : 1,
@@ -437,7 +437,7 @@ function AufgabeItemRow({
         <button
           onClick={() => onToggleHA(ha.id, !ha.erledigt)}
           disabled={pending}
-          className="flex size-5 flex-shrink-0 items-center justify-center rounded-md border border-border transition-all hover:border-brand"
+          className="flex size-5 flex-shrink-0 items-center justify-center rounded-md border border-border transition-[border-color,background-color] hover:border-brand"
           style={ha.erledigt ? { background: "linear-gradient(135deg,var(--brand),var(--indigo))", borderColor: "transparent" } : {}}
         >
           {ha.erledigt && <span className="text-[10px] font-black text-white">✓</span>}
@@ -447,7 +447,7 @@ function AufgabeItemRow({
         <button
           onClick={() => onDeleteHA(ha.id)}
           disabled={pending}
-          className="flex-shrink-0 text-[14px] leading-none text-text-mute opacity-0 transition-all hover:text-destructive group-hover:opacity-100"
+          className="flex-shrink-0 text-[14px] leading-none text-text-mute opacity-0 transition-[color,opacity] hover:text-destructive group-hover:opacity-100"
         >
           ×
         </button>
@@ -460,7 +460,7 @@ function AufgabeItemRow({
   const tage = tageBis(k.datum);
   return (
     <div
-      className="group flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 transition-all"
+      className="group flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 transition-[border-color,background-color,opacity]"
       style={{
         background: "var(--surface-2)",
         opacity: dimmed ? 0.5 : 1,
@@ -504,7 +504,7 @@ function AufgabeItemRow({
       <button
         onClick={() => onDeleteK(k.id)}
         disabled={pending}
-        className="flex-shrink-0 text-[14px] leading-none text-text-mute opacity-0 transition-all hover:text-destructive group-hover:opacity-100"
+        className="flex-shrink-0 text-[14px] leading-none text-text-mute opacity-0 transition-[color,opacity] hover:text-destructive group-hover:opacity-100"
       >
         ×
       </button>

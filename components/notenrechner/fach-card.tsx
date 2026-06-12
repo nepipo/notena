@@ -68,7 +68,7 @@ function KategorienSplit({ noten }: { noten: Note[] }) {
           <span className="w-4 shrink-0 font-mono text-[10px] text-text-mute">K</span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-3">
             <div
-              className="h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full transition-[width,background-color] duration-500"
               style={{ width: `${(kS / 15) * 100}%`, background: schnittFarbe(kS) }}
             />
           </div>
@@ -85,7 +85,7 @@ function KategorienSplit({ noten }: { noten: Note[] }) {
           <span className="w-4 shrink-0 font-mono text-[10px] text-text-mute">M</span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-3">
             <div
-              className="h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full transition-[width,background-color] duration-500"
               style={{ width: `${(mS / 15) * 100}%`, background: schnittFarbe(mS) }}
             />
           </div>

@@ -109,7 +109,7 @@ export function HausaufgabenListe({
           return (
             <div
               key={ha.id}
-              className="lift flex items-center gap-3 rounded-2xl border border-border p-3 transition-all"
+              className="lift flex items-center gap-3 rounded-2xl border border-border p-3"
               style={{
                 background: "linear-gradient(145deg, var(--surface-2), var(--surface-1))",
                 opacity: ha.erledigt ? 0.45 : 1,
@@ -144,7 +144,7 @@ export function HausaufgabenListe({
               {/* Checkbox */}
               <button
                 onClick={() => toggle(ha.id, !ha.erledigt)}
-                className="flex size-6 flex-shrink-0 items-center justify-center rounded-lg border border-border transition-all hover:border-brand hover:shadow-[0_0_10px_rgba(29,161,255,.3)]"
+                className="flex size-6 flex-shrink-0 items-center justify-center rounded-lg border border-border transition-[border-color,background-color,box-shadow] hover:border-brand hover:shadow-[0_0_10px_rgba(29,161,255,.3)]"
                 style={
                   ha.erledigt
                     ? { background: "linear-gradient(135deg,var(--brand),var(--indigo))", borderColor: "transparent" }
