@@ -644,6 +644,13 @@ export function StundenplanBoard({
                 const eTyp = entfallTyp(s.id, tagIndex);
                 const label = s.fach?.name ?? s.bezeichnung ?? "–";
                 const markFarbe = eTyp === "entfall" ? "#ff3050" : eTyp === "krank" ? "#f59e0b" : null;
+                const tagIso = tagIsos[tagIndex];
+                const stundeKlausuren = !eTyp && s.fach_id
+                  ? klausuren.filter((k) => k.fach_id === s.fach_id && toLocalIso(k.datum) === tagIso)
+                  : [];
+                const stundeHAs = !eTyp && s.fach_id
+                  ? hausaufgaben.filter((h) => !h.erledigt && h.fach_id === s.fach_id && h.faellig_am === tagIso)
+                  : [];
 
                 return (
                   <div
@@ -658,7 +665,7 @@ export function StundenplanBoard({
                   >
                     <div
                       onClick={() => openEdit(s)}
-                      className="group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-xl p-2 transition-all hover:scale-[1.02]"
+                      className="group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-xl p-2 transition-[filter] hover:brightness-110"
                       style={{
                         background: eTyp === "entfall"
                           ? "rgba(255,48,80,.08)"
@@ -696,6 +703,30 @@ export function StundenplanBoard({
                         {!eTyp && (s.lehrer || s.raum) && (
                           <div className="truncate font-mono text-[9px] text-text-dim">
                             {[s.lehrer, s.raum].filter(Boolean).join(" · ")}
+                          </div>
+                        )}
+                        {(stundeKlausuren.length > 0 || stundeHAs.length > 0) && (
+                          <div className="mt-0.5 flex flex-wrap gap-0.5 overflow-hidden">
+                            {stundeKlausuren.map((k) => (
+                              <span
+                                key={k.id}
+                                className="truncate rounded px-1 font-mono text-[8px] font-bold leading-tight"
+                                style={{ background: "rgba(255,48,80,.2)", color: "#ff3050" }}
+                                title={k.titel}
+                              >
+                                ✕ {k.titel}
+                              </span>
+                            ))}
+                            {stundeHAs.map((h) => (
+                              <span
+                                key={h.id}
+                                className="truncate rounded px-1 font-mono text-[8px] font-bold leading-tight"
+                                style={{ background: "rgba(251,191,36,.2)", color: "#f59e0b" }}
+                                title={h.beschreibung}
+                              >
+                                HA
+                              </span>
+                            ))}
                           </div>
                         )}
                       </div>
