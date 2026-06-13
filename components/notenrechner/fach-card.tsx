@@ -238,7 +238,6 @@ export function FachCard({
   const [wwwOffen, setWwwOffen] = useState(false);
   const [verlaufOffen, setVerlaufOffen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const schnitt = fachSchnittGerundet(fach.noten, fach.gewichtungConfig);
   const farbe = schnittFarbe(schnitt);
   const tage = naechsteKlausur ? tageBis(naechsteKlausur.datum) : null;
@@ -361,21 +360,13 @@ export function FachCard({
               />
             );
           }
-          const isConfirming = confirmDeleteId === n.id;
           return (
             <span
               key={n.id}
-              className={`inline-flex items-center gap-1 rounded-full border font-mono text-xs transition-colors ${
-                isConfirming
-                  ? "border-destructive/60 bg-destructive/15"
-                  : "border-border bg-surface-2"
-              }`}
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 font-mono text-xs"
             >
               <button
-                onClick={() => {
-                  setConfirmDeleteId(null);
-                  setEditingNoteId(n.id!);
-                }}
+                onClick={() => setEditingNoteId(n.id!)}
                 title={`${n.bezeichnung ?? KAT_LABEL[n.kategorie]} — klick zum Bearbeiten`}
                 className="inline-flex items-center gap-1 px-2.5 py-1 hover:text-brand"
               >
@@ -385,32 +376,13 @@ export function FachCard({
                   <span className="text-text-mute">·{n.bezeichnung.slice(0, 8)}</span>
                 )}
               </button>
-              {isConfirming ? (
-                <>
-                  <button
-                    onClick={() => { onRemoveNote(fach.id, n.id!); setConfirmDeleteId(null); }}
-                    className="py-1 pr-1.5 font-semibold text-destructive hover:text-destructive"
-                    title="Löschen bestätigen"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => setConfirmDeleteId(null)}
-                    className="py-1 pr-2 text-text-mute hover:text-foreground"
-                    title="Abbrechen"
-                  >
-                    ✕
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setConfirmDeleteId(n.id!)}
-                  title="Löschen"
-                  className="py-1 pr-2 text-text-mute hover:text-destructive"
-                >
-                  ×
-                </button>
-              )}
+              <button
+                onClick={() => onRemoveNote(fach.id, n.id!)}
+                title="Löschen"
+                className="py-1 pr-2 text-text-mute hover:text-destructive"
+              >
+                ×
+              </button>
             </span>
           );
         })}
@@ -420,6 +392,58 @@ export function FachCard({
 
       {wwwOffen && <WasWaereWennPanel fach={fach} />}
     </section>
+  );
+}
+
+function KategorieSelector({
+  value,
+  onChange,
+}: {
+  value: Kategorie;
+  onChange: (k: Kategorie) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  function select(k: Kategorie) {
+    onChange(k);
+    setOpen(false);
+  }
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-[11px] font-semibold transition-colors active:scale-[0.96] ${
+          open
+            ? "border-brand/40 bg-brand/10 text-brand"
+            : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"
+        }`}
+      >
+        {KAT_LABEL[value]}
+        <ChevronDown
+          className={`size-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {ALLE_KATEGORIEN.map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => select(k)}
+              className={`rounded-xl border px-3 py-1.5 font-mono text-[11px] transition-colors active:scale-[0.94] ${
+                value === k
+                  ? "border-brand bg-brand font-semibold text-black"
+                  : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"
+              }`}
+            >
+              {KAT_LABEL[k]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -451,20 +475,8 @@ function NoteEditForm({
 
   return (
     <div className="w-full rounded-2xl border border-brand/30 bg-surface-2 p-3 shadow-sm">
-      <div className="mb-2 flex flex-wrap gap-1">
-        {ALLE_KATEGORIEN.map((k) => (
-          <button
-            key={k}
-            onClick={() => setKategorie(k)}
-            className={`rounded-lg px-2 py-0.5 font-mono text-[10px] transition-[transform,background-color,color] duration-150 active:scale-[0.93] ${
-              kategorie === k
-                ? "bg-brand font-semibold text-black"
-                : "bg-surface-3 text-text-dim hover:bg-surface-2"
-            }`}
-          >
-            {KAT_LABEL[k]}
-          </button>
-        ))}
+      <div className="mb-2">
+        <KategorieSelector value={kategorie} onChange={setKategorie} />
       </div>
       <div className="flex items-center gap-2">
         <Input
@@ -537,20 +549,19 @@ function AddNote({
 
   return (
     <div className="mt-4 space-y-2 border-t border-border pt-4">
-      <div className="flex flex-wrap gap-1">
-        {ALLE_KATEGORIEN.map((k) => (
-          <button
-            key={k}
-            onClick={() => setKategorie(k)}
-            className={`rounded-lg px-2 py-1 font-mono text-[11px] transition-[transform,background-color,color] duration-150 active:scale-[0.93] ${
-              kategorie === k
-                ? "bg-brand font-semibold text-black"
-                : "bg-surface-2 text-text-dim hover:bg-surface-3"
-            }`}
-          >
-            {KAT_LABEL[k]}
-          </button>
-        ))}
+      <div className="flex items-center gap-2">
+        <KategorieSelector value={kategorie} onChange={setKategorie} />
+        <div className="flex-1" />
+        <button
+          onClick={() => setErweitert(!erweitert)}
+          className="flex items-center gap-1 font-mono text-[11px] text-text-mute transition-[transform,color] duration-150 hover:text-text-dim active:scale-[0.95]"
+        >
+          Optionen
+          <ChevronDown
+            className={`size-3 transition-transform duration-200 ${erweitert ? "rotate-180" : ""}`}
+            style={{ transitionTimingFunction: "var(--ease-out)" }}
+          />
+        </button>
       </div>
 
       <div className="flex items-center gap-2">
@@ -564,16 +575,6 @@ function AddNote({
           placeholder="0–15"
           className="h-9 w-20 bg-surface-2 font-mono"
         />
-        <button
-          onClick={() => setErweitert(!erweitert)}
-          className="flex items-center gap-1 font-mono text-[11px] text-text-mute transition-[transform,color] duration-150 hover:text-text-dim active:scale-[0.95]"
-        >
-          Optionen
-          <ChevronDown
-            className={`size-3 transition-transform duration-200 ${erweitert ? "rotate-180" : ""}`}
-            style={{ transitionTimingFunction: "var(--ease-out)" }}
-          />
-        </button>
         <Button onClick={submit} size="sm" className="ml-auto font-display font-bold">
           + Note
         </Button>
