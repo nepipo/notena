@@ -32,7 +32,7 @@ function SchnittBalken({ wert }: { wert: number | null }) {
   return (
     <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-3">
       <div
-        className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+        className="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-500"
         style={{ width: `${pct}%`, background: schnittFarbe(wert) }}
       />
     </div>
@@ -192,7 +192,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                   setProbePunkte("");
                   setZiel("");
                 }}
-                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
+                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[background-color,border-color] ${
                   istAktiv
                     ? "border-brand/40 bg-brand/10"
                     : "border-transparent bg-surface-2 hover:bg-surface-3"

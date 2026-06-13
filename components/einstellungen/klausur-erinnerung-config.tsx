@@ -59,7 +59,7 @@ export function KlausurErinnerungConfig({ initial }: { initial: number[] }) {
               onClick={() => toggle(tage)}
               disabled={disabled}
               aria-pressed={aktiv}
-              className={`rounded-xl border px-4 py-2 font-display text-sm font-bold transition-all disabled:opacity-40 ${
+              className={`rounded-xl border px-4 py-2 font-display text-sm font-bold transition-[background-color,border-color,color,opacity] disabled:opacity-40 ${
                 aktiv
                   ? "border-brand/40 bg-brand/12 text-brand"
                   : "border-border bg-surface-2 text-foreground hover:bg-surface-3"

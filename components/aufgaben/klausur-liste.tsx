@@ -96,7 +96,7 @@ export function KlausurListe({
           return (
             <div
               key={k.id}
-              className="lift flex items-center gap-3 rounded-2xl border border-border p-3 transition-all"
+              className="lift flex items-center gap-3 rounded-2xl border border-border p-3"
               style={{ background: "linear-gradient(145deg, var(--surface-2), var(--surface-1))" }}
             >
               {/* Farbiger Stripe */}

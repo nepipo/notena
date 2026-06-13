@@ -176,7 +176,7 @@ export function FaecherVerwaltung({
                   {/* Farbpunkt — klickbar */}
                   <button
                     onClick={() => setColorPickerId(colorPickerId === f.id ? null : f.id)}
-                    className="group relative shrink-0 rounded-full p-0.5 transition-all hover:ring-2 hover:ring-white/20"
+                    className="group relative shrink-0 rounded-full p-0.5 transition-[box-shadow] hover:ring-2 hover:ring-white/20"
                     title="Farbe wählen"
                     disabled={pending}
                   >

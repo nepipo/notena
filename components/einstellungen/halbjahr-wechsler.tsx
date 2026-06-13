@@ -64,7 +64,7 @@ export function HalbjahrWechsler({ current }: { current: string }) {
                   }
                 }}
                 disabled={isPending}
-                className={`rounded-xl border px-3.5 py-2 pr-8 font-mono text-xs font-semibold transition-all disabled:opacity-50 ${
+                className={`rounded-xl border px-3.5 py-2 pr-8 font-mono text-xs font-semibold transition-[background-color,border-color,color,opacity] disabled:opacity-50 ${
                   aktiv
                     ? "border-brand bg-brand text-black"
                     : "border-border bg-surface-2 text-text-dim hover:border-brand/40 hover:text-foreground"

@@ -34,7 +34,7 @@ export function AccentPicker({ current }: { current: AccentColor }) {
             onClick={() => pick(value)}
             disabled={isPending}
             title={label}
-            className="group flex items-center gap-2 rounded-xl border px-3 py-2 font-mono text-xs font-semibold transition-all disabled:opacity-50"
+            className="group flex items-center gap-2 rounded-xl border px-3 py-2 font-mono text-xs font-semibold transition-[background-color,border-color,opacity] disabled:opacity-50"
             style={{
               borderColor: aktiv ? brand : "var(--border)",
               background: aktiv

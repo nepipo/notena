@@ -50,7 +50,7 @@ export function FeedbackButton() {
       <button
         onClick={open}
         aria-label="Feedback senden"
-        className={`fixed z-50 flex items-center gap-2 rounded-full border border-border bg-surface-2/90 px-4 py-2.5 font-mono text-xs font-semibold text-text-dim shadow-lg backdrop-blur-md transition-all duration-200 hover:border-brand/40 hover:text-foreground hover:shadow-brand/10 active:scale-95
+        className={`fixed z-50 flex items-center gap-2 rounded-full border border-border bg-surface-2/90 px-4 py-2.5 font-mono text-xs font-semibold text-text-dim shadow-lg backdrop-blur-md transition-[transform,opacity,box-shadow,border-color,color] duration-200 hover:border-brand/40 hover:text-foreground hover:shadow-brand/10 active:scale-[0.97]
           bottom-[88px] right-4
           lg:bottom-6 lg:right-6
           ${status !== "idle" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
@@ -128,7 +128,7 @@ export function FeedbackButton() {
                 <button
                   onClick={submit}
                   disabled={!text.trim() || status === "loading"}
-                  className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 font-display text-sm font-extrabold text-black transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 font-display text-sm font-extrabold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send className="size-3.5" />
                   {status === "loading" ? "Sendet…" : "Senden"}

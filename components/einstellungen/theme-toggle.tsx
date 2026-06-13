@@ -33,7 +33,7 @@ export function ThemeToggle({ current }: { current: Theme }) {
           key={value}
           onClick={() => toggle(value)}
           disabled={isPending}
-          className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 font-mono text-xs font-semibold transition-all disabled:opacity-50 ${
+          className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 font-mono text-xs font-semibold transition-[background-color,color,opacity] disabled:opacity-50 ${
             current === value
               ? "bg-surface-1 text-foreground shadow-sm"
               : "text-text-mute hover:text-text-dim"
