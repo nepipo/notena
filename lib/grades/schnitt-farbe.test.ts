@@ -1,20 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { schnittFarbe } from "./schnitt-farbe";
+import { DE_0_15, AT_1_5 } from "./systems";
 
 describe("schnittFarbe", () => {
-  it("gibt text-dim zurück bei null", () => {
+  it("null -> dim", () => {
     expect(schnittFarbe(null)).toBe("var(--text-dim)");
   });
-  it("gibt success bei >= 10", () => {
-    expect(schnittFarbe(10)).toBe("var(--success)");
-    expect(schnittFarbe(14.5)).toBe("var(--success)");
+  it("DE default unverändert", () => {
+    expect(schnittFarbe(11)).toBe("var(--success)");
+    expect(schnittFarbe(3)).toBe("var(--destructive)");
   });
-  it("gibt amber bei 7-9.9", () => {
-    expect(schnittFarbe(7)).toBe("#f59e0b");
-    expect(schnittFarbe(9.9)).toBe("#f59e0b");
-  });
-  it("gibt destructive bei < 7", () => {
-    expect(schnittFarbe(6.9)).toBe("var(--destructive)");
-    expect(schnittFarbe(0)).toBe("var(--destructive)");
+  it("system-aware (AT invertiert)", () => {
+    expect(schnittFarbe(1.5, AT_1_5)).toBe("var(--success)");
+    expect(schnittFarbe(5, AT_1_5)).toBe("var(--destructive)");
+    expect(schnittFarbe(11, DE_0_15)).toBe("var(--success)");
   });
 });

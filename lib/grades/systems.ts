@@ -142,12 +142,128 @@ export const DE_0_15: Notensystem & {
   punkteZuNote: de0_15FormatNote,
 };
 
+// ── DE Schulnoten (1–6, Tendenz, niedriger = besser) ───────────────────────
+
+const DE_1_6_TENDENZ: Record<string, number> = { "+": -0.3, "-": 0.3, "−": 0.3, "": 0 };
+
+function de1_6Parse(eingabe: string): number | null {
+  const n = eingabe.trim();
+  const m = /^([1-6])([+\-−]?)$/.exec(n);
+  if (!m) return null;
+  const basis = Number(m[1]);
+  const delta = DE_1_6_TENDENZ[m[2]] ?? 0;
+  const wert = Math.round((basis + delta) * 10) / 10;
+  if (wert < 1 || wert > 6) return null;
+  return wert;
+}
+
+function de1_6FormatNote(wert: number): string {
+  const basis = Math.round(wert);
+  const diff = Math.round((wert - basis) * 10) / 10;
+  const tendenz = diff <= -0.3 ? "+" : diff >= 0.3 ? "−" : "";
+  return `${basis}${tendenz}`;
+}
+
+export const DE_1_6: Notensystem = {
+  id: "de_1_6",
+  label: "Deutschland — Schulnoten (1–6)",
+  min: 1,
+  max: 6,
+  step: 0.1,
+  richtung: "niedriger_besser",
+  bestehtAb: 4,
+  schnittDezimal: 1,
+  formatNote: de1_6FormatNote,
+  formatSchnitt: (w) => deFix(w, 1),
+  parse: de1_6Parse,
+  farbe: (s) => farbeNachRichtung(s, "niedriger_besser", 2, 4),
+};
+
+// ── Schweiz (1–6, Viertelnoten, höher = besser) ────────────────────────────
+
+function ch1_6Parse(eingabe: string): number | null {
+  const n = eingabe.trim().replace(",", ".");
+  if (!/^\d+(\.\d+)?$/.test(n)) return null;
+  const wert = Number(n);
+  if (wert < 1 || wert > 6) return null;
+  if (Math.abs(wert * 4 - Math.round(wert * 4)) > 1e-9) return null;
+  return Math.round(wert * 4) / 4;
+}
+
+export const CH_1_6: Notensystem = {
+  id: "ch_1_6",
+  label: "Schweiz (1–6)",
+  min: 1,
+  max: 6,
+  step: 0.25,
+  richtung: "hoeher_besser",
+  bestehtAb: 4,
+  schnittDezimal: 2,
+  formatNote: (w) => deNum(w),
+  formatSchnitt: (w) => deFix(w, 2),
+  parse: ch1_6Parse,
+  farbe: (s) => farbeNachRichtung(s, "hoeher_besser", 5, 4),
+};
+
+// ── Gemeinsamer Parser für Ganzzahl-Systeme ────────────────────────────────
+
+function ganzzahlParse(min: number, max: number) {
+  return (eingabe: string): number | null => {
+    const n = eingabe.trim();
+    if (!/^\d+$/.test(n)) return null;
+    const w = Number(n);
+    return w >= min && w <= max ? w : null;
+  };
+}
+
+// ── Österreich (1–5, niedriger = besser) ───────────────────────────────────
+
+export const AT_1_5: Notensystem = {
+  id: "at_1_5",
+  label: "Österreich (1–5)",
+  min: 1,
+  max: 5,
+  step: 1,
+  richtung: "niedriger_besser",
+  bestehtAb: 4,
+  schnittDezimal: 1,
+  formatNote: (w) => deNum(w),
+  formatSchnitt: (w) => deFix(w, 1),
+  parse: ganzzahlParse(1, 5),
+  farbe: (s) => farbeNachRichtung(s, "niedriger_besser", 2, 4),
+};
+
+// ── IB (1–7, höher = besser) ───────────────────────────────────────────────
+
+export const IB_1_7: Notensystem = {
+  id: "ib_1_7",
+  label: "International Baccalaureate (1–7)",
+  min: 1,
+  max: 7,
+  step: 1,
+  richtung: "hoeher_besser",
+  bestehtAb: 4,
+  schnittDezimal: 1,
+  formatNote: (w) => deNum(w),
+  formatSchnitt: (w) => deFix(w, 1),
+  parse: ganzzahlParse(1, 7),
+  farbe: (s) => farbeNachRichtung(s, "hoeher_besser", 5, 4),
+};
+
+// ── Registry ───────────────────────────────────────────────────────────────
+
 const ALLE: Record<NotensystemId, Notensystem> = {
   de_0_15: DE_0_15,
-  // weitere Systeme folgen in den nächsten Tasks
-} as Record<NotensystemId, Notensystem>;
+  de_1_6: DE_1_6,
+  ch_1_6: CH_1_6,
+  at_1_5: AT_1_5,
+  ib_1_7: IB_1_7,
+};
 
 /** Liefert das Notensystem zur Id, fällt auf DE zurück. */
 export function getNotensystem(id: string): Notensystem {
   return ALLE[id as NotensystemId] ?? DE_0_15;
 }
+
+/** Alle Systeme als Liste (für Dropdowns), DE zuerst. */
+export const ALLE_SYSTEME: Notensystem[] = [DE_0_15, DE_1_6, CH_1_6, AT_1_5, IB_1_7];

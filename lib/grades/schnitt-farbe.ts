@@ -1,7 +1,7 @@
-/** Gibt die CSS-Farb-Variable für einen Schnitt zurück (für inline style). */
-export function schnittFarbe(schnitt: number | null): string {
+import { DE_0_15, type Notensystem } from "./systems";
+
+/** CSS-Farb-Variable für einen Schnitt, richtungsabhängig je System. */
+export function schnittFarbe(schnitt: number | null, system: Notensystem = DE_0_15): string {
   if (schnitt === null) return "var(--text-dim)";
-  if (schnitt >= 10) return "var(--success)";
-  if (schnitt >= 7) return "#f59e0b";
-  return "var(--destructive)";
+  return system.farbe(schnitt);
 }
