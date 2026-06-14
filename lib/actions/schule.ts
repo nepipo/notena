@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { GewichtungConfig, Kategorie } from "@/lib/grades/types";
 import { dbError, UpdateFachSchema } from "@/lib/validation";
+import { getNotensystem } from "@/lib/grades/systems";
 
 async function audit(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -26,6 +27,21 @@ async function requireUserId(): Promise<string> {
   const sub = data?.claims?.sub;
   if (typeof sub !== "string") throw new Error("Nicht angemeldet.");
   return sub;
+}
+
+async function userNotensystem(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data } = await supabase
+    .from("nutzer_profil")
+    .select("notensystem")
+    .eq("id", userId)
+    .single();
+  return getNotensystem(data?.notensystem ?? "de_0_15");
+}
+
+function wertGueltig(wert: number, system: ReturnType<typeof getNotensystem>): boolean {
+  if (!Number.isFinite(wert) || wert < system.min || wert > system.max) return false;
+  const gerundet = Math.round(wert / system.step) * system.step;
+  return Math.abs(gerundet - wert) < 1e-6;
 }
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -88,16 +104,17 @@ export async function addNote(
   bezeichnung?: string,
   gewicht?: number,
 ): Promise<AddNoteResult> {
-  if (!Number.isFinite(punkte) || punkte < 0 || punkte > 15) {
-    return { ok: false, error: "Punkte muessen zwischen 0 und 15 liegen." };
-  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+    const system = await userNotensystem(supabase, userId);
+    if (!wertGueltig(punkte, system)) {
+      return { ok: false, error: `Note muss zwischen ${system.min} und ${system.max} liegen.` };
+    }
     const { data, error } = await supabase.from("schule_note").insert({
       user_id: userId,
       fach_id: fachId,
-      punkte: Math.round(punkte),
+      punkte,
       kategorie,
       bezeichnung: bezeichnung?.trim() || null,
       gewicht: gewicht ?? 1,
@@ -118,16 +135,17 @@ export async function updateNote(
   bezeichnung?: string,
   gewicht?: number,
 ): Promise<ActionResult> {
-  if (!Number.isFinite(punkte) || punkte < 0 || punkte > 15) {
-    return { ok: false, error: "Punkte müssen zwischen 0 und 15 liegen." };
-  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+    const system = await userNotensystem(supabase, userId);
+    if (!wertGueltig(punkte, system)) {
+      return { ok: false, error: `Note muss zwischen ${system.min} und ${system.max} liegen.` };
+    }
     const { error } = await supabase
       .from("schule_note")
       .update({
-        punkte: Math.round(punkte),
+        punkte,
         kategorie,
         bezeichnung: bezeichnung?.trim() || null,
         gewicht: gewicht ?? 1,
@@ -545,6 +563,39 @@ export async function updateKlausur(
     revalidatePath("/dashboard");
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: dbError(e) };
+  }
+}
+
+export async function noteAnzahl(): Promise<number> {
+  const userId = await requireUserId();
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("schule_note")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  return count ?? 0;
+}
+
+const NOTENSYSTEM_IDS = ["de_0_15", "de_1_6", "ch_1_6", "at_1_5", "ib_1_7"] as const;
+
+export async function setNotensystem(id: string): Promise<ActionResult> {
+  if (!(NOTENSYSTEM_IDS as readonly string[]).includes(id)) {
+    return { ok: false, error: "Unbekanntes Notensystem." };
+  }
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("nutzer_profil")
+      .update({ notensystem: id })
+      .eq("id", userId);
+    if (error) return { ok: false, error: dbError(error) };
+    revalidatePath("/noten");
+    revalidatePath("/dashboard");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: dbError(e) };
