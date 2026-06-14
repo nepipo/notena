@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppNav } from "@/components/app-nav";
 import { FeedbackButton } from "@/components/feedback-button";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
+import { NotensystemProvider } from "@/components/notensystem-provider";
 
 export default async function AppLayout({
   children,
@@ -16,7 +17,7 @@ export default async function AppLayout({
 
   const { data: profil } = await supabase
     .from("nutzer_profil")
-    .select("name, onboarding_abgeschlossen")
+    .select("name, onboarding_abgeschlossen, notensystem")
     .eq("id", claims.sub)
     .single();
 
@@ -26,13 +27,16 @@ export default async function AppLayout({
 
   const email = typeof claims.email === "string" ? claims.email : "";
   const initiale = (profil?.name?.trim()?.[0] ?? email[0] ?? "?").toUpperCase();
+  const notensystem = profil?.notensystem ?? "de_0_15";
 
   return (
-    <div className="min-h-screen">
-      <AppNav initiale={initiale} />
-      <div className="pb-24 lg:pb-0">{children}</div>
-      <FeedbackButton />
-      <PwaInstallBanner />
-    </div>
+    <NotensystemProvider systemId={notensystem}>
+      <div className="min-h-screen">
+        <AppNav initiale={initiale} />
+        <div className="pb-24 lg:pb-0">{children}</div>
+        <FeedbackButton />
+        <PwaInstallBanner />
+      </div>
+    </NotensystemProvider>
   );
 }
