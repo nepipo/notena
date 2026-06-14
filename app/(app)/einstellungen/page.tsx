@@ -30,17 +30,19 @@ export default async function EinstellungenPage() {
   const { data: authData } = await supabase.auth.getClaims();
   const email = typeof authData?.claims?.email === "string" ? authData.claims.email : "";
 
-  const { data: profil } = await supabase
+  const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
     .select("name, klasse, schule, eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland")
     .single();
+  if (profilErr) console.error("[einstellungen] profil fetch error:", profilErr);
 
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
-  const { data: fachRows } = await supabase
+  const { data: fachRows, error: fachErr } = await supabase
     .from("schule_fach")
     .select("*")
     .order("name");
+  if (fachErr) console.error("[einstellungen] schule_fach fetch error:", fachErr);
 
   const eingabeModus = profil?.eingabe_modus ?? "punkte";
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
