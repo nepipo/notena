@@ -157,7 +157,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const body = await req.json() as { messages: ClientMessage[] };
+  let body: { messages: ClientMessage[] };
+  try {
+    body = await req.json() as { messages: ClientMessage[] };
+  } catch {
+    return Response.json({ error: "Ungültiges JSON" }, { status: 400 });
+  }
   if (!body.messages?.length) {
     return Response.json({ error: "Keine Nachrichten" }, { status: 400 });
   }
@@ -188,42 +193,46 @@ export async function POST(req: Request) {
       : tool
   );
 
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
-    system: [
-      {
-        type: "text",
-        text: kontext.systemPrompt,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    tools: cachedTools,
-    tool_choice: { type: "any" },
-    messages: toAnthropicMessages(body.messages),
-  });
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: kontext.systemPrompt,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      tools: cachedTools,
+      tool_choice: { type: "any" },
+      messages: toAnthropicMessages(body.messages),
+    });
 
-  const toolBlock = response.content.find((b) => b.type === "tool_use");
-  if (!toolBlock || toolBlock.type !== "tool_use") {
-    return Response.json({ type: "text", content: "–" } satisfies CoachApiResponse);
-  }
+    const toolBlock = response.content.find((b) => b.type === "tool_use");
+    if (!toolBlock || toolBlock.type !== "tool_use") {
+      return Response.json({ type: "text", content: "–" } satisfies CoachApiResponse);
+    }
 
-  const name = toolBlock.name as ToolName;
-  const input = toolBlock.input as Record<string, unknown>;
+    const name = toolBlock.name as ToolName;
+    const input = toolBlock.input as Record<string, unknown>;
 
-  // respond_to_user = kein Mutations-Tool, direkt als Text zurückgeben
-  if (name === "respond_to_user") {
-    const result: CoachApiResponse = { type: "text", content: (input.text as string) ?? "–" };
+    // respond_to_user = kein Mutations-Tool, direkt als Text zurückgeben
+    if (name === "respond_to_user") {
+      const result: CoachApiResponse = { type: "text", content: (input.text as string) ?? "–" };
+      return Response.json(result);
+    }
+
+    const result: CoachApiResponse = {
+      type: "tool_call",
+      name,
+      input,
+      tool_use_id: toolBlock.id,
+      preview: buildPreview(name, input, fachName),
+      snapshot: findSnapshot(name, input, kontext.raw),
+    };
     return Response.json(result);
+  } catch {
+    return Response.json({ error: "KI nicht erreichbar, bitte versuche es gleich nochmal." }, { status: 503 });
   }
-
-  const result: CoachApiResponse = {
-    type: "tool_call",
-    name,
-    input,
-    tool_use_id: toolBlock.id,
-    preview: buildPreview(name, input, fachName),
-    snapshot: findSnapshot(name, input, kontext.raw),
-  };
-  return Response.json(result);
 }

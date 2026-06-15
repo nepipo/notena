@@ -19,22 +19,25 @@ import { berechneJahresUebersicht } from "@/lib/grades/jahr";
 export default async function NotenPage() {
   const supabase = await createClient();
 
-  const { data: profil } = await supabase
+  const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
     .select("aktuelles_halbjahr")
     .single();
+  if (profilErr) console.error("[noten] profil fetch error:", profilErr);
 
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
   // Fächer + Noten für aktuelles Halbjahr (inkl. null-Halbjahr für Foto-Import-Fächer)
-  const { data: fachRows } = await supabase
+  const { data: fachRows, error: fachErr } = await supabase
     .from("schule_fach")
     .select("*")
     .or(`halbjahr.eq.${halbjahr},halbjahr.is.null`)
     .order("created_at", { ascending: true });
+  if (fachErr) console.error("[noten] schule_fach fetch error:", fachErr);
 
   // Verfügbare Halbjahre (distinct) über ALLE Fächer des Users
-  const { data: hjRows } = await supabase.from("schule_fach").select("halbjahr");
+  const { data: hjRows, error: hjErr } = await supabase.from("schule_fach").select("halbjahr");
+  if (hjErr) console.error("[noten] halbjahr distinct fetch error:", hjErr);
   const verfuegbareHalbjahre = Array.from(
     new Set([
       halbjahr,
@@ -45,18 +48,20 @@ export default async function NotenPage() {
   ).sort();
 
   const fachIds = (fachRows ?? []).map((f) => f.id);
-  const { data: noteRows } = fachIds.length
+  const { data: noteRows, error: noteErr } = fachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
-    : { data: [] as NoteRow[] };
+    : { data: [] as NoteRow[], error: null };
+  if (noteErr) console.error("[noten] schule_note fetch error:", noteErr);
 
   // Upcoming Klausuren (für Countdown-Badge)
   const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
-  const { data: klausurRows } = await supabase
+  const { data: klausurRows, error: klausurErr } = await supabase
     .from("schule_klausur")
     .select("*")
     .gte("datum", todayUtc)
     .order("datum", { ascending: true })
     .limit(20);
+  if (klausurErr) console.error("[noten] schule_klausur fetch error:", klausurErr);
 
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],
@@ -66,14 +71,16 @@ export default async function NotenPage() {
 
   // Vorhalbjahres-Schnitte (pro Fachname) als Referenz im neuen HJ.
   const vorigesHj = vorherigesHalbjahr(halbjahr);
-  const { data: vorFachRows } = await supabase
+  const { data: vorFachRows, error: vorFachErr } = await supabase
     .from("schule_fach")
     .select("*")
     .eq("halbjahr", vorigesHj);
+  if (vorFachErr) console.error("[noten] vorFachRows fetch error:", vorFachErr);
   const vorFachIds = (vorFachRows ?? []).map((f) => f.id);
-  const { data: vorNoteRows } = vorFachIds.length
+  const { data: vorNoteRows, error: vorNoteErr } = vorFachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", vorFachIds)
-    : { data: [] as NoteRow[] };
+    : { data: [] as NoteRow[], error: null };
+  if (vorNoteErr) console.error("[noten] vorNoteRows fetch error:", vorNoteErr);
   const vorFaecher = assembleFaecher(
     (vorFachRows ?? []) as FachRow[],
     (vorNoteRows ?? []) as NoteRow[],
@@ -86,14 +93,16 @@ export default async function NotenPage() {
 
   // Jahres-Übersicht: beide Halbjahre des aktuellen Schuljahres
   const [shj1, shj2] = halbjahreImSchuljahr(halbjahr);
-  const { data: jahrFachRows } = await supabase
+  const { data: jahrFachRows, error: jahrFachErr } = await supabase
     .from("schule_fach")
     .select("*")
     .in("halbjahr", [shj1, shj2]);
+  if (jahrFachErr) console.error("[noten] jahrFachRows fetch error:", jahrFachErr);
   const jahrFachIds = (jahrFachRows ?? []).map((f) => f.id);
-  const { data: jahrNoteRows } = jahrFachIds.length
+  const { data: jahrNoteRows, error: jahrNoteErr } = jahrFachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", jahrFachIds)
-    : { data: [] as NoteRow[] };
+    : { data: [] as NoteRow[], error: null };
+  if (jahrNoteErr) console.error("[noten] jahrNoteRows fetch error:", jahrNoteErr);
   const alleJahrFach = (jahrFachRows ?? []) as FachRow[];
   const alleJahrNoten = (jahrNoteRows ?? []) as NoteRow[];
   const shj1Faecher = assembleFaecher(

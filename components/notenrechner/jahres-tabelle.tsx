@@ -1,7 +1,7 @@
 "use client";
 
-import { punkteZuNote } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
+import { useNotensystem } from "@/components/notensystem-provider";
 import type { JahresUebersicht } from "@/lib/grades/jahr";
 
 function fmt(n: number | null): string {
@@ -12,13 +12,14 @@ function fmt(n: number | null): string {
 }
 
 function Zelle({ wert }: { wert: number | null }) {
+  const system = useNotensystem();
   return (
     <td className="px-4 py-3 text-right">
-      <span className="font-mono font-semibold" style={{ color: schnittFarbe(wert) }}>
+      <span className="font-mono font-semibold" style={{ color: schnittFarbe(wert, system) }}>
         {fmt(wert)}
       </span>
       {wert !== null && (
-        <div className="font-mono text-[10px] text-text-mute">{punkteZuNote(wert)}</div>
+        <div className="font-mono text-[10px] text-text-mute">{system.formatNote(wert)}</div>
       )}
     </td>
   );
@@ -31,6 +32,7 @@ export function JahresTabelle({
   uebersicht: JahresUebersicht;
   schuljahr: string;
 }) {
+  const system = useNotensystem();
   const leer = uebersicht.zeilen.length === 0;
 
   return (
@@ -55,15 +57,15 @@ export function JahresTabelle({
           <div className="mt-3 flex items-end">
             <span
               className="font-display text-[110px] font-extrabold leading-[0.85] tracking-[-0.06em]"
-              style={{ color: schnittFarbe(uebersicht.gesamtJahr) }}
+              style={{ color: schnittFarbe(uebersicht.gesamtJahr, system) }}
             >
               {fmt(uebersicht.gesamtJahr)}
             </span>
-            <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/15</span>
+            <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/{system.max}</span>
           </div>
           {uebersicht.gesamtJahr !== null && (
             <div className="mt-2 font-mono text-sm text-text-dim">
-              Note {punkteZuNote(uebersicht.gesamtJahr)} · Durchschnitt beider Halbjahre
+              Note {system.formatNote(uebersicht.gesamtJahr)} · Durchschnitt beider Halbjahre
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 /**
- * Notenrechner-Kernlogik (0–15-Punkte-System, deutsche Oberstufe).
- * Reine Funktionen, vollständig ohne Seiteneffekte.
+ * Notenrechner-Kernlogik. System-agnostisch: Bereich/Richtung kommen über das
+ * Notensystem rein (default DE für Back-Compat).
  */
 
 import {
@@ -10,11 +10,17 @@ import {
   type Note,
   DEFAULT_GEWICHTUNG_CONFIG,
 } from "./types";
+import { DE_0_15, type Notensystem } from "./systems";
 
+/** Begrenzt einen Wert auf den gültigen Bereich des Systems. */
+export function clamp(wert: number, system: Notensystem = DE_0_15): number {
+  if (Number.isNaN(wert)) return system.min;
+  return Math.min(system.max, Math.max(system.min, wert));
+}
 
+/** @deprecated Nutze clamp(wert, system). Bleibt für Alt-Aufrufer. */
 export function clampPunkte(punkte: number): number {
-  if (Number.isNaN(punkte)) return 0;
-  return Math.min(15, Math.max(0, punkte));
+  return clamp(punkte, DE_0_15);
 }
 
 export function runde(wert: number, dezimal = 1): number {
@@ -22,13 +28,9 @@ export function runde(wert: number, dezimal = 1): number {
   return Math.round(wert * f) / f;
 }
 
+/** @deprecated Nutze system.formatNote(). Re-Export auf DE für Alt-Komponenten. */
 export function punkteZuNote(punkte: number): string {
-  const p = Math.round(clampPunkte(punkte));
-  if (p === 0) return "6";
-  const grundnote = 6 - Math.ceil(p / 3);
-  const rest = (p - 1) % 3;
-  const tendenz = rest === 2 ? "+" : rest === 0 ? "−" : "";
-  return `${grundnote}${tendenz}`;
+  return DE_0_15.formatNote(punkte);
 }
 
 /** Ordnet eine Kategorie einer Gruppe zu (für die K/M-Anzeige). */
@@ -37,14 +39,14 @@ export function kategorieZurGruppe(k: Kategorie): "klausur" | "muendlich" {
 }
 
 /** Gewichteter Schnitt einer einzelnen Kategorie. Für Detailansichten. */
-export function kategorieSchnitt(noten: Note[], kategorie: Kategorie): number | null {
+export function kategorieSchnitt(noten: Note[], kategorie: Kategorie, system: Notensystem = DE_0_15): number | null {
   const relevant = noten.filter((n) => n.kategorie === kategorie);
   if (relevant.length === 0) return null;
   let summe = 0;
   let gewSum = 0;
   for (const n of relevant) {
     const g = n.gewicht ?? 1;
-    summe += clampPunkte(n.punkte) * g;
+    summe += clamp(n.punkte, system) * g;
     gewSum += g;
   }
   return gewSum > 0 ? summe / gewSum : null;
@@ -61,7 +63,7 @@ function resolveConfig(config?: GewichtungConfig): GewichtungConfig {
  * Klausur-Dynamik: wächst klausurDynamisch, wächst das Klausur-Gewicht mit
  * jeder Klausur (klausurPro × Anzahl, gedeckelt bei klausurMax).
  */
-export function fachSchnitt(noten: Note[], config?: GewichtungConfig): number | null {
+export function fachSchnitt(noten: Note[], config?: GewichtungConfig, system: Notensystem = DE_0_15): number | null {
   if (noten.length === 0) return null;
   const c = resolveConfig(config);
 
@@ -73,7 +75,7 @@ export function fachSchnitt(noten: Note[], config?: GewichtungConfig): number | 
   for (const n of noten) {
     const gruppe = kategorieZurGruppe(n.kategorie);
     const g = n.gewicht ?? 1;
-    gruppen[gruppe].sum += clampPunkte(n.punkte) * g;
+    gruppen[gruppe].sum += clamp(n.punkte, system) * g;
     gruppen[gruppe].gew += g;
   }
 
@@ -101,17 +103,17 @@ export function fachSchnitt(noten: Note[], config?: GewichtungConfig): number | 
   return gewSum > 0 ? summe / gewSum : null;
 }
 
-export function fachSchnittGerundet(noten: Note[], config?: GewichtungConfig): number | null {
-  const s = fachSchnitt(noten, config);
+export function fachSchnittGerundet(noten: Note[], config?: GewichtungConfig, system: Notensystem = DE_0_15): number | null {
+  const s = fachSchnitt(noten, config, system);
   return s === null ? null : runde(s);
 }
 
-export function gesamtSchnitt(faecher: Fach[]): number | null {
+export function gesamtSchnitt(faecher: Fach[], system: Notensystem = DE_0_15): number | null {
   let summe = 0;
   let gewSum = 0;
   for (const fach of faecher) {
     if (fach.ausgeschlossen) continue;
-    const schnitt = fachSchnitt(fach.noten, fach.gewichtungConfig);
+    const schnitt = fachSchnitt(fach.noten, fach.gewichtungConfig, system);
     if (schnitt === null) continue;
     const fg = fach.fachGewicht ?? 1;
     if (fg <= 0) continue;
@@ -121,8 +123,8 @@ export function gesamtSchnitt(faecher: Fach[]): number | null {
   return gewSum > 0 ? summe / gewSum : null;
 }
 
-export function gesamtSchnittGerundet(faecher: Fach[]): number | null {
-  const s = gesamtSchnitt(faecher);
+export function gesamtSchnittGerundet(faecher: Fach[], system: Notensystem = DE_0_15): number | null {
+  const s = gesamtSchnitt(faecher, system);
   return s === null ? null : runde(s);
 }
 
@@ -130,8 +132,9 @@ export function wasWaereWenn(
   noten: Note[],
   hypothese: Note,
   config?: GewichtungConfig,
+  system: Notensystem = DE_0_15,
 ): number | null {
-  return fachSchnitt([...noten, hypothese], config);
+  return fachSchnitt([...noten, hypothese], config, system);
 }
 
 export function benoetigtePunkte(
@@ -140,16 +143,24 @@ export function benoetigtePunkte(
   kategorie: Kategorie,
   gewicht: number,
   ziel: number,
+  system: Notensystem = DE_0_15,
 ): number | "erreicht" | "unmoeglich" {
-  const aktuell = fachSchnitt(noten, config);
-  if (aktuell !== null && runde(aktuell) >= ziel) return "erreicht";
+  const aktuell = fachSchnitt(noten, config, system);
+  const zielErreicht = (s: number) =>
+    system.richtung === "hoeher_besser" ? runde(s) >= ziel : runde(s) <= ziel;
+  if (aktuell !== null && zielErreicht(aktuell)) return "erreicht";
 
-  for (let p = 0; p <= 15; p++) {
-    const mitProbe = fachSchnitt(
-      [...noten, { punkte: p, kategorie, gewicht }],
-      config,
-    );
-    if (mitProbe !== null && runde(mitProbe) >= ziel) return p;
+  // Gültige Werte aufsteigend erzeugen.
+  const werte: number[] = [];
+  for (let v = system.min; v <= system.max + 1e-9; v += system.step) {
+    werte.push(Math.round(v / system.step) * system.step);
+  }
+  // hoeher_besser: kleinste ausreichende Note zuerst -> aufsteigend durchsuchen.
+  // niedriger_besser: größte noch ausreichende Note zuerst -> absteigend.
+  const reihe = system.richtung === "hoeher_besser" ? werte : [...werte].reverse();
+  for (const v of reihe) {
+    const mitProbe = fachSchnitt([...noten, { punkte: v, kategorie, gewicht }], config, system);
+    if (mitProbe !== null && zielErreicht(mitProbe)) return v;
   }
   return "unmoeglich";
 }

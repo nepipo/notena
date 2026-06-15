@@ -9,8 +9,9 @@ import { FachDialog } from "./fach-dialog";
 import { HalbjahrSwitcher } from "./halbjahr-switcher";
 import { JahresTabelle } from "./jahres-tabelle";
 import { addFach, removeNote, addNote, updateNote } from "@/lib/actions/schule";
-import { gesamtSchnittGerundet, punkteZuNote } from "@/lib/grades/calc";
+import { gesamtSchnittGerundet } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
+import { useNotensystem } from "@/components/notensystem-provider";
 import type { Fach, Kategorie } from "@/lib/grades/types";
 import { assembleKlausuren, type KlausurRow } from "@/lib/grades/db";
 import type { JahresUebersicht } from "@/lib/grades/jahr";
@@ -52,11 +53,12 @@ export function NotenrechnerBoard({
   const [dialogFachId, setDialogFachId] = useState<string | null>(null);
   const [ansicht, setAnsicht] = useState<"halbjahr" | "jahr" | "whatif">("halbjahr");
   const [, startTransition] = useTransition();
+  const system = useNotensystem();
 
   const aktiveFaecher = faecher.filter((f) => !f.ausgeschlossen);
   const ausgeschlossenCount = faecher.length - aktiveFaecher.length;
-  const gesamt = gesamtSchnittGerundet(aktiveFaecher);
-  const gesamtFarbe = schnittFarbe(gesamt);
+  const gesamt = gesamtSchnittGerundet(aktiveFaecher, system);
+  const gesamtFarbe = schnittFarbe(gesamt, system);
   const dialogFach = faecher.find((f) => f.id === dialogFachId) ?? null;
 
   const klausurByFach = assembleKlausuren(klausuren);
@@ -235,11 +237,11 @@ export function NotenrechnerBoard({
             >
               {fmt(gesamt)}
             </span>
-            <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/15</span>
+            <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/{system.max}</span>
           </div>
           {gesamt !== null && (
             <div className="mt-2 font-mono text-sm text-text-dim">
-              Note {punkteZuNote(gesamt)} · {aktiveFaecher.length} Fächer
+              Note {system.formatNote(gesamt)} · {aktiveFaecher.length} Fächer
               {ausgeschlossenCount > 0 && (
                 <span className="ml-2 text-text-mute">
                   ({ausgeschlossenCount} ausgeschlossen)

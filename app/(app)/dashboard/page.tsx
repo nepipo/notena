@@ -36,47 +36,55 @@ export default async function DashboardPage() {
   const { data: authData } = await supabase.auth.getClaims();
   const userId = authData?.claims?.sub ?? "";
 
-  const { data: profil } = await supabase
+  const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
     .select("aktuelles_halbjahr, name")
     .eq("id", userId)
     .single();
+  if (profilErr) console.error("[dashboard] profil fetch error:", profilErr);
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
-  const { data: fachRows } = await supabase
+  const { data: fachRows, error: fachErr } = await supabase
     .from("schule_fach")
     .select("*")
     .eq("halbjahr", halbjahr)
     .order("created_at", { ascending: true });
+  if (fachErr) console.error("[dashboard] schule_fach fetch error:", fachErr);
   const fachIds = (fachRows ?? []).map((f) => f.id);
-  const { data: noteRows } = fachIds.length
+
+  const { data: noteRows, error: noteErr } = fachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
-    : { data: [] as NoteRow[] };
+    : { data: [] as NoteRow[], error: null };
+  if (noteErr) console.error("[dashboard] schule_note fetch error:", noteErr);
 
   const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
-  const { data: klausurRows } = await supabase
+  const { data: klausurRows, error: klausurErr } = await supabase
     .from("schule_klausur")
     .select("*")
     .gte("datum", todayUtc)
     .order("datum", { ascending: true })
     .limit(1);
+  if (klausurErr) console.error("[dashboard] schule_klausur fetch error:", klausurErr);
 
-  const { data: stundeRows } = await supabase
+  const { data: stundeRows, error: stundeErr } = await supabase
     .from("stundenplan_stunde")
     .select("*")
     .eq("wochentag", heutigerWochentag())
     .order("zeit_start");
+  if (stundeErr) console.error("[dashboard] stundenplan_stunde fetch error:", stundeErr);
 
-  const { count: offeneHA } = await supabase
+  const { count: offeneHA, error: haErr } = await supabase
     .from("hausaufgabe")
     .select("*", { count: "exact", head: true })
     .eq("erledigt", false);
+  if (haErr) console.error("[dashboard] hausaufgabe count error:", haErr);
 
   // Alle Fächer (ohne Halbjahr-Filter) für Stundenplan-Widget — RLS reicht, kein user_id-Filter
-  const { data: alleFachRows } = await supabase
+  const { data: alleFachRows, error: alleFachErr } = await supabase
     .from("schule_fach")
     .select("id, name, farbe")
     .order("name");
+  if (alleFachErr) console.error("[dashboard] alleFachRows fetch error:", alleFachErr);
 
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],

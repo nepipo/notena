@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatedNumber } from "@/components/animated-number";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
-import { punkteZuNote } from "@/lib/grades/calc";
+import { useNotensystem } from "@/components/notensystem-provider";
 
 interface Props {
   gesamt: number | null;
@@ -13,13 +13,15 @@ interface Props {
 
 export function SchnittKarte({ gesamt, faecherAnzahl, animationDelay }: Props) {
   const [mounted, setMounted] = useState(false);
+  const system = useNotensystem();
+  const range = system.max - system.min;
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const farbe = schnittFarbe(gesamt);
+  const farbe = schnittFarbe(gesamt, system);
 
   return (
     <section
@@ -44,7 +46,7 @@ export function SchnittKarte({ gesamt, faecherAnzahl, animationDelay }: Props) {
               className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[88px]"
               style={{ color: farbe }}
             />
-            <span className="mb-2 ml-1 text-2xl font-medium text-text-mute">/15</span>
+            <span className="mb-2 ml-1 text-2xl font-medium text-text-mute">/{system.max}</span>
           </>
         ) : (
           <span className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] text-text-mute sm:text-[88px]">
@@ -58,14 +60,14 @@ export function SchnittKarte({ gesamt, faecherAnzahl, animationDelay }: Props) {
             <div
               className="h-full rounded-full transition-[width] duration-[1200ms]"
               style={{
-                width: mounted ? `${(gesamt / 15) * 100}%` : "0%",
+                width: mounted ? `${((gesamt - system.min) / range) * 100}%` : "0%",
                 background: farbe,
                 transitionTimingFunction: "var(--ease-out)",
               }}
             />
           </div>
           <div className="mt-2 font-mono text-sm text-text-dim">
-            Note {punkteZuNote(gesamt)} · {faecherAnzahl} Fächer
+            Note {system.formatNote(gesamt)} · {faecherAnzahl} Fächer
           </div>
         </>
       ) : (

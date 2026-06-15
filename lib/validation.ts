@@ -20,7 +20,7 @@ export const AddFachSchema = z.object({
 
 export const AddNoteSchema = z.object({
   fachId: FachIdSchema,
-  punkte: z.number().int().min(0).max(15),
+  punkte: z.number().min(0).max(15), // .int() entfällt (CH-Kommas); Per-System-Check in der Action
   kategorie: KategorieSchema,
   bezeichnung: z.string().max(200).optional(),
   gewicht: z.number().positive().max(10).optional(),
