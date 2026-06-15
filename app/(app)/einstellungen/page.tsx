@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/components/einstellungen/theme-toggle";
 import { AccentPicker } from "@/components/einstellungen/accent-picker";
 import { BriefingToggle } from "@/components/einstellungen/briefing-toggle";
 import { BundeslandSelector } from "@/components/einstellungen/bundesland-selector";
+import { NotensystemWahl } from "@/components/einstellungen/notensystem-wahl";
 import { ProfilForm } from "@/components/profil-form";
 import { DeleteAccountButton } from "@/components/delete-account-button";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ export default async function EinstellungenPage() {
 
   const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
-    .select("name, klasse, schule, eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland")
+    .select("name, klasse, schule, eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem")
     .single();
   if (profilErr) console.error("[einstellungen] profil fetch error:", profilErr);
 
@@ -49,6 +50,7 @@ export default async function EinstellungenPage() {
   const briefingAktiv = profil?.briefing_aktiv !== false;
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
   const bundesland = (profil as Record<string, unknown> | null)?.bundesland as string | null ?? null;
+  const notensystem = profil?.notensystem ?? "de_0_15";
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -121,6 +123,15 @@ export default async function EinstellungenPage() {
             Wird für den Ferien-Countdown genutzt.
           </p>
           <BundeslandSelector initialValue={bundesland} />
+        </div>
+        <div className="mt-5 border-t border-border pt-5">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-sm font-semibold">Notensystem</p>
+          </div>
+          <p className="mb-3 text-xs text-text-mute">
+            DE (0–15), DE (1–6), Schweiz (1–6), Österreich (1–5) oder IB (1–7).
+          </p>
+          <NotensystemWahl initialValue={notensystem} />
         </div>
       </section>
 
