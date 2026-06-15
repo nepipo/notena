@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { setNotensystem } from "@/lib/actions/schule";
 import { ALLE_SYSTEME } from "@/lib/grades/systems";
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function NotensystemWahl({ initialValue }: Props) {
+  const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -22,6 +24,7 @@ export function NotensystemWahl({ initialValue }: Props) {
       const res = await setNotensystem(next);
       if (res.ok) {
         setSaved(true);
+        router.refresh();
         setTimeout(() => setSaved(false), 2000);
       } else {
         toast.error(`Fehler: ${res.error}`);
