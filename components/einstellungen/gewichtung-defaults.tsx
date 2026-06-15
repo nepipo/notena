@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { saveDefaultGewichtung, applyGewichtungAufAlleFaecher } from "@/lib/actions/schule";
+import { Switch } from "@/components/ui/switch";
 import { DEFAULT_GEWICHTUNG_CONFIG } from "@/lib/grades/types";
 import type { GewichtungConfig } from "@/lib/grades/types";
 
@@ -112,18 +113,10 @@ export function GewichtungDefaults({
               Klausur-Gewicht wächst mit jeder Klausur (bis zum Cap)
             </div>
           </div>
-          <button
-            onClick={() => setConfig((p) => ({ ...p, klausurDynamisch: !p.klausurDynamisch }))}
-            className={`relative h-6 w-11 overflow-hidden rounded-full border transition-colors ${
-              config.klausurDynamisch ? "border-brand bg-brand" : "border-border bg-surface-3"
-            }`}
-          >
-            <span
-              className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${
-                config.klausurDynamisch ? "translate-x-5" : "translate-x-0.5"
-              }`}
-            />
-          </button>
+          <Switch
+            checked={config.klausurDynamisch}
+            onCheckedChange={(v) => setConfig((p) => ({ ...p, klausurDynamisch: v }))}
+          />
         </div>
 
         {config.klausurDynamisch && (
