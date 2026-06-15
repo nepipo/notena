@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { updatePraeferenzen } from "@/lib/actions/schule";
+import { updatePraeferenzen, noteAnzahl } from "@/lib/actions/schule";
 import { signOut, deleteAccount } from "@/app/auth/actions";
 import { PushToggle } from "@/components/push-toggle";
 import { KlausurErinnerungConfig } from "@/components/einstellungen/klausur-erinnerung-config";
@@ -51,6 +51,7 @@ export default async function EinstellungenPage() {
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
   const bundesland = (profil as Record<string, unknown> | null)?.bundesland as string | null ?? null;
   const notensystem = profil?.notensystem ?? "de_0_15";
+  const anzahlNoten = await noteAnzahl();
   const faecher = (fachRows ?? []) as FachRow[];
 
   return (
@@ -131,7 +132,7 @@ export default async function EinstellungenPage() {
           <p className="mb-3 text-xs text-text-mute">
             DE (0–15), DE (1–6), Schweiz (1–6), Österreich (1–5) oder IB (1–7).
           </p>
-          <NotensystemWahl initialValue={notensystem} />
+          <NotensystemWahl initialValue={notensystem} noteAnzahl={anzahlNoten} />
         </div>
       </section>
 
