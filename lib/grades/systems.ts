@@ -1,8 +1,16 @@
 /**
- * Notensystem-Abstraktion. Single Source of Truth für alle Systeme.
- * Jedes System kapselt Bereich, Richtung, Format, Parse und Farb-Logik.
- * Diese Datei importiert NICHT aus calc.ts (sonst Zyklus) — die DE-Note-Logik
- * lebt hier.
+ * Notensystem-Abstraktion — KANONISCHES MODELL.
+ *
+ * Noten werden intern IMMER als 0–15 Punkte (deutsche Oberstufe) gespeichert.
+ * Jedes System rechnet nur beim ANZEIGEN und EINGEBEN in seine eigene Skala um.
+ * Dadurch ändert ein System-Wechsel nur die "Anzeige-Linse" — Noten und Schnitt
+ * rechnen sich sofort um, ohne dass Daten angefasst werden.
+ *
+ *  - DE 0–15 ↔ DE 1–6: EXAKT (KMK-Umrechnungstabelle Punkte ↔ Note).
+ *  - CH / AT / IB: lineare NÄHERUNG — zwischen Ländern gibt es keine offizielle
+ *    Umrechnungsformel, daher bewusst als Näherung gekennzeichnet (exakt=false).
+ *
+ * Diese Datei importiert NICHT aus calc.ts (sonst Zyklus).
  */
 
 export type NotensystemId = "de_0_15" | "de_1_6" | "ch_1_6" | "at_1_5" | "ib_1_7";
@@ -11,23 +19,24 @@ export type Richtung = "hoeher_besser" | "niedriger_besser";
 export interface Notensystem {
   id: NotensystemId;
   label: string;
+  /** true = Umrechnung ist exakt (nur DE-Systeme), false = Näherung (CH/AT/IB). */
+  exakt: boolean;
+  /** Kanonischer Bereich — IMMER 0–15 (Punkte). Für Balken-Normalisierung etc. */
   min: number;
   max: number;
-  /** Schrittweite gültiger Eingaben (1 = Ganzzahl, 0.25 = CH-Viertel). */
+  /** Kanonische Schrittweite (Punkte). */
   step: number;
   richtung: Richtung;
-  /** Schwelle „bestanden" (mit richtung interpretiert). Nur für Anzeige/Farbe. */
-  bestehtAb: number;
-  /** Nachkommastellen der Schnitt-Anzeige. */
-  schnittDezimal: number;
-  /** Einzelnote/Label, z.B. 13 -> "1−" (DE) oder 4.5 -> "4,5" (CH). */
-  formatNote(wert: number): string;
-  /** Schnitt mit fixen Nachkommastellen, de-DE. */
-  formatSchnitt(wert: number): string;
-  /** Eingabe-String -> gespeicherter Wert, oder null bei ungültig. */
+  /** Eingabe-Hinweis in der System-Skala (Platzhalter), z.B. "0–15" / "1–6". */
+  eingabeHinweis: string;
+  /** Kanonische 0–15 Punkte -> Anzeige einer Einzelnote in diesem System. */
+  formatNote(punkte: number): string;
+  /** Kanonische 0–15 Punkte -> Schnitt-Anzeige in diesem System. */
+  formatSchnitt(punkte: number): string;
+  /** Eingabe-String (System-Skala) -> kanonische 0–15 Punkte, oder null. */
   parse(eingabe: string): number | null;
-  /** CSS-Farbe für einen Schnitt (richtungsabhängig). */
-  farbe(schnitt: number): string;
+  /** CSS-Farbe für einen Schnitt (auf Basis kanonischer Punkte). */
+  farbe(punkte: number): string;
 }
 
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────
@@ -39,41 +48,24 @@ function deFix(wert: number, dezimal: number): string {
   });
 }
 
-/** Natürliche Zahl-Darstellung ohne erzwungene Nachkommastellen (max 2). */
-function deNum(wert: number): string {
-  return wert.toLocaleString("de-DE", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
+function clampP(p: number): number {
+  if (Number.isNaN(p)) return 0;
+  return Math.min(15, Math.max(0, p));
 }
 
-/**
- * Farb-Logik nach Richtung: bei hoeher_besser ist großer Wert gut, bei
- * niedriger_besser ist kleiner Wert gut. `gut`/`mittel` sind Schwellen in
- * Richtung „besser".
- */
-function farbeNachRichtung(
-  schnitt: number,
-  richtung: Richtung,
-  gut: number,
-  mittel: number,
-): string {
-  const istGut = richtung === "hoeher_besser" ? schnitt >= gut : schnitt <= gut;
-  const istMittel = richtung === "hoeher_besser" ? schnitt >= mittel : schnitt <= mittel;
-  if (istGut) return "var(--success)";
-  if (istMittel) return "#f59e0b";
+/** Farbe rein nach kanonischen Punkten (hohe Punkte = gut). Für alle Systeme gleich. */
+function farbeNachPunkte(punkte: number): string {
+  const p = clampP(punkte);
+  if (p >= 10) return "var(--success)";
+  if (p >= 7) return "#f59e0b";
   return "var(--destructive)";
 }
 
-function clampZu(wert: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, wert));
-}
+// ── DE-Notentabelle (Punkte ↔ Note), exakt (KMK) ───────────────────────────
 
-// ── DE Oberstufe (0–15) ────────────────────────────────────────────────────
-
-/** Punkte -> Tendenz-Note (15 -> "1+", 13 -> "1−", 0 -> "6"). */
-function de0_15FormatNote(punkte: number): string {
-  const p = Math.round(clampZu(punkte, 0, 15));
+/** Kanonische Punkte -> deutsche Tendenz-Note (15 -> "1+", 13 -> "1−", 0 -> "6"). */
+function punkteZuNote(punkte: number): string {
+  const p = Math.round(clampP(punkte));
   if (p === 0) return "6";
   const grundnote = 6 - Math.ceil(p / 3);
   const rest = (p - 1) % 3;
@@ -81,14 +73,10 @@ function de0_15FormatNote(punkte: number): string {
   return `${grundnote}${tendenz}`;
 }
 
-/**
- * Note ("2+", "1-", "6") -> Punkte (nur Notendarstellung, keine rohen Zahlen).
- * @deprecated Aliased als noteZuPunkte für Rückwärtskompatibilität.
- */
-function de0_15NoteZuPunkte(note: string): number | null {
+/** Deutsche Note ("2+", "1-", "6") -> kanonische Punkte, oder null. */
+function noteZuPunkte(note: string): number | null {
   const n = note.trim();
   if (n === "6") return 0;
-  // Akzeptiere Bindestrich (U+002D) und Minus (U+2212).
   const match = /^([1-5])([+\-−]?)$/.exec(n);
   if (!match) return null;
   const grundnote = Number(match[1]);
@@ -96,158 +84,153 @@ function de0_15NoteZuPunkte(note: string): number | null {
   const hoechster = (6 - grundnote) * 3; // 1->15, 2->12, ... 5->3
   const punkte =
     tendenz === "+" ? hoechster : tendenz === "-" || tendenz === "−" ? hoechster - 2 : hoechster - 1;
-  return clampZu(punkte, 0, 15);
+  return clampP(punkte);
 }
 
-/** Note ("2+") -> Punkte. Akzeptiert auch rohe Ganzzahl-Punkte ("14"). */
+// ── Lineare Näherungs-Umrechnung Punkte <-> Fremdsystem ────────────────────
+// Punkte 0..15 werden linear auf [unten..oben] der Zielskala abgebildet.
+// invertiert=true für Skalen, bei denen 1 die beste Note ist (AT).
+
+function macheKonverter(unten: number, oben: number, invertiert: boolean) {
+  const ausPunkte = (p: number): number => {
+    const t = clampP(p) / 15; // 0..1, 1 = beste Leistung
+    return invertiert ? oben - t * (oben - unten) : unten + t * (oben - unten);
+  };
+  const zuPunkte = (wert: number): number => {
+    const w = Math.min(oben, Math.max(unten, wert));
+    const t = invertiert ? (oben - w) / (oben - unten) : (w - unten) / (oben - unten);
+    return Math.round(t * 15);
+  };
+  return { ausPunkte, zuPunkte };
+}
+
+// ── DE Oberstufe (0–15 Punkte) — kanonisch, Anzeige = Punkte ───────────────
+
+/** Eingabe in DE-Oberstufe: rohe Punkte ("14") ODER Note ("2+") -> Punkte. */
 function de0_15Parse(eingabe: string): number | null {
   const n = eingabe.trim().replace(",", ".");
   if (n === "") return null;
-  // Rohe Punkte?
   if (/^\d{1,2}$/.test(n)) {
     const p = Number(n);
     return p >= 0 && p <= 15 ? p : null;
   }
-  if (n === "6") return 0;
-  // Tendenz-Note. Akzeptiere Bindestrich (U+002D) und Minus (U+2212).
-  const match = /^([1-5])([+\-−]?)$/.exec(n);
-  if (!match) return null;
-  const grundnote = Number(match[1]);
-  const tendenz = match[2];
-  const hoechster = (6 - grundnote) * 3; // 1->15, 2->12, ... 5->3
-  const punkte =
-    tendenz === "+" ? hoechster : tendenz === "-" || tendenz === "−" ? hoechster - 2 : hoechster - 1;
-  return clampZu(punkte, 0, 15);
+  return noteZuPunkte(n);
 }
 
 export const DE_0_15: Notensystem & {
-  /** @deprecated Alias für parse(). Bleibt für Alt-Tests und -Komponenten. */
+  /** @deprecated Alias für parse(). */
   noteZuPunkte(note: string): number | null;
-  /** @deprecated Alias für formatNote(). Bleibt für Alt-Tests und -Komponenten. */
+  /** @deprecated Alias für formatNote im Note-Stil. */
   punkteZuNote(punkte: number): string;
 } = {
   id: "de_0_15",
   label: "Deutschland — Oberstufe (0–15 Punkte)",
+  exakt: true,
   min: 0,
   max: 15,
   step: 1,
   richtung: "hoeher_besser",
-  bestehtAb: 5,
-  schnittDezimal: 1,
-  formatNote: de0_15FormatNote,
-  formatSchnitt: (w) => deFix(w, 1),
+  eingabeHinweis: "0–15 oder 2+",
+  formatNote: (p) => `${Math.round(clampP(p))}`,
+  formatSchnitt: (p) => deFix(clampP(p), 1),
   parse: de0_15Parse,
-  farbe: (s) => farbeNachRichtung(s, "hoeher_besser", 10, 7),
-  noteZuPunkte: de0_15NoteZuPunkte,
-  punkteZuNote: de0_15FormatNote,
+  farbe: farbeNachPunkte,
+  noteZuPunkte,
+  punkteZuNote,
 };
 
-// ── DE Schulnoten (1–6, Tendenz, niedriger = besser) ───────────────────────
-
-const DE_1_6_TENDENZ: Record<string, number> = { "+": -0.3, "-": 0.3, "−": 0.3, "": 0 };
-
-function de1_6Parse(eingabe: string): number | null {
-  const n = eingabe.trim();
-  const m = /^([1-6])([+\-−]?)$/.exec(n);
-  if (!m) return null;
-  const basis = Number(m[1]);
-  const delta = DE_1_6_TENDENZ[m[2]] ?? 0;
-  const wert = Math.round((basis + delta) * 10) / 10;
-  if (wert < 1 || wert > 6) return null;
-  return wert;
-}
-
-function de1_6FormatNote(wert: number): string {
-  const basis = Math.round(wert);
-  const diff = Math.round((wert - basis) * 10) / 10;
-  const tendenz = diff <= -0.3 ? "+" : diff >= 0.3 ? "−" : "";
-  return `${basis}${tendenz}`;
-}
+// ── DE Schulnoten (1–6) — EXAKT, Anzeige = Tendenz-Note ────────────────────
 
 export const DE_1_6: Notensystem = {
   id: "de_1_6",
   label: "Deutschland — Schulnoten (1–6)",
-  min: 1,
-  max: 6,
-  step: 0.1,
-  richtung: "niedriger_besser",
-  bestehtAb: 4,
-  schnittDezimal: 1,
-  formatNote: de1_6FormatNote,
-  formatSchnitt: (w) => deFix(w, 1),
-  parse: de1_6Parse,
-  farbe: (s) => farbeNachRichtung(s, "niedriger_besser", 2, 4),
+  exakt: true,
+  min: 0,
+  max: 15,
+  step: 1,
+  richtung: "hoeher_besser",
+  eingabeHinweis: "1–6 (z.B. 2+)",
+  formatNote: (p) => punkteZuNote(p),
+  formatSchnitt: (p) => punkteZuNote(Math.round(clampP(p))),
+  parse: (e) => noteZuPunkte(e),
+  farbe: farbeNachPunkte,
 };
 
-// ── Schweiz (1–6, Viertelnoten, höher = besser) ────────────────────────────
+// ── Schweiz (1–6, 6 = beste) — Näherung ────────────────────────────────────
 
-function ch1_6Parse(eingabe: string): number | null {
-  const n = eingabe.trim().replace(",", ".");
-  if (!/^\d+(\.\d+)?$/.test(n)) return null;
-  const wert = Number(n);
-  if (wert < 1 || wert > 6) return null;
-  if (Math.abs(wert * 4 - Math.round(wert * 4)) > 1e-9) return null;
-  return Math.round(wert * 4) / 4;
+const CH = macheKonverter(1, 6, false);
+
+function chFormat(p: number): string {
+  // auf Viertelnote runden
+  const v = Math.round(CH.ausPunkte(p) * 4) / 4;
+  return deFix(v, 2);
 }
 
 export const CH_1_6: Notensystem = {
   id: "ch_1_6",
   label: "Schweiz (1–6)",
-  min: 1,
-  max: 6,
-  step: 0.25,
+  exakt: false,
+  min: 0,
+  max: 15,
+  step: 1,
   richtung: "hoeher_besser",
-  bestehtAb: 4,
-  schnittDezimal: 2,
-  formatNote: (w) => deNum(w),
-  formatSchnitt: (w) => deFix(w, 2),
-  parse: ch1_6Parse,
-  farbe: (s) => farbeNachRichtung(s, "hoeher_besser", 5, 4),
+  eingabeHinweis: "1–6 (z.B. 4,5)",
+  formatNote: chFormat,
+  formatSchnitt: chFormat,
+  parse: (e) => {
+    const n = e.trim().replace(",", ".");
+    if (!/^\d+(\.\d+)?$/.test(n)) return null;
+    const w = Number(n);
+    if (w < 1 || w > 6) return null;
+    return CH.zuPunkte(w);
+  },
+  farbe: farbeNachPunkte,
 };
 
-// ── Gemeinsamer Parser für Ganzzahl-Systeme ────────────────────────────────
+// ── Österreich (1–5, 1 = beste) — Näherung ─────────────────────────────────
 
-function ganzzahlParse(min: number, max: number) {
-  return (eingabe: string): number | null => {
-    const n = eingabe.trim();
-    if (!/^\d+$/.test(n)) return null;
-    const w = Number(n);
-    return w >= min && w <= max ? w : null;
-  };
-}
-
-// ── Österreich (1–5, niedriger = besser) ───────────────────────────────────
+const AT = macheKonverter(1, 5, true);
 
 export const AT_1_5: Notensystem = {
   id: "at_1_5",
   label: "Österreich (1–5)",
-  min: 1,
-  max: 5,
+  exakt: false,
+  min: 0,
+  max: 15,
   step: 1,
-  richtung: "niedriger_besser",
-  bestehtAb: 4,
-  schnittDezimal: 1,
-  formatNote: (w) => deNum(w),
-  formatSchnitt: (w) => deFix(w, 1),
-  parse: ganzzahlParse(1, 5),
-  farbe: (s) => farbeNachRichtung(s, "niedriger_besser", 2, 4),
+  richtung: "hoeher_besser",
+  eingabeHinweis: "1–5",
+  formatNote: (p) => `${Math.round(AT.ausPunkte(p))}`,
+  formatSchnitt: (p) => deFix(AT.ausPunkte(p), 1),
+  parse: (e) => {
+    const n = e.trim();
+    if (!/^[1-5]$/.test(n)) return null;
+    return AT.zuPunkte(Number(n));
+  },
+  farbe: farbeNachPunkte,
 };
 
-// ── IB (1–7, höher = besser) ───────────────────────────────────────────────
+// ── IB (1–7, 7 = beste) — Näherung ─────────────────────────────────────────
+
+const IB = macheKonverter(1, 7, false);
 
 export const IB_1_7: Notensystem = {
   id: "ib_1_7",
   label: "International Baccalaureate (1–7)",
-  min: 1,
-  max: 7,
+  exakt: false,
+  min: 0,
+  max: 15,
   step: 1,
   richtung: "hoeher_besser",
-  bestehtAb: 4,
-  schnittDezimal: 1,
-  formatNote: (w) => deNum(w),
-  formatSchnitt: (w) => deFix(w, 1),
-  parse: ganzzahlParse(1, 7),
-  farbe: (s) => farbeNachRichtung(s, "hoeher_besser", 5, 4),
+  eingabeHinweis: "1–7",
+  formatNote: (p) => `${Math.round(IB.ausPunkte(p))}`,
+  formatSchnitt: (p) => deFix(IB.ausPunkte(p), 1),
+  parse: (e) => {
+    const n = e.trim();
+    if (!/^[1-7]$/.test(n)) return null;
+    return IB.zuPunkte(Number(n));
+  },
+  farbe: farbeNachPunkte,
 };
 
 // ── Registry ───────────────────────────────────────────────────────────────

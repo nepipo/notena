@@ -4,23 +4,13 @@ import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { useNotensystem } from "@/components/notensystem-provider";
 import type { JahresUebersicht } from "@/lib/grades/jahr";
 
-function fmt(n: number | null): string {
-  return n === null ? "–" : n.toLocaleString("de-DE", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
-
 function Zelle({ wert }: { wert: number | null }) {
   const system = useNotensystem();
   return (
     <td className="px-4 py-3 text-right">
       <span className="font-mono font-semibold" style={{ color: schnittFarbe(wert, system) }}>
-        {fmt(wert)}
+        {wert === null ? "–" : system.formatSchnitt(wert)}
       </span>
-      {wert !== null && (
-        <div className="font-mono text-[10px] text-text-mute">{system.formatNote(wert)}</div>
-      )}
     </td>
   );
 }
@@ -59,13 +49,15 @@ export function JahresTabelle({
               className="font-display text-[110px] font-extrabold leading-[0.85] tracking-[-0.06em]"
               style={{ color: schnittFarbe(uebersicht.gesamtJahr, system) }}
             >
-              {fmt(uebersicht.gesamtJahr)}
+              {uebersicht.gesamtJahr === null ? "–" : system.formatSchnitt(uebersicht.gesamtJahr)}
             </span>
-            <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/{system.max}</span>
+            {system.id === "de_0_15" && (
+              <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/15</span>
+            )}
           </div>
           {uebersicht.gesamtJahr !== null && (
             <div className="mt-2 font-mono text-sm text-text-dim">
-              Note {system.formatNote(uebersicht.gesamtJahr)} · Durchschnitt beider Halbjahre
+              Schnitt {system.formatSchnitt(uebersicht.gesamtJahr)} · Durchschnitt beider Halbjahre
             </div>
           )}
         </div>

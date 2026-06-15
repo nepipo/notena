@@ -26,12 +26,6 @@ const ALLE_KATEGORIEN: Kategorie[] = [
   "klausur", "test", "muendlich", "referat", "hausaufgabe", "sonstige",
 ];
 
-function fmt(n: number | null): string {
-  return n === null ? "–" : n.toLocaleString("de-DE", {
-    minimumFractionDigits: 1, maximumFractionDigits: 1,
-  });
-}
-
 function tageBis(datumIso: string): number {
   const [y, m, d] = datumIso.slice(0, 10).split("-").map(Number);
   const ziel = new Date(y, m - 1, d);
@@ -75,10 +69,7 @@ function KategorienSplit({ noten }: { noten: Note[] }) {
             />
           </div>
           <span className="w-7 shrink-0 font-mono text-xs font-bold" style={{ color: schnittFarbe(kS, system) }}>
-            {fmt(kS)}
-          </span>
-          <span className="w-5 shrink-0 font-mono text-[10px] text-text-mute">
-            {system.formatNote(kS)}
+            {system.formatSchnitt(kS)}
           </span>
         </div>
       )}
@@ -92,10 +83,7 @@ function KategorienSplit({ noten }: { noten: Note[] }) {
             />
           </div>
           <span className="w-7 shrink-0 font-mono text-xs font-bold" style={{ color: schnittFarbe(mS, system) }}>
-            {fmt(mS)}
-          </span>
-          <span className="w-5 shrink-0 font-mono text-[10px] text-text-mute">
-            {system.formatNote(mS)}
+            {system.formatSchnitt(mS)}
           </span>
         </div>
       )}
@@ -162,7 +150,7 @@ function SchnittVerlauf({ noten }: { noten: Note[] }) {
                 textAnchor="middle" fontSize={7}
                 fill="var(--text-mute)" fontFamily="monospace"
               >
-                {n.punkte}
+                {system.formatNote(n.punkte)}
               </text>
               <text
                 x={x + BAR_W / 2} y={H + 11}
@@ -259,13 +247,10 @@ export function FachCard({
         <div className="flex items-center gap-2">
           <div className="text-right">
             <div>
-              <span className="font-display text-2xl font-extrabold" style={{ color: farbe }}>{fmt(schnitt)}</span>
-              {schnitt !== null && (
-                <span className="ml-1.5 font-mono text-xs text-text-dim">{system.formatNote(schnitt)}</span>
-              )}
+              <span className="font-display text-2xl font-extrabold" style={{ color: farbe }}>{schnitt === null ? "–" : system.formatSchnitt(schnitt)}</span>
             </div>
             {vorherSchnitt != null && (
-              <div className="font-mono text-[10px] text-text-mute">Vorher: {fmt(vorherSchnitt)}</div>
+              <div className="font-mono text-[10px] text-text-mute">Vorher: {system.formatSchnitt(vorherSchnitt)}</div>
             )}
           </div>
           {fach.noten.length >= 2 && (
@@ -329,7 +314,7 @@ export function FachCard({
                 title={`${n.bezeichnung ?? KAT_LABEL[n.kategorie]} — klick zum Bearbeiten`}
                 className="inline-flex items-center gap-1 px-2.5 py-1 hover:text-brand"
               >
-                <span className="font-semibold">{n.punkte}</span>
+                <span className="font-semibold">{system.formatNote(n.punkte)}</span>
                 <span className="text-text-mute">{KAT_KUERZEL[n.kategorie]}</span>
                 {n.bezeichnung && <span className="text-text-mute">·{n.bezeichnung.slice(0, 8)}</span>}
               </button>

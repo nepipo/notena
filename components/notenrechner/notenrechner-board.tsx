@@ -17,12 +17,6 @@ import { assembleKlausuren, type KlausurRow } from "@/lib/grades/db";
 import type { JahresUebersicht } from "@/lib/grades/jahr";
 import { WasWaereWennSeite } from "@/components/was-waere-wenn-seite";
 
-function fmt(n: number | null): string {
-  return n === null ? "–" : n.toLocaleString("de-DE", {
-    minimumFractionDigits: 1, maximumFractionDigits: 1,
-  });
-}
-
 let tempCounter = 0;
 const tempId = () => `temp-${tempCounter++}`;
 const isTempId = (id: string) => id.startsWith("temp-");
@@ -235,13 +229,15 @@ export function NotenrechnerBoard({
               className="font-display text-[72px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[110px]"
               style={{ color: gesamtFarbe }}
             >
-              {fmt(gesamt)}
+              {gesamt === null ? "–" : system.formatSchnitt(gesamt)}
             </span>
-            <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/{system.max}</span>
+            {system.id === "de_0_15" && (
+              <span className="mb-3 ml-1 text-3xl font-medium text-text-mute">/15</span>
+            )}
           </div>
           {gesamt !== null && (
             <div className="mt-2 font-mono text-sm text-text-dim">
-              Note {system.formatNote(gesamt)} · {aktiveFaecher.length} Fächer
+              Schnitt {system.formatSchnitt(gesamt)} · {aktiveFaecher.length} Fächer
               {ausgeschlossenCount > 0 && (
                 <span className="ml-2 text-text-mute">
                   ({ausgeschlossenCount} ausgeschlossen)

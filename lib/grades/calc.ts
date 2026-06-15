@@ -28,9 +28,9 @@ export function runde(wert: number, dezimal = 1): number {
   return Math.round(wert * f) / f;
 }
 
-/** @deprecated Nutze system.formatNote(). Re-Export auf DE für Alt-Komponenten. */
+/** @deprecated Liefert die deutsche Note zu Punkten. Re-Export für Alt-Komponenten/Demo. */
 export function punkteZuNote(punkte: number): string {
-  return DE_0_15.formatNote(punkte);
+  return DE_0_15.punkteZuNote(punkte);
 }
 
 /** Ordnet eine Kategorie einer Gruppe zu (für die K/M-Anzeige). */

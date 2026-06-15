@@ -37,17 +37,26 @@ export function SchnittKarte({ gesamt, faecherAnzahl, animationDelay }: Props) {
       </div>
       <div className="mt-3 flex items-end">
         {gesamt !== null ? (
-          <>
-            <AnimatedNumber
-              value={gesamt}
-              decimals={1}
-              durationMs={1400}
-              delayMs={300}
+          system.id === "de_0_15" ? (
+            <>
+              <AnimatedNumber
+                value={gesamt}
+                decimals={1}
+                durationMs={1400}
+                delayMs={300}
+                className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[88px]"
+                style={{ color: farbe }}
+              />
+              <span className="mb-2 ml-1 text-2xl font-medium text-text-mute">/15</span>
+            </>
+          ) : (
+            <span
               className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] sm:text-[88px]"
               style={{ color: farbe }}
-            />
-            <span className="mb-2 ml-1 text-2xl font-medium text-text-mute">/{system.max}</span>
-          </>
+            >
+              {system.formatSchnitt(gesamt)}
+            </span>
+          )
         ) : (
           <span className="font-display text-[60px] font-extrabold leading-[0.85] tracking-[-0.06em] text-text-mute sm:text-[88px]">
             –
@@ -67,7 +76,7 @@ export function SchnittKarte({ gesamt, faecherAnzahl, animationDelay }: Props) {
             />
           </div>
           <div className="mt-2 font-mono text-sm text-text-dim">
-            Note {system.formatNote(gesamt)} · {faecherAnzahl} Fächer
+            Schnitt {system.formatSchnitt(gesamt)} · {faecherAnzahl} Fächer
           </div>
         </>
       ) : (
