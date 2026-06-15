@@ -68,6 +68,7 @@ export function AufgabenListe({
 
   const [tab, setTab] = useState<Tab>("alle");
   const [aktiverFach, setAktiverFach] = useState<string>("alle");
+  const [showFachFilter, setShowFachFilter] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formTyp, setFormTyp] = useState<"ha" | "klausur">("ha");
   const [vorbeiOpen, setVorbeiOpen] = useState(false);
@@ -208,38 +209,55 @@ export function AufgabenListe({
         </button>
       </div>
 
-      {/* Fach-Filter-Pills */}
+      {/* Fach-Filter */}
       {filterFaecher.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setAktiverFach("alle")}
-            className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color,border-color]"
-            style={
-              aktiverFach === "alle"
-                ? { background: "rgba(29,161,255,.18)", color: "var(--brand)", border: "1px solid rgba(29,161,255,.35)" }
-                : { background: "var(--surface-2)", color: "var(--text-mute)", border: "1px solid var(--border)" }
-            }
-          >
-            Alle Fächer
-          </button>
-          {filterFaecher.map((f) => {
-            const farbe = f.farbe ?? FACH_FALLBACK_FARBE;
-            const aktiv = aktiverFach === f.id;
-            return (
-              <button
-                key={f.id}
-                onClick={() => setAktiverFach(aktiv ? "alle" : f.id)}
-                className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color,border-color]"
-                style={
-                  aktiv
-                    ? { background: hexToRgba(farbe, 0.2), color: farbe, border: `1px solid ${hexToRgba(farbe, 0.4)}` }
-                    : { background: "var(--surface-2)", color: "var(--text-mute)", border: "1px solid var(--border)" }
-                }
-              >
-                {f.name}
-              </button>
-            );
-          })}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                setShowFachFilter((v) => !v);
+                setAktiverFach("alle");
+              }}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color,border-color]"
+              style={
+                showFachFilter || aktiverFach !== "alle"
+                  ? { background: "rgba(29,161,255,.18)", color: "var(--brand)", border: "1px solid rgba(29,161,255,.35)" }
+                  : { background: "var(--surface-2)", color: "var(--text-mute)", border: "1px solid var(--border)" }
+              }
+            >
+              {aktiverFach !== "alle"
+                ? (filterFaecher.find((f) => f.id === aktiverFach)?.name ?? "Alle Fächer")
+                : "Alle Fächer"}
+              <ChevronDown
+                className={`size-3 transition-transform ${showFachFilter ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+          {showFachFilter && (
+            <div className="flex flex-wrap gap-1.5">
+              {filterFaecher.map((f) => {
+                const farbe = f.farbe ?? FACH_FALLBACK_FARBE;
+                const aktiv = aktiverFach === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => {
+                      setAktiverFach(aktiv ? "alle" : f.id);
+                      setShowFachFilter(false);
+                    }}
+                    className="rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide transition-[background-color,color,border-color]"
+                    style={
+                      aktiv
+                        ? { background: hexToRgba(farbe, 0.2), color: farbe, border: `1px solid ${hexToRgba(farbe, 0.4)}` }
+                        : { background: "var(--surface-2)", color: "var(--text-mute)", border: "1px solid var(--border)" }
+                    }
+                  >
+                    {f.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
