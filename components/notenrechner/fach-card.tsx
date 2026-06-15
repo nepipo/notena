@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TrendingUp, Sparkles, Settings2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -353,8 +353,19 @@ export function FachCard({
 
 function KategorieSelector({ value, onChange }: { value: Kategorie; onChange: (k: Kategorie) => void }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
   return (
-    <div>
+    <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -363,20 +374,20 @@ function KategorieSelector({ value, onChange }: { value: Kategorie; onChange: (k
         {KAT_LABEL[value]}
         <ChevronDown className={`size-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {ALLE_KATEGORIEN.map((k) => (
-            <button
-              key={k}
-              type="button"
-              onClick={() => { onChange(k); setOpen(false); }}
-              className={`rounded-xl border px-3 py-1.5 font-mono text-[11px] transition-colors active:scale-[0.94] ${value === k ? "border-brand bg-brand font-semibold text-black" : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"}`}
-            >
-              {KAT_LABEL[k]}
-            </button>
-          ))}
-        </div>
-      )}
+      <div
+        className={`absolute left-0 top-0 z-50 flex flex-wrap gap-1.5 rounded-2xl border border-border/60 bg-surface-1/95 p-2 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-150 origin-top-left ${open ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"}`}
+      >
+        {ALLE_KATEGORIEN.map((k) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => { onChange(k); setOpen(false); }}
+            className={`rounded-xl border px-3 py-1.5 font-mono text-[11px] transition-colors active:scale-[0.94] ${value === k ? "border-brand bg-brand font-semibold text-black" : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"}`}
+          >
+            {KAT_LABEL[k]}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
