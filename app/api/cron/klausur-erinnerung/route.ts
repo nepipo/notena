@@ -53,7 +53,6 @@ export async function GET(req: Request) {
       gesendet++;
     }
 
-    console.log(`[cron/klausur-erinnerung] ${gesendet} Erinnerungen gesendet.`);
     return NextResponse.json({ ok: true, gesendet });
   } catch (e) {
     console.error("[cron/klausur-erinnerung]", e);
