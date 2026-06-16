@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { updatePraeferenzen, noteAnzahl } from "@/lib/actions/schule";
+import { noteAnzahl } from "@/lib/actions/schule";
 import { signOut, deleteAccount } from "@/app/auth/actions";
 import { PushToggle } from "@/components/push-toggle";
 import { KlausurErinnerungConfig } from "@/components/einstellungen/klausur-erinnerung-config";
@@ -33,7 +33,7 @@ export default async function EinstellungenPage() {
 
   const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
-    .select("name, klasse, schule, eingabe_modus, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem")
+    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem")
     .single();
   if (profilErr) console.error("[einstellungen] profil fetch error:", profilErr);
 
@@ -45,7 +45,6 @@ export default async function EinstellungenPage() {
     .order("name");
   if (fachErr) console.error("[einstellungen] schule_fach fetch error:", fachErr);
 
-  const eingabeModus = profil?.eingabe_modus ?? "punkte";
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
   const briefingAktiv = profil?.briefing_aktiv !== false;
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
@@ -133,36 +132,6 @@ export default async function EinstellungenPage() {
             DE (0–15), DE (1–6), Schweiz (1–6), Österreich (1–5) oder IB (1–7).
           </p>
           <NotensystemWahl initialValue={notensystem} noteAnzahl={anzahlNoten} />
-        </div>
-      </section>
-
-      {/* ── EINGABE-MODUS ─────────────────────────────────── */}
-      <section
-        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
-        style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
-      >
-        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
-          Eingabe-Modus
-        </div>
-        <p className="mt-1 text-sm text-text-dim">Wie möchtest du Noten eingeben?</p>
-        <div className="mt-4 flex gap-3">
-          {(["punkte", "note"] as const).map((modus) => (
-            <form key={modus} className="flex-1">
-              <button
-                formAction={async () => {
-                  "use server";
-                  await updatePraeferenzen(modus);
-                }}
-                className={`w-full rounded-xl border px-4 py-3 font-display font-bold transition-colors ${
-                  eingabeModus === modus
-                    ? "border-brand bg-brand text-black"
-                    : "border-border bg-surface-2 text-foreground hover:bg-surface-3"
-                }`}
-              >
-                {modus === "punkte" ? "Punkte (0–15)" : "Noten (1+ bis 6)"}
-              </button>
-            </form>
-          ))}
         </div>
       </section>
 

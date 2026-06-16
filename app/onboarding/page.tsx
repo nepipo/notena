@@ -8,7 +8,6 @@ import { completeOnboarding, addFach, updateFach } from "@/lib/actions/schule";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { BUNDESLAND_LABEL, type Bundesland } from "@/lib/ferien/ferien-data";
 
-type Modus = "punkte" | "note";
 type Niveau = "grund" | "erhoeht";
 
 interface FachEintrag {
@@ -23,14 +22,13 @@ const VORSCHLAG_FAECHER = [
   "Latein", "Französisch", "Spanisch",
 ];
 
-const STEP_LABELS = ["Profil", "Fächer", "Einstellungen"];
+const STEP_LABELS = ["Profil", "Fächer"];
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [klasse, setKlasse] = useState<11 | 12 | 13 | null>(null);
   const [bundesland, setBundesland] = useState<Bundesland | "">("");
-  const [eingabeModus, setEingabeModus] = useState<Modus>("punkte");
   const [faecher, setFaecher] = useState<FachEintrag[]>([]);
   const [freitextName, setFreitextName] = useState("");
   const [freitextNiveau, setFreitextNiveau] = useState<Niveau>("grund");
@@ -81,7 +79,7 @@ export default function OnboardingPage() {
   function finish() {
     if (!klasse) return;
     startFinishTransition(async () => {
-      const res = await completeOnboarding(name, klasse, eingabeModus, bundesland || null);
+      const res = await completeOnboarding(name, klasse, bundesland || null);
       if (!res.ok) {
         toast.error(`Fehler: ${res.error}`);
         return;
@@ -132,7 +130,7 @@ export default function OnboardingPage() {
       {step === 1 && (
         <div className="mt-10 w-full max-w-md animate-fade-up">
           <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.25em] text-brand">
-            Schritt 1 von 3
+            Schritt 1 von 2
           </div>
           <h1 className="font-display text-4xl font-extrabold leading-tight">
             Wie heißt du?
@@ -209,7 +207,7 @@ export default function OnboardingPage() {
       {step === 2 && (
         <div className="mt-10 w-full max-w-md animate-fade-up">
           <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.25em] text-brand">
-            Schritt 2 von 3
+            Schritt 2 von 2
           </div>
           <h1 className="font-display text-4xl font-extrabold leading-tight">
             Deine Fächer
@@ -320,97 +318,9 @@ export default function OnboardingPage() {
           )}
 
           <button
-            onClick={() => setStep(3)}
-            disabled={isPendingFach}
-            className="mt-6 w-full rounded-2xl bg-brand px-6 py-4 font-display font-extrabold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {faecher.length > 0 ? `Weiter mit ${faecher.length} Fächern →` : "Weiter →"}
-          </button>
-          <button
-            onClick={() => setStep(1)}
-            className="mt-3 w-full font-mono text-sm text-text-mute hover:text-text-dim"
-          >
-            ← Zurück
-          </button>
-        </div>
-      )}
-
-      {/* ── Screen 3: Modus + Done ───────────────────────── */}
-      {step === 3 && (
-        <div className="mt-10 w-full max-w-md animate-fade-up">
-          <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.25em] text-brand">
-            Letzter Schritt
-          </div>
-          <h1 className="font-display text-4xl font-extrabold leading-tight">
-            Wie gibst du<br />Noten ein?
-          </h1>
-          <p className="mt-2 text-sm text-text-dim">
-            Jederzeit in den Einstellungen änderbar.
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3">
-            {(["punkte", "note"] as Modus[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setEingabeModus(m)}
-                className={`rounded-2xl border p-5 text-left transition-[border-color,background-color,box-shadow] ${
-                  eingabeModus === m
-                    ? "border-brand bg-brand/10 shadow-[0_0_24px_color-mix(in_srgb,var(--brand)_15%,transparent)]"
-                    : "border-border bg-surface-2 hover:bg-surface-3"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-display font-extrabold">
-                    {m === "punkte" ? "Punkte (0–15)" : "Noten (1+ bis 6)"}
-                  </span>
-                  {eingabeModus === m && (
-                    <span className="font-mono text-[10px] font-bold text-brand">✓ Ausgewählt</span>
-                  )}
-                </div>
-                <div className="mt-1 font-mono text-sm text-text-dim">
-                  {m === "punkte"
-                    ? "Das Oberstufen-System — du gibst 0 bis 15 Punkte ein."
-                    : "Klassische Schulnoten — du gibst 1+, 2, 3− usw. ein."}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Mini-Summary */}
-          <div className="mt-6 rounded-2xl border border-border/50 bg-surface-2 p-4">
-            <div className="mb-2 font-mono text-[10px] uppercase tracking-[.15em] text-text-mute">
-              Dein Setup
-            </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex gap-2">
-                <span className="text-text-mute">Name</span>
-                <span className="font-semibold">{name}</span>
-              </div>
-              <div className="flex gap-2">
-                <span className="text-text-mute">Klasse</span>
-                <span className="font-semibold">{klasse}</span>
-              </div>
-              {bundesland && (
-                <div className="flex gap-2">
-                  <span className="text-text-mute">Bundesland</span>
-                  <span className="font-semibold">{BUNDESLAND_LABEL[bundesland as Bundesland]}</span>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <span className="shrink-0 text-text-mute">Fächer</span>
-                <span className="font-semibold">
-                  {faecher.length > 0
-                    ? faecher.map((f) => `${f.name} (${f.niveau === "erhoeht" ? "LK" : "GK"})`).join(", ")
-                    : "Noch keine — kannst du gleich eintragen"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <button
             onClick={finish}
-            disabled={isPendingFinish}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-6 py-4 font-display font-extrabold text-black transition-opacity hover:opacity-90 disabled:opacity-70"
+            disabled={isPendingFach || isPendingFinish}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-6 py-4 font-display font-extrabold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {isPendingFinish ? (
               <>
@@ -418,11 +328,11 @@ export default function OnboardingPage() {
                 Wird eingerichtet…
               </>
             ) : (
-              "Los geht's →"
+              faecher.length > 0 ? `Los geht's mit ${faecher.length} Fächern →` : "Los geht's →"
             )}
           </button>
           <button
-            onClick={() => setStep(2)}
+            onClick={() => setStep(1)}
             className="mt-3 w-full font-mono text-sm text-text-mute hover:text-text-dim"
           >
             ← Zurück

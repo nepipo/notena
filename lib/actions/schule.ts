@@ -263,29 +263,9 @@ export async function removeKlausur(klausurId: string): Promise<ActionResult> {
   }
 }
 
-export async function updatePraeferenzen(
-  eingabeModus: "punkte" | "note",
-): Promise<ActionResult> {
-  try {
-    const userId = await requireUserId();
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("nutzer_profil")
-      .update({ eingabe_modus: eingabeModus })
-      .eq("id", userId);
-    if (error) return { ok: false, error: dbError(error) };
-    revalidatePath("/dashboard");
-    revalidatePath("/einstellungen");
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: dbError(e) };
-  }
-}
-
 export async function completeOnboarding(
   name: string,
   klasse: number | null,
-  eingabeModus: "punkte" | "note",
   bundesland?: string | null,
 ): Promise<ActionResult> {
   try {
@@ -296,7 +276,6 @@ export async function completeOnboarding(
       .update({
         name: name.trim() || null,
         klasse,
-        eingabe_modus: eingabeModus,
         bundesland: bundesland ?? null,
         onboarding_abgeschlossen: true,
       })

@@ -13,7 +13,7 @@ export async function GET() {
 
   try {
     const [profilRes, fachRes, noteRes, klausurRes] = await Promise.all([
-      supabase.from("nutzer_profil").select("name, klasse, schule, aktuelles_halbjahr, eingabe_modus").eq("id", userId).single(),
+      supabase.from("nutzer_profil").select("name, klasse, schule, aktuelles_halbjahr").eq("id", userId).single(),
       supabase.from("schule_fach").select("id, name, halbjahr, niveau, farbe").eq("user_id", userId).order("halbjahr").order("name"),
       supabase.from("schule_note").select("fach_id, punkte, kategorie, bezeichnung, gewicht, created_at").eq("user_id", userId).order("created_at"),
       supabase.from("schule_klausur").select("titel, datum, fach_id, created_at").eq("user_id", userId).order("datum"),
@@ -38,7 +38,6 @@ export async function GET() {
         klasse: profil?.klasse ?? null,
         schule: profil?.schule ?? null,
         aktuelles_halbjahr: profil?.aktuelles_halbjahr ?? aktuellesHalbjahr(),
-        eingabe_modus: profil?.eingabe_modus ?? "punkte",
       },
       faecher: (fachRows ?? []).map((f) => ({
         id: f.id,
