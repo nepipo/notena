@@ -31,9 +31,9 @@ export function NotensystemWahl({ initialValue, noteAnzahl }: Props) {
         // Warnung nicht-blockierend NACH dem Wechsel, wenn schon Noten da sind.
         if (noteAnzahl > 0) {
           const label = ALLE_SYSTEME.find((s) => s.id === next)?.label ?? next;
-          toast.warning(
-            `Auf „${label}" umgestellt. Deine ${noteAnzahl} bestehenden Noten wurden nicht umgerechnet.`,
-            { duration: 6000 },
+          toast.success(
+            `Auf „${label}" umgestellt. Deine Noten werden jetzt entsprechend angezeigt.`,
+            { duration: 4000 },
           );
         }
         router.refresh();
