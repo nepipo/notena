@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -9,8 +10,8 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  // Supabase (Auth, DB, Realtime)
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  // Supabase (Auth, DB, Realtime) + Sentry Error-Reporting
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.de.sentry.io",
   "frame-src 'none'",
   "object-src 'none'",
   "base-uri 'self'",
@@ -36,4 +37,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "lebens-automatismus",
+  project: "project-x",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});
