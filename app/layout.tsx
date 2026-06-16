@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Onest, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { cookies } from "next/headers";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 type Theme = "dark" | "light" | "system";
@@ -87,6 +88,7 @@ export default async function RootLayout({
       <body className="min-h-full">
         {children}
         <Toaster theme={theme === "light" ? "light" : "dark"} position="top-center" richColors />
+        <Analytics />
       </body>
     </html>
   );
