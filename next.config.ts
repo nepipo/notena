@@ -38,8 +38,8 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  org: "lebens-automatismus",
-  project: "project-x",
+  org: "project-x-4k",
+  project: "javascript-nextjs",
   silent: !process.env.CI,
   widenClientFileUpload: true,
   disableLogger: true,
