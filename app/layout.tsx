@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Onest, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 type Theme = "dark" | "light" | "system";
@@ -89,6 +90,7 @@ export default async function RootLayout({
         {children}
         <Toaster theme={theme === "light" ? "light" : "dark"} position="top-center" richColors />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
