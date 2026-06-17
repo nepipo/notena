@@ -52,7 +52,7 @@ export function kategorieSchnitt(noten: Note[], kategorie: Kategorie, system: No
   return gewSum > 0 ? summe / gewSum : null;
 }
 
-function resolveConfig(config?: GewichtungConfig): GewichtungConfig {
+function resolveConfig(config?: Partial<GewichtungConfig>): GewichtungConfig {
   return config ? { ...DEFAULT_GEWICHTUNG_CONFIG, ...config } : DEFAULT_GEWICHTUNG_CONFIG;
 }
 
@@ -63,7 +63,7 @@ function resolveConfig(config?: GewichtungConfig): GewichtungConfig {
  * Klausur-Dynamik: wächst klausurDynamisch, wächst das Klausur-Gewicht mit
  * jeder Klausur (klausurPro × Anzahl, gedeckelt bei klausurMax).
  */
-export function fachSchnitt(noten: Note[], config?: GewichtungConfig, system: Notensystem = DE_0_15): number | null {
+export function fachSchnitt(noten: Note[], config?: Partial<GewichtungConfig>, system: Notensystem = DE_0_15): number | null {
   if (noten.length === 0) return null;
   const c = resolveConfig(config);
 
@@ -103,7 +103,7 @@ export function fachSchnitt(noten: Note[], config?: GewichtungConfig, system: No
   return gewSum > 0 ? summe / gewSum : null;
 }
 
-export function fachSchnittGerundet(noten: Note[], config?: GewichtungConfig, system: Notensystem = DE_0_15): number | null {
+export function fachSchnittGerundet(noten: Note[], config?: Partial<GewichtungConfig>, system: Notensystem = DE_0_15): number | null {
   const s = fachSchnitt(noten, config, system);
   return s === null ? null : runde(s);
 }
@@ -131,7 +131,7 @@ export function gesamtSchnittGerundet(faecher: Fach[], system: Notensystem = DE_
 export function wasWaereWenn(
   noten: Note[],
   hypothese: Note,
-  config?: GewichtungConfig,
+  config?: Partial<GewichtungConfig>,
   system: Notensystem = DE_0_15,
 ): number | null {
   return fachSchnitt([...noten, hypothese], config, system);
@@ -139,7 +139,7 @@ export function wasWaereWenn(
 
 export function benoetigtePunkte(
   noten: Note[],
-  config: GewichtungConfig | undefined,
+  config: Partial<GewichtungConfig> | undefined,
   kategorie: Kategorie,
   gewicht: number,
   ziel: number,

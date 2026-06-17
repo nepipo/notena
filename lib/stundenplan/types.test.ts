@@ -12,10 +12,12 @@ const stunde = (o: Partial<StundeRow> = {}): StundeRow => ({
   id: "x",
   user_id: "u",
   fach_id: null,
+  bezeichnung: null,
   wochentag: 1,
   zeit_start: "08:00:00",
   zeit_end:   "09:30:00",
   raum: null,
+  lehrer: null,
   woche_typ: null,
   ...o,
 });
