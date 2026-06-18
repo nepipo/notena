@@ -16,7 +16,9 @@ import { BundeslandSelector } from "@/components/einstellungen/bundesland-select
 import { NotensystemWahl } from "@/components/einstellungen/notensystem-wahl";
 import { ProfilForm } from "@/components/profil-form";
 import { DeleteAccountButton } from "@/components/delete-account-button";
+import { AboStatus } from "@/components/einstellungen/abo-status";
 import { Button } from "@/components/ui/button";
+import { istPro } from "@/lib/pro/plan";
 import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
 import type { GewichtungConfig } from "@/lib/grades/types";
@@ -33,7 +35,7 @@ export default async function EinstellungenPage() {
 
   const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
-    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem")
+    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem, plan_tier, plan_status, plan_intervall, plan_bis")
     .single();
   if (profilErr) console.error("[einstellungen] profil fetch error:", profilErr);
 
@@ -78,6 +80,22 @@ export default async function EinstellungenPage() {
           initialName={profil?.name ?? ""}
           initialKlasse={profil?.klasse ?? null}
           initialSchule={profil?.schule ?? ""}
+        />
+      </section>
+
+      {/* ── ABO ───────────────────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.03s" }}
+      >
+        <div className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Abo
+        </div>
+        <AboStatus
+          pro={istPro(profil)}
+          status={profil?.plan_status ?? null}
+          intervall={profil?.plan_intervall ?? null}
+          bis={profil?.plan_bis ?? null}
         />
       </section>
 
