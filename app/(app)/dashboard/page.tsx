@@ -3,6 +3,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { BriefingKarte } from "@/components/dashboard/briefing-karte";
 import { CoachChat } from "@/components/dashboard/coach-chat";
+import { UpgradePrompt } from "@/components/pro/upgrade-prompt";
+import { istPro } from "@/lib/pro/plan";
 import { GrussText } from "@/components/dashboard/gruss-text";
 import { FerienCountdown } from "@/components/dashboard/ferien-countdown";
 import { SchnittKarte } from "@/components/dashboard/schnitt-karte";
@@ -38,11 +40,12 @@ export default async function DashboardPage() {
 
   const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
-    .select("aktuelles_halbjahr, name")
+    .select("aktuelles_halbjahr, name, plan_tier, plan_bis")
     .eq("id", userId)
     .single();
   if (profilErr) console.error("[dashboard] profil fetch error:", profilErr);
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+  const pro = istPro(profil);
 
   const { data: fachRows, error: fachErr } = await supabase
     .from("schule_fach")
@@ -108,10 +111,14 @@ export default async function DashboardPage() {
         </h1>
       </header>
 
-      {/* Briefing */}
-      <Suspense fallback={<BriefingSkeleton />}>
-        <BriefingKarte />
-      </Suspense>
+      {/* Briefing — Pro-Feature */}
+      {pro ? (
+        <Suspense fallback={<BriefingSkeleton />}>
+          <BriefingKarte />
+        </Suspense>
+      ) : (
+        <UpgradePrompt feature="Tägliches KI-Briefing" />
+      )}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <SchnittKarte
@@ -242,9 +249,9 @@ export default async function DashboardPage() {
         </Suspense>
       </div>
 
-      {/* KI-Coach */}
+      {/* KI-Coach — Pro-Feature */}
       <div className="mt-4">
-        <CoachChat />
+        {pro ? <CoachChat /> : <UpgradePrompt feature="KI-Coach" />}
       </div>
     </main>
   );
