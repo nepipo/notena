@@ -285,6 +285,9 @@ export async function applyOnboarding(
     const userId = await requireUserId();
     const supabase = await createClient();
 
+    // Klasse 5–10 → 1-6 Notensystem, Klasse 11–13 → 0-15 Punkte
+    const notensystem = data.klasse <= 10 ? "de_1_6" : "de_0_15";
+
     const { error: profilError } = await supabase
       .from("nutzer_profil")
       .update({
@@ -295,6 +298,7 @@ export async function applyOnboarding(
         bundesland: data.bundesland ?? null,
         schulform: data.schulform ?? null,
         schule: data.schule ?? null,
+        notensystem,
         onboarding_abgeschlossen: true,
       })
       .eq("id", userId);
