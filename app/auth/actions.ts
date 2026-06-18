@@ -57,17 +57,19 @@ export async function signup(
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${origin}/auth/confirm` },
+    options: { emailRedirectTo: `${origin}/auth/confirm?next=/onboarding` },
   });
 
   if (error) {
     return { error: error.message };
   }
 
-  // Email-Bestätigung deaktiviert -> Session existiert sofort
+  // Email-Bestätigung deaktiviert -> Session existiert sofort.
+  // Nach /onboarding leiten: dort wird das anonym gesammelte Onboarding
+  // aus dem localStorage in die DB geflusht (oder Fallback-Durchlauf).
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect("/dashboard");
+    redirect("/onboarding");
   }
 
   return {

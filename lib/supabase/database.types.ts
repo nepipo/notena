@@ -154,15 +154,18 @@ export type Database = {
           created_at: string
           default_gewichtung: Json | null
           eingabe_modus: string
+          geburtsdatum: string | null
           geburtsjahr: number | null
           id: string
           klasse: number | null
           klausur_erinnerung_tage: number[]
+          nachname: string | null
           name: string | null
           notensystem: string
           onboarding_abgeschlossen: boolean
           plan_tier: string
           schule: string | null
+          schulform: string | null
           updated_at: string
           wochen_modus: string | null
         }
@@ -174,15 +177,18 @@ export type Database = {
           created_at?: string
           default_gewichtung?: Json | null
           eingabe_modus?: string
+          geburtsdatum?: string | null
           geburtsjahr?: number | null
           id: string
           klasse?: number | null
           klausur_erinnerung_tage?: number[]
+          nachname?: string | null
           name?: string | null
           notensystem?: string
           onboarding_abgeschlossen?: boolean
           plan_tier?: string
           schule?: string | null
+          schulform?: string | null
           updated_at?: string
           wochen_modus?: string | null
         }
@@ -194,15 +200,18 @@ export type Database = {
           created_at?: string
           default_gewichtung?: Json | null
           eingabe_modus?: string
+          geburtsdatum?: string | null
           geburtsjahr?: number | null
           id?: string
           klasse?: number | null
           klausur_erinnerung_tage?: number[]
+          nachname?: string | null
           name?: string | null
           notensystem?: string
           onboarding_abgeschlossen?: boolean
           plan_tier?: string
           schule?: string | null
+          schulform?: string | null
           updated_at?: string
           wochen_modus?: string | null
         }

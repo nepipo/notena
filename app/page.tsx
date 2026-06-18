@@ -108,7 +108,7 @@ export default async function Home() {
           className="anim mt-8 flex w-full max-w-xs flex-col gap-3"
           style={{ animationDelay: "320ms" }}
         >
-          <Button render={<Link href="/signup" />} className="w-full font-display text-base font-extrabold">
+          <Button render={<Link href="/onboarding" />} className="w-full font-display text-base font-extrabold">
             Kostenlos starten →
           </Button>
           <Button
@@ -280,7 +280,7 @@ export default async function Home() {
           </p>
           <div className="mt-7 flex flex-col items-center gap-3">
             <Button
-              render={<Link href="/signup" />}
+              render={<Link href="/onboarding" />}
               className="w-full max-w-xs font-display text-base font-extrabold"
             >
               Jetzt kostenlos starten →

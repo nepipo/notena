@@ -5,8 +5,8 @@ import { SignupForm } from "@/components/auth/signup-form";
 export default function SignupPage() {
   return (
     <AuthShell
-      title="Leg los."
-      subtitle="Erstell dein Konto — kostenlos, in 30 Sekunden."
+      title="Fast geschafft."
+      subtitle="Sicher dir dein Konto, damit dein Setup gespeichert bleibt — kostenlos."
       footer={
         <>
           Schon ein Konto?{" "}

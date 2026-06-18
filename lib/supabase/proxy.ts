@@ -45,6 +45,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/forgot-password") ||
     path.startsWith("/auth") ||
     path.startsWith("/demo") ||
+    // Onboarding laeuft anonym vor der Registrierung
+    path.startsWith("/onboarding") ||
     // PWA-Ressourcen: müssen ohne Login erreichbar sein
     path === "/manifest.webmanifest" ||
     path === "/icon" ||

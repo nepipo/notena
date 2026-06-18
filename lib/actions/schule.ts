@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { GewichtungConfig, Kategorie } from "@/lib/grades/types";
-import { dbError, UpdateFachSchema } from "@/lib/validation";
+import { dbError, UpdateFachSchema, ApplyOnboardingSchema } from "@/lib/validation";
 import { getNotensystem } from "@/lib/grades/systems";
+import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
+import type { OnboardingData } from "@/lib/onboarding/storage";
 
 async function audit(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -263,25 +265,57 @@ export async function removeKlausur(klausurId: string): Promise<ActionResult> {
   }
 }
 
-export async function completeOnboarding(
-  name: string,
-  klasse: number | null,
-  bundesland?: string | null,
+/**
+ * Schreibt die im Onboarding gesammelten Daten in einem Rutsch:
+ * Profilfelder + alle Faecher (Batch-Insert, keine N+1-Loop) und setzt
+ * onboarding_abgeschlossen=true. Wird nach dem ersten Login aus dem
+ * localStorage gespeist (anonymes Onboarding) ODER direkt im eingeloggten
+ * Fallback-Durchlauf aufgerufen.
+ */
+export async function applyOnboarding(
+  input: OnboardingData,
 ): Promise<ActionResult> {
+  const parsed = ApplyOnboardingSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
+  const data = parsed.data;
+
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
-    const { error } = await supabase
+
+    const { error: profilError } = await supabase
       .from("nutzer_profil")
       .update({
-        name: name.trim() || null,
-        klasse,
-        bundesland: bundesland ?? null,
+        name: data.vorname,
+        nachname: data.nachname ?? null,
+        geburtsdatum: data.geburtsdatum ?? null,
+        klasse: data.klasse,
+        bundesland: data.bundesland ?? null,
+        schulform: data.schulform ?? null,
+        schule: data.schule ?? null,
         onboarding_abgeschlossen: true,
       })
       .eq("id", userId);
-    if (error) return { ok: false, error: dbError(error) };
+    if (profilError) return { ok: false, error: dbError(profilError) };
+
+    if (data.faecher.length > 0) {
+      const halbjahr = aktuellesHalbjahr();
+      const rows = data.faecher.map((f) => ({
+        user_id: userId,
+        name: f.name,
+        halbjahr,
+        niveau: f.niveau,
+      }));
+      const { error: fachError } = await supabase.from("schule_fach").insert(rows);
+      if (fachError) return { ok: false, error: dbError(fachError) };
+    }
+
     revalidatePath("/dashboard");
+    revalidatePath("/noten");
+    revalidatePath("/stundenplan");
+    revalidatePath("/einstellungen");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: dbError(e) };
