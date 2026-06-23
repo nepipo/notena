@@ -189,7 +189,6 @@ export function StundenplanBoard({
   klausuren,
   entfaelle,
   bundesland,
-  land,
 }: {
   stunden: StundeRow[];
   faecher: FachRow[];
@@ -198,7 +197,6 @@ export function StundenplanBoard({
   klausuren: KlausurRow[];
   entfaelle: EntfallRow[];
   bundesland: Bundesland | null;
-  land: string | null;
 }) {
   const fachMap = new Map(alleFaecher.map((f) => [f.id, f]));
   const angereichert: StundeAngereichert[] = stunden.map((s) => ({

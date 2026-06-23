@@ -106,6 +106,7 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
         }
       })();
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFlushing(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

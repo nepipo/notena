@@ -25,12 +25,11 @@ export default async function StundenplanPage() {
       supabase.from("stundenplan_entfall").select("*")
         .gte("datum", vonDatum.toISOString().slice(0, 10))
         .lte("datum", bisDatum.toISOString().slice(0, 10)),
-      supabase.from("nutzer_profil").select("bundesland, land").eq("id", userId).single(),
+      supabase.from("nutzer_profil").select("bundesland").eq("id", userId).single(),
     ]);
 
   const fachRows = alleFachRows ?? [];
   const bundesland = (profil?.bundesland as Bundesland | null | undefined) ?? null;
-  const land = profil?.land ?? null;
 
   const stunden = (stundeRows ?? []) as StundeRow[];
   const heuteWochentag = heute.getDay(); // 0=So…6=Sa
@@ -66,7 +65,6 @@ export default async function StundenplanPage() {
         klausuren={(klausurRows ?? []) as KlausurRow[]}
         entfaelle={(entfallRows ?? []) as EntfallRow[]}
         bundesland={bundesland}
-        land={land}
       />
     </main>
   );
