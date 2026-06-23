@@ -751,8 +751,9 @@ export function StundenplanBoard({
                 </div>
               )}
 
-              {/* Stunden-Blöcke */}
+              {/* Stunden-Blöcke (nicht auf Ferien-/Feiertag-Tagen) */}
               {proTag.map((stundenAmTag, tagIndex) =>
+                (tagInfos[tagIndex].ferien || tagInfos[tagIndex].feiertag) ? null :
                 stundenAmTag.map((s) => {
                   const farbe = s.fach?.farbe ?? FACH_FALLBACK_FARBE;
                   const top = topPct(s.zeit_start);
