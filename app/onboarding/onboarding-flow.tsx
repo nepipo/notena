@@ -15,7 +15,7 @@ import {
   clearOnboarding,
 } from "@/lib/onboarding/storage";
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 const VORSCHLAG_FAECHER = [
   "Mathe", "Deutsch", "Englisch", "Physik", "Geschichte",
@@ -28,6 +28,13 @@ const SCHULFORMEN: { code: string; label: string }[] = [
   { code: "berufsschule", label: "Berufsschule" },
   { code: "stadtteilschule", label: "Stadtteilschule" },
   { code: "andere", label: "Andere" },
+];
+
+const LAENDER: { code: string; emoji: string; label: string }[] = [
+  { code: "de", emoji: "🇩🇪", label: "Deutschland" },
+  { code: "at", emoji: "🇦🇹", label: "Österreich" },
+  { code: "ch", emoji: "🇨🇭", label: "Schweiz" },
+  { code: "other", emoji: "🌍", label: "Anderes Land" },
 ];
 
 const textInput =
@@ -47,6 +54,7 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [nachname, setNachname] = useState("");
   const [geburtsdatum, setGeburtsdatum] = useState("");
   const [klasse, setKlasse] = useState<number | null>(null);
+  const [land, setLand] = useState<string>("");
   const [bundesland, setBundesland] = useState<Bundesland | "">("");
   const [schulform, setSchulform] = useState("");
   const [schule, setSchule] = useState("");
@@ -62,6 +70,7 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
       nachname: nachname.trim() || null,
       geburtsdatum: geburtsdatum || null,
       klasse,
+      land: land || null,
       bundesland: bundesland || null,
       schulform: schulform || null,
       schule: schule.trim() || null,
@@ -74,14 +83,13 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
     setNachname(d.nachname ?? "");
     setGeburtsdatum(d.geburtsdatum ?? "");
     setKlasse(d.klasse);
+    setLand(d.land ?? "");
     setBundesland((d.bundesland as Bundesland) ?? "");
     setSchulform(d.schulform ?? "");
     setSchule(d.schule ?? "");
     setFaecher(d.faecher ?? []);
   }
 
-  // Eingeloggter Einstieg: zwischengespeichertes Onboarding in die DB flushen.
-  // Kein localStorage (z. B. anderes Geraet) -> regulaeren Flow zeigen (Fallback).
   useEffect(() => {
     if (!isLoggedIn) return;
     const pending = loadOnboarding();
@@ -103,8 +111,23 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn]);
 
-  const back = () => setStep((s) => Math.max(1, s - 1));
-  const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  const back = () => {
+    // step 6 (Bundesland) → skip back to step 5 if non-DE
+    if (step === 7 && land && land !== "de") {
+      setStep(5);
+      return;
+    }
+    setStep((s) => Math.max(1, s - 1));
+  };
+
+  const next = () => {
+    // step 5 (Land) → skip Bundesland (step 6) for non-DE
+    if (step === 5 && land && land !== "de") {
+      setStep(7);
+      return;
+    }
+    setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  };
 
   function toggleVorschlag(name: string) {
     setFaecher((prev) =>
@@ -148,7 +171,6 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
     }
   }
 
-  // Vollbild-Spinner waehrend des Flush-Versuchs nach Login.
   if (flushing) {
     return (
       <main className="relative z-[5] flex min-h-screen flex-col items-center justify-center gap-3 px-5">
@@ -158,21 +180,25 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
     );
   }
 
+  // Displayed step number accounts for the skipped Bundesland step for non-DE
+  const displayStep = step === 7 && land && land !== "de" ? 6 : step;
+  const displayTotal = land && land !== "de" ? TOTAL_STEPS - 1 : TOTAL_STEPS;
+
   return (
     <main className="relative z-[5] flex min-h-screen flex-col items-center px-5 py-12 sm:px-8">
       {/* Progress */}
       <div className="w-full max-w-md">
         <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.25em] text-brand">
-          Schritt {step} von {TOTAL_STEPS}
+          Schritt {displayStep} von {displayTotal}
         </div>
         <div className="flex gap-1.5">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+          {Array.from({ length: displayTotal }).map((_, i) => (
             <div
               key={i}
               className="h-1 flex-1 rounded-full transition-[background-color] duration-500"
               style={{
                 background:
-                  step >= i + 1
+                  displayStep >= i + 1
                     ? "linear-gradient(90deg, var(--brand), var(--brand-2))"
                     : "var(--surface-3)",
               }}
@@ -281,8 +307,37 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
           </>
         )}
 
-        {/* ── 5 · Bundesland (Pflicht) ── */}
+        {/* ── 5 · Land (Pflicht) ── */}
         {step === 5 && (
+          <>
+            <h1 className="font-display text-4xl font-extrabold leading-tight">
+              In welchem Land gehst du zur Schule?
+            </h1>
+            <p className="mt-2 text-sm text-text-dim">
+              Damit wir Ferien und Feiertage richtig anzeigen können.
+            </p>
+            <div className="mt-8 grid grid-cols-2 gap-3">
+              {LAENDER.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => { setLand(l.code); setBundesland(""); next(); }}
+                  className={`flex flex-col items-center gap-2 rounded-2xl border py-6 font-display font-extrabold transition-[border-color,background-color,color,box-shadow] ${
+                    land === l.code
+                      ? "border-brand bg-brand/10 text-brand shadow-[0_0_20px_color-mix(in_srgb,var(--brand)_25%,transparent)]"
+                      : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"
+                  }`}
+                >
+                  <span className="text-3xl">{l.emoji}</span>
+                  <span className="text-sm">{l.label}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={back} className={subtleBtn}>← Zurück</button>
+          </>
+        )}
+
+        {/* ── 6 · Bundesland (Pflicht, nur DE) ── */}
+        {step === 6 && (
           <>
             <h1 className="font-display text-4xl font-extrabold leading-tight">
               Welches Bundesland?
@@ -312,14 +367,22 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
           </>
         )}
 
-        {/* ── 6 · Schulform (optional) ── */}
-        {step === 6 && (
+        {/* ── 7 · Schulform (optional) ── */}
+        {step === 7 && (
           <>
             <h1 className="font-display text-4xl font-extrabold leading-tight">
               Auf welche Schule gehst du?
             </h1>
             <p className="mt-2 text-sm text-text-dim">Optional.</p>
-            <div className="mt-8 grid grid-cols-2 gap-3">
+            {land && land !== "de" && (
+              <div
+                className="mt-4 rounded-xl border px-4 py-3 font-mono text-xs text-text-mute"
+                style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
+              >
+                💡 Ferien-Countdown und Feiertage sind aktuell nur für Deutschland verfügbar.
+              </div>
+            )}
+            <div className="mt-6 grid grid-cols-2 gap-3">
               {SCHULFORMEN.map((sf) => (
                 <button
                   key={sf.code}
@@ -341,8 +404,8 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
           </>
         )}
 
-        {/* ── 7 · Schulname (optional) ── */}
-        {step === 7 && (
+        {/* ── 8 · Schulname (optional) ── */}
+        {step === 8 && (
           <>
             <h1 className="font-display text-4xl font-extrabold leading-tight">
               Wie heißt deine Schule?
@@ -365,8 +428,8 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
           </>
         )}
 
-        {/* ── 8 · Fächer ── */}
-        {step === 8 && (
+        {/* ── 9 · Fächer ── */}
+        {step === 9 && (
           <>
             <h1 className="font-display text-4xl font-extrabold leading-tight">
               Deine Fächer

@@ -73,6 +73,7 @@ export const ApplyOnboardingSchema = z.object({
     .nullable()
     .optional(),
   klasse: z.number().int().min(5).max(13),
+  land: z.string().max(10).nullable().optional(),
   bundesland: z.enum(BUNDESLAND_CODES).nullable().optional(),
   schulform: z.enum(SCHULFORM_CODES).nullable().optional(),
   schule: z.string().trim().max(200).nullable().optional(),

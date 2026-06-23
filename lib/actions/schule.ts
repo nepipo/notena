@@ -309,6 +309,7 @@ export async function applyOnboarding(
         nachname: data.nachname ?? null,
         geburtsdatum: data.geburtsdatum ?? null,
         klasse: data.klasse,
+        land: data.land ?? null,
         bundesland: data.bundesland ?? null,
         schulform: data.schulform ?? null,
         schule: data.schule ?? null,

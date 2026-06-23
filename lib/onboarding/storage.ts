@@ -20,6 +20,7 @@ export interface OnboardingData {
   nachname: string | null;
   geburtsdatum: string | null; // ISO "YYYY-MM-DD"
   klasse: number | null;
+  land: string | null;         // "de", "at", "ch", "other"
   bundesland: string | null;
   schulform: string | null;
   schule: string | null;

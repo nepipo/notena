@@ -159,6 +159,7 @@ export type Database = {
           id: string
           klasse: number | null
           klausur_erinnerung_tage: number[]
+          land: string | null
           nachname: string | null
           name: string | null
           notensystem: string
@@ -182,6 +183,7 @@ export type Database = {
           id: string
           klasse?: number | null
           klausur_erinnerung_tage?: number[]
+          land?: string | null
           nachname?: string | null
           name?: string | null
           notensystem?: string
@@ -205,6 +207,7 @@ export type Database = {
           id?: string
           klasse?: number | null
           klausur_erinnerung_tage?: number[]
+          land?: string | null
           nachname?: string | null
           name?: string | null
           notensystem?: string

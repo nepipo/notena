@@ -2,31 +2,35 @@ import { createClient } from "@/lib/supabase/server";
 import { StundenplanBoard } from "@/components/stundenplan/stundenplan-board";
 import type { StundeRow, HausaufgabeRow, EntfallRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
+import type { Bundesland } from "@/lib/ferien/ferien-data";
 
 const WOCHENTAGE = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
 export default async function StundenplanPage() {
   const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+  const userId = authData?.claims?.sub ?? "";
 
   // Load entfälle for ±8 weeks around today
   const heute = new Date();
   const vonDatum = new Date(heute); vonDatum.setDate(heute.getDate() - 56);
   const bisDatum = new Date(heute); bisDatum.setDate(heute.getDate() + 56);
 
-  const [{ data: stundeRows }, { data: alleFachRows }, { data: haRows }, { data: klausurRows }, { data: entfallRows }] =
+  const [{ data: stundeRows }, { data: alleFachRows }, { data: haRows }, { data: klausurRows }, { data: entfallRows }, { data: profil }] =
     await Promise.all([
       supabase.from("stundenplan_stunde").select("*").order("wochentag").order("zeit_start"),
-      // All faecher (for color/display of existing stunden referencing old halbjahre)
       supabase.from("schule_fach").select("*").order("name"),
       supabase.from("hausaufgabe").select("*").order("faellig_am"),
       supabase.from("schule_klausur").select("*").order("datum"),
       supabase.from("stundenplan_entfall").select("*")
         .gte("datum", vonDatum.toISOString().slice(0, 10))
         .lte("datum", bisDatum.toISOString().slice(0, 10)),
+      supabase.from("nutzer_profil").select("bundesland, land").eq("id", userId).single(),
     ]);
 
-  // All faecher for dropdown — Stundenplan is not halbjahr-specific
   const fachRows = alleFachRows ?? [];
+  const bundesland = (profil?.bundesland as Bundesland | null | undefined) ?? null;
+  const land = profil?.land ?? null;
 
   const stunden = (stundeRows ?? []) as StundeRow[];
   const heuteWochentag = heute.getDay(); // 0=So…6=Sa
@@ -61,6 +65,8 @@ export default async function StundenplanPage() {
         hausaufgaben={(haRows ?? []) as HausaufgabeRow[]}
         klausuren={(klausurRows ?? []) as KlausurRow[]}
         entfaelle={(entfallRows ?? []) as EntfallRow[]}
+        bundesland={bundesland}
+        land={land}
       />
     </main>
   );
