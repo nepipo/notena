@@ -20,6 +20,8 @@ export interface FachRow {
   // Neue vollständige Config (nullable — alt Rows haben null)
   gewichtung_config: GewichtungConfig | null;
   ausgeschlossen: boolean;
+  parent_fach_id: string | null;
+  subfach_gewicht: number | null;
   created_at: string;
 }
 
@@ -86,6 +88,8 @@ export function assembleFaecher(fachRows: FachRow[], noteRows: NoteRow[]): Fach[
     farbe: f.farbe,
     niveau: f.niveau,
     ausgeschlossen: f.ausgeschlossen,
+    parentFachId: f.parent_fach_id,
+    subfachGewicht: f.subfach_gewicht,
   }));
 }
 

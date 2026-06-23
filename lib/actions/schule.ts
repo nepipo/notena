@@ -192,6 +192,8 @@ export async function updateFach(
     fach_gewicht?: number;
     ausgeschlossen?: boolean;
     gewichtung_config?: GewichtungConfig | null;
+    parent_fach_id?: string | null;
+    subfach_gewicht?: number | null;
   },
 ): Promise<ActionResult> {
   const parsed = UpdateFachSchema.safeParse(updates);
@@ -201,6 +203,18 @@ export async function updateFach(
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+
+    // Sicherheits-Check: parent_fach_id darf nur auf eigene Fächer zeigen
+    if (parsed.data.parent_fach_id) {
+      const { data: parentCheck } = await supabase
+        .from("schule_fach")
+        .select("id")
+        .eq("id", parsed.data.parent_fach_id)
+        .eq("user_id", userId)
+        .single();
+      if (!parentCheck) return { ok: false, error: "Übergeordnetes Fach nicht gefunden." };
+    }
+
     const { error } = await supabase
       .from("schule_fach")
       .update(parsed.data)

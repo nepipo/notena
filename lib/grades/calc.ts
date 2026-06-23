@@ -108,12 +108,65 @@ export function fachSchnittGerundet(noten: Note[], config?: Partial<GewichtungCo
   return s === null ? null : runde(s);
 }
 
+/**
+ * Schnitt eines Elternfachs unter Einbeziehung seiner Unterfächer.
+ * Jedes Unterfach trägt uf.subfachGewicht (0–1) zum Gesamtschnitt bei.
+ * Der Rest (1 − ΣUnterfachgewichte) kommt aus den eigenen Noten des Elternfachs.
+ * Fehlende Daten werden wie überall renormalisiert.
+ */
+export function fachSchnittMitUnterfaecher(
+  fach: Fach,
+  unterfaecher: Fach[],
+  system: Notensystem = DE_0_15,
+): number | null {
+  const subfachGesamt = unterfaecher.reduce((s, uf) => s + (uf.subfachGewicht ?? 0), 0);
+  const eigenAnteil = Math.max(0, 1 - subfachGesamt);
+
+  let summe = 0;
+  let gewSum = 0;
+
+  if (eigenAnteil > 0) {
+    const eigenSchnitt = fachSchnitt(fach.noten, fach.gewichtungConfig, system);
+    if (eigenSchnitt !== null) {
+      summe += eigenSchnitt * eigenAnteil;
+      gewSum += eigenAnteil;
+    }
+  }
+
+  for (const uf of unterfaecher) {
+    const w = uf.subfachGewicht ?? 0;
+    if (w <= 0) continue;
+    const ufSchnitt = fachSchnitt(uf.noten, uf.gewichtungConfig, system);
+    if (ufSchnitt !== null) {
+      summe += ufSchnitt * w;
+      gewSum += w;
+    }
+  }
+
+  return gewSum > 0 ? summe / gewSum : null;
+}
+
 export function gesamtSchnitt(faecher: Fach[], system: Notensystem = DE_0_15): number | null {
+  // Unterfach-Map aufbauen: parentId → [Unterfächer]
+  const unterfachMap = new Map<string, Fach[]>();
+  for (const f of faecher) {
+    if (f.parentFachId) {
+      const list = unterfachMap.get(f.parentFachId) ?? [];
+      list.push(f);
+      unterfachMap.set(f.parentFachId, list);
+    }
+  }
+
   let summe = 0;
   let gewSum = 0;
   for (const fach of faecher) {
     if (fach.ausgeschlossen) continue;
-    const schnitt = fachSchnitt(fach.noten, fach.gewichtungConfig, system);
+    if (fach.parentFachId) continue; // Unterfächer zählen durch ihr Elternfach
+    const unterfaecher = unterfachMap.get(fach.id) ?? [];
+    const schnitt =
+      unterfaecher.length > 0
+        ? fachSchnittMitUnterfaecher(fach, unterfaecher, system)
+        : fachSchnitt(fach.noten, fach.gewichtungConfig, system);
     if (schnitt === null) continue;
     const fg = fach.fachGewicht ?? 1;
     if (fg <= 0) continue;

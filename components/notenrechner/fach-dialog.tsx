@@ -38,11 +38,13 @@ export function FachDialog({
   open,
   onClose,
   onUpdate,
+  alleFaecher = [],
 }: {
   fach: Fach;
   open: boolean;
   onClose: () => void;
   onUpdate: (updates: Partial<Fach>) => void;
+  alleFaecher?: Fach[];
 }) {
   const baseConfig = fach.gewichtungConfig ?? DEFAULT_GEWICHTUNG_CONFIG;
 
@@ -50,7 +52,22 @@ export function FachDialog({
   const [farbe, setFarbe] = useState<string | null>(fach.farbe ?? null);
   const [ausgeschlossen, setAusgeschlossen] = useState(fach.ausgeschlossen ?? false);
   const [config, setConfig] = useState<GewichtungConfig>({ ...baseConfig });
+  const [parentFachId, setParentFachId] = useState<string | null>(fach.parentFachId ?? null);
+  const [subfachGewichtProzent, setSubfachGewichtProzent] = useState(
+    fach.subfachGewicht != null ? Math.round(fach.subfachGewicht * 100) : 30,
+  );
   const [, startTransition] = useTransition();
+
+  // Fächer die als Elternfach in Frage kommen:
+  // - nicht das Fach selbst
+  // - keine Fächer die bereits Unterfächer von etwas sind (max 2 Ebenen)
+  // - keine Fächer die selbst Unterfächer von diesem Fach sind
+  const moeglicheElternfaecher = alleFaecher.filter(
+    (f) => f.id !== fach.id && !f.parentFachId,
+  );
+
+  // Hat dieses Fach selbst Unterfächer? Dann kann es kein Unterfach sein.
+  const hatUnterfaecher = alleFaecher.some((f) => f.parentFachId === fach.id);
 
   function setProzent(key: keyof Pick<GewichtungConfig, "klausur" | "test" | "muendlich" | "referat" | "hausaufgabe" | "sonstige">, pct: string) {
     const n = parseInt(pct, 10);
@@ -60,12 +77,16 @@ export function FachDialog({
 
   function save() {
     const fachGewicht = niveau === "erhoeht" ? 2 : 1;
+    const resolvedParentId = hatUnterfaecher ? null : parentFachId;
+    const resolvedGewicht = resolvedParentId ? subfachGewichtProzent / 100 : null;
     const updates: Partial<Fach> = {
       niveau,
       farbe,
       fachGewicht,
       ausgeschlossen,
       gewichtungConfig: config,
+      parentFachId: resolvedParentId,
+      subfachGewicht: resolvedGewicht,
     };
     onUpdate(updates);
     onClose();
@@ -79,6 +100,8 @@ export function FachDialog({
         // Legacy-Spalten sync
         gewicht_klausur: config.klausurDynamisch ? 0 : config.klausur,
         gewicht_muendlich: config.muendlich + config.test + config.referat + config.hausaufgabe + config.sonstige,
+        parent_fach_id: resolvedParentId,
+        subfach_gewicht: resolvedGewicht,
       });
       if (!res.ok) toast.error(`Konnte nicht gespeichert werden: ${res.error}`);
     });
@@ -243,6 +266,76 @@ export function FachDialog({
               ))}
             </div>
           </div>
+
+          {/* Übergeordnetes Fach */}
+          {!hatUnterfaecher && (
+            <div className="mt-5">
+              <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+                Übergeordnetes Fach
+              </div>
+              <p className="mb-3 font-mono text-[11px] text-text-mute">
+                Dieses Fach trägt einen Teil zur Note eines anderen Fachs bei (z.&nbsp;B. Cambridge → Englisch).
+              </p>
+              <div className="flex gap-2">
+                <select
+                  value={parentFachId ?? ""}
+                  onChange={(e) => setParentFachId(e.target.value || null)}
+                  className="flex-1 rounded-xl border border-border bg-surface-2 px-3 py-2 font-mono text-sm text-foreground focus:border-brand focus:outline-none"
+                >
+                  <option value="">Keines (eigenständiges Fach)</option>
+                  {moeglicheElternfaecher.map((ef) => (
+                    <option key={ef.id} value={ef.id}>
+                      {ef.name}
+                    </option>
+                  ))}
+                </select>
+                {parentFachId && (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={subfachGewichtProzent}
+                      onChange={(e) => {
+                        const n = parseInt(e.target.value, 10);
+                        if (Number.isFinite(n)) setSubfachGewichtProzent(Math.min(100, Math.max(1, n)));
+                      }}
+                      className="h-9 w-16 rounded-xl border border-border bg-surface-2 px-2 text-right font-mono text-sm focus:border-brand focus:outline-none"
+                    />
+                    <span className="font-mono text-xs text-text-mute">%</span>
+                  </div>
+                )}
+              </div>
+              {parentFachId && (
+                <div className="mt-2 rounded-lg bg-brand/10 px-3 py-2 font-mono text-[11px] text-brand">
+                  {fach.name} zählt {subfachGewichtProzent}% der Note von{" "}
+                  {moeglicheElternfaecher.find((f) => f.id === parentFachId)?.name ?? "…"}.
+                </div>
+              )}
+            </div>
+          )}
+          {hatUnterfaecher && (
+            <div className="mt-5">
+              <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+                Unterfächer
+              </div>
+              <div className="space-y-1">
+                {alleFaecher
+                  .filter((f) => f.parentFachId === fach.id)
+                  .map((uf) => (
+                    <div key={uf.id} className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2">
+                      <span className="font-mono text-sm">{uf.name}</span>
+                      <span className="font-mono text-xs text-brand">
+                        {uf.subfachGewicht != null ? `${Math.round(uf.subfachGewicht * 100)}%` : "?%"}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+              <p className="mt-2 font-mono text-[11px] text-text-mute">
+                Dieses Fach hat Unterfächer — konfiguriere das Elternfach im jeweiligen Unterfach-Dialog.
+              </p>
+            </div>
+          )}
 
           {/* Ausschließen */}
           <div className="mt-4 flex items-center justify-between rounded-xl border border-border bg-surface-2 px-4 py-3">

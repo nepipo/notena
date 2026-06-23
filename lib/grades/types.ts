@@ -64,6 +64,10 @@ export interface Fach {
   farbe?: string | null;
   niveau?: string;
   ausgeschlossen?: boolean;
+  /** ID des übergeordneten Fachs (wenn dieses Fach ein Unterfach ist). */
+  parentFachId?: string | null;
+  /** Anteil am Gesamtschnitt des Elternfachs (0–1). z.B. 0.3 = 30%. */
+  subfachGewicht?: number | null;
 }
 
 /** @deprecated Nur noch für Backward-Compat. Benutze GewichtungConfig. */

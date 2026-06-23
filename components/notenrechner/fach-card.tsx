@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   fachSchnittGerundet,
+  fachSchnittMitUnterfaecher,
+  runde,
   kategorieZurGruppe,
 } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
@@ -193,6 +195,8 @@ export function FachCard({
   index,
   naechsteKlausur,
   vorherSchnitt,
+  unterfaecher,
+  elternfachName,
   onAddNote,
   onRemoveNote,
   onUpdateNote,
@@ -202,6 +206,8 @@ export function FachCard({
   index: number;
   naechsteKlausur?: { id: string; titel: string; datum: string } | null;
   vorherSchnitt?: number | null;
+  unterfaecher?: Fach[];
+  elternfachName?: string | null;
   onAddNote: (fachId: string, punkte: number, kategorie: Kategorie, bezeichnung?: string, gewicht?: number) => void;
   onRemoveNote: (fachId: string, noteId: string) => void;
   onUpdateNote: (fachId: string, noteId: string, punkte: number, kategorie: Kategorie, bezeichnung?: string, gewicht?: number) => void;
@@ -211,7 +217,10 @@ export function FachCard({
   const [wwwOffen, setWwwOffen] = useState(false);
   const [verlaufOffen, setVerlaufOffen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const schnitt = fachSchnittGerundet(fach.noten, fach.gewichtungConfig, system);
+  const schnitt =
+    unterfaecher && unterfaecher.length > 0
+      ? (() => { const s = fachSchnittMitUnterfaecher(fach, unterfaecher, system); return s === null ? null : runde(s); })()
+      : fachSchnittGerundet(fach.noten, fach.gewichtungConfig, system);
   const farbe = schnittFarbe(schnitt, system);
   const tage = naechsteKlausur ? tageBis(naechsteKlausur.datum) : null;
 
@@ -226,21 +235,28 @@ export function FachCard({
       }}
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          {fach.farbe && (
-            <span className="mt-0.5 inline-block size-2.5 shrink-0 rounded-full" style={{ background: fach.farbe }} />
-          )}
-          <h2 className={`font-display text-xl font-extrabold tracking-[-0.02em] ${fach.ausgeschlossen ? "line-through decoration-text-mute" : ""}`}>
-            {fach.name}
-          </h2>
-          {fach.ausgeschlossen && (
-            <span className="rounded-md bg-surface-3 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] text-text-mute">
-              Kein Schnitt
-            </span>
-          )}
-          {fach.niveau && (
-            <span className={`rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] ${fach.niveau === "erhoeht" ? "bg-brand/15 text-brand" : "bg-surface-3 text-text-dim"}`}>
-              {fach.niveau === "erhoeht" ? "LK" : "GK"}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            {fach.farbe && (
+              <span className="mt-0.5 inline-block size-2.5 shrink-0 rounded-full" style={{ background: fach.farbe }} />
+            )}
+            <h2 className={`font-display text-xl font-extrabold tracking-[-0.02em] ${fach.ausgeschlossen ? "line-through decoration-text-mute" : ""}`}>
+              {fach.name}
+            </h2>
+            {fach.ausgeschlossen && (
+              <span className="rounded-md bg-surface-3 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] text-text-mute">
+                Kein Schnitt
+              </span>
+            )}
+            {fach.niveau && (
+              <span className={`rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] ${fach.niveau === "erhoeht" ? "bg-brand/15 text-brand" : "bg-surface-3 text-text-dim"}`}>
+                {fach.niveau === "erhoeht" ? "LK" : "GK"}
+              </span>
+            )}
+          </div>
+          {elternfachName && fach.subfachGewicht != null && (
+            <span className="font-mono text-[10px] text-text-mute">
+              ↳ {Math.round(fach.subfachGewicht * 100)}% von {elternfachName}
             </span>
           )}
         </div>
@@ -281,6 +297,27 @@ export function FachCard({
 
       <KategorienSplit noten={fach.noten} />
       {verlaufOffen && <SchnittVerlauf noten={fach.noten} />}
+      {unterfaecher && unterfaecher.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {unterfaecher.map((uf) => {
+            const ufS = fachSchnittGerundet(uf.noten, uf.gewichtungConfig, system);
+            return (
+              <div key={uf.id} className="flex items-center gap-2 rounded-lg bg-surface-2/60 px-2.5 py-1.5">
+                <span className="flex-1 font-mono text-[11px] text-text-dim">{uf.name}</span>
+                <span className="font-mono text-[10px] text-text-mute">
+                  {uf.subfachGewicht != null ? `${Math.round(uf.subfachGewicht * 100)}%` : ""}
+                </span>
+                {ufS !== null && (
+                  <span className="font-mono text-xs font-bold" style={{ color: schnittFarbe(ufS, system) }}>
+                    {system.formatSchnitt(ufS)}
+                  </span>
+                )}
+                {ufS === null && <span className="font-mono text-xs text-text-mute">–</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {tage !== null && tage >= 0 && tage <= 14 && (
         <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 font-mono text-[11px] text-destructive">

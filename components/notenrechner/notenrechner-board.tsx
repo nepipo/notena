@@ -51,11 +51,40 @@ export function NotenrechnerBoard({
 
   const aktiveFaecher = faecher.filter((f) => !f.ausgeschlossen);
   const ausgeschlossenCount = faecher.length - aktiveFaecher.length;
-  const gesamt = gesamtSchnittGerundet(aktiveFaecher, system);
+  // gesamtSchnitt berücksichtigt Unterfächer intern (überspringt parentFachId-Fächer)
+  const gesamt = gesamtSchnittGerundet(faecher, system);
   const gesamtFarbe = schnittFarbe(gesamt, system);
   const dialogFach = faecher.find((f) => f.id === dialogFachId) ?? null;
 
   const klausurByFach = assembleKlausuren(klausuren);
+
+  // Unterfach-Map: parentId → [Unterfächer]
+  const unterfachMap = new Map<string, typeof faecher>();
+  for (const f of faecher) {
+    if (f.parentFachId) {
+      const list = unterfachMap.get(f.parentFachId) ?? [];
+      list.push(f);
+      unterfachMap.set(f.parentFachId, list);
+    }
+  }
+
+  // Sortierung: Elternfach direkt gefolgt von seinen Unterfächern
+  const faecherGeordnet: typeof faecher = [];
+  for (const f of faecher) {
+    if (f.parentFachId) continue; // wird beim Elternteil eingefügt
+    faecherGeordnet.push(f);
+    const subs = unterfachMap.get(f.id) ?? [];
+    faecherGeordnet.push(...subs);
+  }
+  // Verwaiste Unterfächer (Elternteil gelöscht) am Ende anhängen
+  for (const f of faecher) {
+    if (f.parentFachId && !faecher.some((p) => p.id === f.parentFachId)) {
+      faecherGeordnet.push(f);
+    }
+  }
+
+  // Zähle nur Top-Level-Fächer (keine Unterfächer) für die Anzeige
+  const topLevelAktivCount = aktiveFaecher.filter((f) => !f.parentFachId).length;
 
   function handleAddFach() {
     const name = neuesFach.trim();
@@ -237,7 +266,7 @@ export function NotenrechnerBoard({
           </div>
           {gesamt !== null && (
             <div className="mt-2 font-mono text-sm text-text-dim">
-              Schnitt {system.formatSchnitt(gesamt)} · {aktiveFaecher.length} Fächer
+              Schnitt {system.formatSchnitt(gesamt)} · {topLevelAktivCount} Fächer
               {ausgeschlossenCount > 0 && (
                 <span className="ml-2 text-text-mute">
                   ({ausgeschlossenCount} ausgeschlossen)
@@ -250,13 +279,15 @@ export function NotenrechnerBoard({
 
       {/* Fächer-Grid */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        {faecher.map((fach, i) => (
+        {faecherGeordnet.map((fach, i) => (
           <FachCard
             key={fach.id}
             fach={fach}
             index={i}
             naechsteKlausur={klausurByFach.get(fach.id) ?? null}
             vorherSchnitt={vorherSchnitte[fach.name] ?? null}
+            unterfaecher={unterfachMap.get(fach.id)}
+            elternfachName={fach.parentFachId ? (faecher.find((p) => p.id === fach.parentFachId)?.name ?? null) : null}
             onAddNote={handleAddNote}
             onRemoveNote={handleRemoveNote}
             onUpdateNote={handleUpdateNote}
@@ -293,6 +324,7 @@ export function NotenrechnerBoard({
           open={dialogFachId !== null}
           onClose={() => setDialogFachId(null)}
           onUpdate={(updates) => handleUpdateFach(dialogFach.id, updates)}
+          alleFaecher={faecher}
         />
       )}
         </>

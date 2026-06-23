@@ -41,6 +41,8 @@ export const UpdateFachSchema = z.object({
   fach_gewicht: z.number().min(0).max(10).optional(),
   ausgeschlossen: z.boolean().optional(),
   gewichtung_config: z.record(z.string(), z.unknown()).nullable().optional(),
+  parent_fach_id: z.string().uuid().nullable().optional(),
+  subfach_gewicht: z.number().min(0).max(1).nullable().optional(),
 });
 
 export const HalbjahrSchema = z.string().regex(/^\d{2}\/[12]$/, "Ungültiges Halbjahr-Format.");
