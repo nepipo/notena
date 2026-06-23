@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Onest, JetBrains_Mono } from "next/font/google";
+import { Manrope, Inter, Oswald } from "next/font/google";
 import { Toaster } from "sonner";
 import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
@@ -9,20 +9,20 @@ import "./globals.css";
 type Theme = "dark" | "light" | "system";
 type AccentColor = "blue" | "violet" | "pink" | "green" | "orange" | "red" | "teal" | "indigo";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
 });
 
-const onest = Onest({
-  variable: "--font-onest",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const oswald = Oswald({
+  variable: "--font-oswald",
   subsets: ["latin"],
   display: "swap",
 });
@@ -80,7 +80,7 @@ export default async function RootLayout({
     <html
       lang="de"
       data-accent={accent}
-      className={`${ssrDark ? "dark" : ""} ${bricolage.variable} ${onest.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${ssrDark ? "dark" : ""} ${manrope.variable} ${inter.variable} ${oswald.variable} h-full antialiased`}
     >
       <head>
         {/* FOUC-Prävention: Theme + Akzent vor erstem Paint setzen */}

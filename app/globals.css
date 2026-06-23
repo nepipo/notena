@@ -60,9 +60,9 @@
   --color-success: var(--success);
 
   /* Fonts */
-  --font-display: var(--font-bricolage), sans-serif;
-  --font-sans: var(--font-onest), sans-serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
+  --font-display: var(--font-manrope), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-oswald), sans-serif;
 
   /* Radius-Skala */
   --radius-sm: calc(var(--radius) * 0.6);
