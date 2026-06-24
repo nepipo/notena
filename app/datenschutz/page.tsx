@@ -31,11 +31,11 @@ export default function DatenschutzPage() {
             1. Verantwortlicher
           </h2>
           <p className="font-mono">
-            [DEIN VOLLSTÄNDIGER NAME]
+            Moritz-Kolja Polonius
             <br />
-            [STRAßE UND HAUSNUMMER]
+            Osterbekstraße 90b
             <br />
-            [PLZ] Hamburg
+            22083 Hamburg
             <br />
             E-Mail:{" "}
             <a href="mailto:ne.polonius@gmail.com" className="text-brand hover:underline">
