@@ -26,24 +26,52 @@ function tageBis(iso: string): number {
   return Math.round((zielt.getTime() - heut.getTime()) / 86400000);
 }
 
-// ISO-Wochentag 1=Mo…5=Fr, 0/6=WE
 function heutigerWochentag(): number {
   const d = new Date().getDay();
   return d === 0 ? 7 : d;
 }
 
+// Shell: Header sofort rendern, Karten streamen sobald DB-Queries fertig.
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  // getCachedProfil() ist durch React.cache() dedupliziert — Layout hat es bereits geladen, kein extra DB-Call.
   const profil = await getCachedProfil();
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+
+  return (
+    <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
+      <header className="animate-fade-up mb-8">
+        <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
+          <span className="inline-block size-1.5 rounded-full bg-success" />
+          Übersicht · {halbjahr}
+        </div>
+        <h1 className="text-3xl font-extrabold leading-none sm:text-4xl md:text-5xl">
+          <GrussText name={profil?.name ?? null} />
+        </h1>
+      </header>
+
+      {/* Briefing streamt unabhängig */}
+      <Suspense fallback={<BriefingSkeleton />}>
+        <BriefingKarte />
+      </Suspense>
+
+      {/* Alle Karten streamen sobald DB-Queries fertig (~100–200ms nach Shell) */}
+      <Suspense fallback={<DashboardCardsSkeleton />}>
+        <DashboardData halbjahr={halbjahr} />
+      </Suspense>
+
+      <div className="mt-4">
+        <CoachChat />
+      </div>
+    </main>
+  );
+}
+
+async function DashboardData({ halbjahr }: { halbjahr: string }) {
+  const supabase = await createClient();
 
   const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
   const jetzt = new Date();
   const heuteLokal = `${jetzt.getFullYear()}-${String(jetzt.getMonth() + 1).padStart(2, "0")}-${String(jetzt.getDate()).padStart(2, "0")}`;
 
-  // Alle unabhängigen Queries parallel starten — RLS filtert nach User, kein .eq("user_id") nötig.
   const [
     { data: fachRows, error: fachErr },
     { data: klausurRows, error: klausurErr },
@@ -66,7 +94,6 @@ export default async function DashboardPage() {
   if (haErr) console.error("[dashboard] hausaufgabe count error:", haErr);
   if (alleFachErr) console.error("[dashboard] alleFachRows fetch error:", alleFachErr);
 
-  // Einziger sequentieller Schritt: noteRows braucht die fachIds aus dem Batch oben.
   const fachIds = (fachRows ?? []).map((f) => f.id);
   const { data: noteRows, error: noteErr } = fachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
@@ -91,22 +118,7 @@ export default async function DashboardPage() {
   const gesamtNoten = faecher.reduce((s, f) => s + f.noten.length, 0);
 
   return (
-    <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
-      <header className="animate-fade-up mb-8">
-        <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
-          <span className="inline-block size-1.5 rounded-full bg-success" />
-          Übersicht · {halbjahr}
-        </div>
-        <h1 className="text-3xl font-extrabold leading-none sm:text-4xl md:text-5xl">
-          <GrussText name={profil?.name ?? null} />
-        </h1>
-      </header>
-
-      {/* Briefing */}
-      <Suspense fallback={<BriefingSkeleton />}>
-        <BriefingKarte />
-      </Suspense>
-
+    <>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <SchnittKarte
           gesamt={gesamt}
@@ -114,7 +126,6 @@ export default async function DashboardPage() {
           animationDelay="0.05s"
         />
 
-        {/* Nächste Klausur */}
         <section
           className="lift animate-fade-up card-glow rounded-3xl border border-border p-8"
           style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
@@ -141,9 +152,7 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      {/* Schnellzugriff — Stat-Karten */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Aufgaben */}
         <Link
           href="/aufgaben"
           className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
@@ -161,7 +170,6 @@ export default async function DashboardPage() {
           <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
 
-        {/* What-If */}
         <Link
           href="/what-if"
           className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
@@ -181,7 +189,6 @@ export default async function DashboardPage() {
           <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
 
-        {/* Stundenplan */}
         <Link
           href="/stundenplan"
           className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
@@ -253,17 +260,44 @@ export default async function DashboardPage() {
           <ArrowRight className="absolute bottom-4 right-4 size-4 text-text-mute opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </Link>
 
-        {/* Ferien-Countdown */}
         <Suspense fallback={<FerienSkeleton />}>
           <FerienCountdown />
         </Suspense>
       </div>
+    </>
+  );
+}
 
-      {/* KI-Coach */}
-      <div className="mt-4">
-        <CoachChat />
+function DashboardCardsSkeleton() {
+  return (
+    <div className="mt-4 space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="animate-pulse rounded-3xl border border-border p-8"
+            style={{ background: "var(--card-grad)" }}
+          >
+            <div className="h-2 w-16 rounded bg-surface-2" />
+            <div className="mt-4 h-10 w-28 rounded bg-surface-2" />
+            <div className="mt-2 h-2.5 w-36 rounded bg-surface-2" />
+          </div>
+        ))}
       </div>
-    </main>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="animate-pulse rounded-3xl border border-border p-5"
+            style={{ background: "var(--card-grad)" }}
+          >
+            <div className="h-2 w-14 rounded bg-surface-2" />
+            <div className="mt-3 h-8 w-20 rounded bg-surface-2" />
+            <div className="mt-2 h-2 w-24 rounded bg-surface-2" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
