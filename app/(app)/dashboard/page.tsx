@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedProfil } from "@/lib/supabase/cache";
 import { BriefingKarte } from "@/components/dashboard/briefing-karte";
 import { CoachChat } from "@/components/dashboard/coach-chat";
 import { GrussText } from "@/components/dashboard/gruss-text";
@@ -33,67 +34,44 @@ function heutigerWochentag(): number {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  const userId = authData?.claims?.sub ?? "";
 
-  const { data: profil, error: profilErr } = await supabase
-    .from("nutzer_profil")
-    .select("aktuelles_halbjahr, name")
-    .eq("id", userId)
-    .single();
-  if (profilErr) console.error("[dashboard] profil fetch error:", profilErr);
+  // getCachedProfil() ist durch React.cache() dedupliziert — Layout hat es bereits geladen, kein extra DB-Call.
+  const profil = await getCachedProfil();
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
-  const { data: fachRows, error: fachErr } = await supabase
-    .from("schule_fach")
-    .select("*")
-    .eq("halbjahr", halbjahr)
-    .order("created_at", { ascending: true });
-  if (fachErr) console.error("[dashboard] schule_fach fetch error:", fachErr);
-  const fachIds = (fachRows ?? []).map((f) => f.id);
+  const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
+  const jetzt = new Date();
+  const heuteLokal = `${jetzt.getFullYear()}-${String(jetzt.getMonth() + 1).padStart(2, "0")}-${String(jetzt.getDate()).padStart(2, "0")}`;
 
+  // Alle unabhängigen Queries parallel starten — RLS filtert nach User, kein .eq("user_id") nötig.
+  const [
+    { data: fachRows, error: fachErr },
+    { data: klausurRows, error: klausurErr },
+    { data: stundeRows, error: stundeErr },
+    { data: entfallRows, error: entfallErr },
+    { count: offeneHA, error: haErr },
+    { data: alleFachRows, error: alleFachErr },
+  ] = await Promise.all([
+    supabase.from("schule_fach").select("*").eq("halbjahr", halbjahr).order("created_at", { ascending: true }),
+    supabase.from("schule_klausur").select("*").gte("datum", todayUtc).order("datum", { ascending: true }).limit(1),
+    supabase.from("stundenplan_stunde").select("*").eq("wochentag", heutigerWochentag()).order("zeit_start"),
+    supabase.from("stundenplan_entfall").select("stunde_id, typ, begruendung").eq("datum", heuteLokal),
+    supabase.from("hausaufgabe").select("*", { count: "exact", head: true }).eq("erledigt", false),
+    supabase.from("schule_fach").select("id, name, farbe").order("name"),
+  ]);
+  if (fachErr) console.error("[dashboard] schule_fach fetch error:", fachErr);
+  if (klausurErr) console.error("[dashboard] schule_klausur fetch error:", klausurErr);
+  if (stundeErr) console.error("[dashboard] stundenplan_stunde fetch error:", stundeErr);
+  if (entfallErr) console.error("[dashboard] stundenplan_entfall fetch error:", entfallErr);
+  if (haErr) console.error("[dashboard] hausaufgabe count error:", haErr);
+  if (alleFachErr) console.error("[dashboard] alleFachRows fetch error:", alleFachErr);
+
+  // Einziger sequentieller Schritt: noteRows braucht die fachIds aus dem Batch oben.
+  const fachIds = (fachRows ?? []).map((f) => f.id);
   const { data: noteRows, error: noteErr } = fachIds.length
     ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
     : { data: [] as NoteRow[], error: null };
   if (noteErr) console.error("[dashboard] schule_note fetch error:", noteErr);
-
-  const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
-  const { data: klausurRows, error: klausurErr } = await supabase
-    .from("schule_klausur")
-    .select("*")
-    .gte("datum", todayUtc)
-    .order("datum", { ascending: true })
-    .limit(1);
-  if (klausurErr) console.error("[dashboard] schule_klausur fetch error:", klausurErr);
-
-  const { data: stundeRows, error: stundeErr } = await supabase
-    .from("stundenplan_stunde")
-    .select("*")
-    .eq("wochentag", heutigerWochentag())
-    .order("zeit_start");
-  if (stundeErr) console.error("[dashboard] stundenplan_stunde fetch error:", stundeErr);
-
-  // Entfall/Krank für heute (lokales Datum, konsistent mit dem Stundenplan-Board)
-  const jetzt = new Date();
-  const heuteLokal = `${jetzt.getFullYear()}-${String(jetzt.getMonth() + 1).padStart(2, "0")}-${String(jetzt.getDate()).padStart(2, "0")}`;
-  const { data: entfallRows, error: entfallErr } = await supabase
-    .from("stundenplan_entfall")
-    .select("stunde_id, typ, begruendung")
-    .eq("datum", heuteLokal);
-  if (entfallErr) console.error("[dashboard] stundenplan_entfall fetch error:", entfallErr);
-
-  const { count: offeneHA, error: haErr } = await supabase
-    .from("hausaufgabe")
-    .select("*", { count: "exact", head: true })
-    .eq("erledigt", false);
-  if (haErr) console.error("[dashboard] hausaufgabe count error:", haErr);
-
-  // Alle Fächer (ohne Halbjahr-Filter) für Stundenplan-Widget — RLS reicht, kein user_id-Filter
-  const { data: alleFachRows, error: alleFachErr } = await supabase
-    .from("schule_fach")
-    .select("id, name, farbe")
-    .order("name");
-  if (alleFachErr) console.error("[dashboard] alleFachRows fetch error:", alleFachErr);
 
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],

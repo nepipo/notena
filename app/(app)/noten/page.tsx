@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCachedProfil } from "@/lib/supabase/cache";
 import { NotenrechnerBoard } from "@/components/notenrechner/notenrechner-board";
 import {
   assembleFaecher,
@@ -19,90 +20,71 @@ import { berechneJahresUebersicht } from "@/lib/grades/jahr";
 export default async function NotenPage() {
   const supabase = await createClient();
 
-  const { data: profil, error: profilErr } = await supabase
-    .from("nutzer_profil")
-    .select("aktuelles_halbjahr")
-    .single();
-  if (profilErr) console.error("[noten] profil fetch error:", profilErr);
-
+  // getCachedProfil() dedupliziert — Layout hat es bereits geladen, kein extra DB-Call.
+  const profil = await getCachedProfil();
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+  const vorigesHj = vorherigesHalbjahr(halbjahr);
+  const [shj1, shj2] = halbjahreImSchuljahr(halbjahr);
+  const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
 
-  // Fächer + Noten für aktuelles Halbjahr (inkl. null-Halbjahr für Foto-Import-Fächer)
-  const { data: fachRows, error: fachErr } = await supabase
-    .from("schule_fach")
-    .select("*")
-    .or(`halbjahr.eq.${halbjahr},halbjahr.is.null`)
-    .order("created_at", { ascending: true });
+  // Batch 1: Alle Fach-Queries parallel (brauchen nur halbjahr, nicht fachIds)
+  const [
+    { data: fachRows, error: fachErr },
+    { data: hjRows, error: hjErr },
+    { data: klausurRows, error: klausurErr },
+    { data: vorFachRows, error: vorFachErr },
+    { data: jahrFachRows, error: jahrFachErr },
+  ] = await Promise.all([
+    supabase.from("schule_fach").select("*").or(`halbjahr.eq.${halbjahr},halbjahr.is.null`).order("created_at", { ascending: true }),
+    supabase.from("schule_fach").select("halbjahr"),
+    supabase.from("schule_klausur").select("*").gte("datum", todayUtc).order("datum", { ascending: true }).limit(20),
+    supabase.from("schule_fach").select("*").eq("halbjahr", vorigesHj),
+    supabase.from("schule_fach").select("*").in("halbjahr", [shj1, shj2]),
+  ]);
   if (fachErr) console.error("[noten] schule_fach fetch error:", fachErr);
-
-  // Verfügbare Halbjahre (distinct) über ALLE Fächer des Users
-  const { data: hjRows, error: hjErr } = await supabase.from("schule_fach").select("halbjahr");
   if (hjErr) console.error("[noten] halbjahr distinct fetch error:", hjErr);
+  if (klausurErr) console.error("[noten] schule_klausur fetch error:", klausurErr);
+  if (vorFachErr) console.error("[noten] vorFachRows fetch error:", vorFachErr);
+  if (jahrFachErr) console.error("[noten] jahrFachRows fetch error:", jahrFachErr);
+
   const verfuegbareHalbjahre = Array.from(
-    new Set([
-      halbjahr,
-      ...(hjRows ?? [])
-        .map((r) => r.halbjahr)
-        .filter((h): h is string => !!h),
-    ]),
+    new Set([halbjahr, ...(hjRows ?? []).map((r) => r.halbjahr).filter((h): h is string => !!h)]),
   ).sort();
 
+  // Batch 2: Alle Noten-Queries parallel (brauchen fachIds aus Batch 1)
   const fachIds = (fachRows ?? []).map((f) => f.id);
-  const { data: noteRows, error: noteErr } = fachIds.length
-    ? await supabase.from("schule_note").select("*").in("fach_id", fachIds)
-    : { data: [] as NoteRow[], error: null };
+  const vorFachIds = (vorFachRows ?? []).map((f) => f.id);
+  const jahrFachIds = (jahrFachRows ?? []).map((f) => f.id);
+
+  const [
+    { data: noteRows, error: noteErr },
+    { data: vorNoteRows, error: vorNoteErr },
+    { data: jahrNoteRows, error: jahrNoteErr },
+  ] = await Promise.all([
+    fachIds.length
+      ? supabase.from("schule_note").select("*").in("fach_id", fachIds)
+      : Promise.resolve({ data: [] as NoteRow[], error: null }),
+    vorFachIds.length
+      ? supabase.from("schule_note").select("*").in("fach_id", vorFachIds)
+      : Promise.resolve({ data: [] as NoteRow[], error: null }),
+    jahrFachIds.length
+      ? supabase.from("schule_note").select("*").in("fach_id", jahrFachIds)
+      : Promise.resolve({ data: [] as NoteRow[], error: null }),
+  ]);
   if (noteErr) console.error("[noten] schule_note fetch error:", noteErr);
+  if (vorNoteErr) console.error("[noten] vorNoteRows fetch error:", vorNoteErr);
+  if (jahrNoteErr) console.error("[noten] jahrNoteRows fetch error:", jahrNoteErr);
 
-  // Upcoming Klausuren (für Countdown-Badge)
-  const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
-  const { data: klausurRows, error: klausurErr } = await supabase
-    .from("schule_klausur")
-    .select("*")
-    .gte("datum", todayUtc)
-    .order("datum", { ascending: true })
-    .limit(20);
-  if (klausurErr) console.error("[noten] schule_klausur fetch error:", klausurErr);
-
-  const faecher = assembleFaecher(
-    (fachRows ?? []) as FachRow[],
-    (noteRows ?? []) as NoteRow[],
-  );
+  const faecher = assembleFaecher((fachRows ?? []) as FachRow[], (noteRows ?? []) as NoteRow[]);
   const klausuren = (klausurRows ?? []) as KlausurRow[];
 
-  // Vorhalbjahres-Schnitte (pro Fachname) als Referenz im neuen HJ.
-  const vorigesHj = vorherigesHalbjahr(halbjahr);
-  const { data: vorFachRows, error: vorFachErr } = await supabase
-    .from("schule_fach")
-    .select("*")
-    .eq("halbjahr", vorigesHj);
-  if (vorFachErr) console.error("[noten] vorFachRows fetch error:", vorFachErr);
-  const vorFachIds = (vorFachRows ?? []).map((f) => f.id);
-  const { data: vorNoteRows, error: vorNoteErr } = vorFachIds.length
-    ? await supabase.from("schule_note").select("*").in("fach_id", vorFachIds)
-    : { data: [] as NoteRow[], error: null };
-  if (vorNoteErr) console.error("[noten] vorNoteRows fetch error:", vorNoteErr);
-  const vorFaecher = assembleFaecher(
-    (vorFachRows ?? []) as FachRow[],
-    (vorNoteRows ?? []) as NoteRow[],
-  );
+  const vorFaecher = assembleFaecher((vorFachRows ?? []) as FachRow[], (vorNoteRows ?? []) as NoteRow[]);
   const vorherSchnitte: Record<string, number> = {};
   for (const vf of vorFaecher) {
     const s = fachSchnittGerundet(vf.noten, vf.gewichtungConfig);
     if (s !== null) vorherSchnitte[vf.name] = s;
   }
 
-  // Jahres-Übersicht: beide Halbjahre des aktuellen Schuljahres
-  const [shj1, shj2] = halbjahreImSchuljahr(halbjahr);
-  const { data: jahrFachRows, error: jahrFachErr } = await supabase
-    .from("schule_fach")
-    .select("*")
-    .in("halbjahr", [shj1, shj2]);
-  if (jahrFachErr) console.error("[noten] jahrFachRows fetch error:", jahrFachErr);
-  const jahrFachIds = (jahrFachRows ?? []).map((f) => f.id);
-  const { data: jahrNoteRows, error: jahrNoteErr } = jahrFachIds.length
-    ? await supabase.from("schule_note").select("*").in("fach_id", jahrFachIds)
-    : { data: [] as NoteRow[], error: null };
-  if (jahrNoteErr) console.error("[noten] jahrNoteRows fetch error:", jahrNoteErr);
   const alleJahrFach = (jahrFachRows ?? []) as FachRow[];
   const alleJahrNoten = (jahrNoteRows ?? []) as NoteRow[];
   const shj1Faecher = assembleFaecher(

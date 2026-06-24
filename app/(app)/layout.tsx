@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCachedClaims, getCachedProfil } from "@/lib/supabase/cache";
 import { AppNav } from "@/components/app-nav";
 import { FeedbackButton } from "@/components/feedback-button";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
@@ -10,16 +10,10 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
+  const claims = await getCachedClaims();
   if (!claims) redirect("/login");
 
-  const { data: profil } = await supabase
-    .from("nutzer_profil")
-    .select("name, onboarding_abgeschlossen, notensystem")
-    .eq("id", claims.sub)
-    .single();
+  const profil = await getCachedProfil();
 
   if (profil && profil.onboarding_abgeschlossen === false) {
     redirect("/onboarding");

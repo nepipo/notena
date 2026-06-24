@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCachedClaims, getCachedProfil } from "@/lib/supabase/cache";
 import { StundenplanBoard } from "@/components/stundenplan/stundenplan-board";
 import type { StundeRow, HausaufgabeRow, EntfallRow, HalbjahrRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
@@ -8,8 +9,10 @@ const WOCHENTAGE = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "
 
 export default async function StundenplanPage() {
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  const userId = authData?.claims?.sub ?? "";
+  // getCachedClaims() + getCachedProfil() sind dedupliziert — Layout hat beides bereits geladen.
+  const claims = await getCachedClaims();
+  const userId = claims?.sub ?? "";
+  const cachedProfil = await getCachedProfil();
 
   // Load entfälle for ±8 weeks around today
   const heute = new Date();
@@ -23,7 +26,6 @@ export default async function StundenplanPage() {
     { data: haRows },
     { data: klausurRows },
     { data: entfallRows },
-    { data: profil },
   ] = await Promise.all([
     supabase.from("stundenplan_halbjahr").select("*").eq("user_id", userId).order("created_at"),
     supabase.from("stundenplan_stunde").select("*").order("wochentag").order("zeit_start"),
@@ -33,13 +35,12 @@ export default async function StundenplanPage() {
     supabase.from("stundenplan_entfall").select("*")
       .gte("datum", vonDatum.toISOString().slice(0, 10))
       .lte("datum", bisDatum.toISOString().slice(0, 10)),
-    supabase.from("nutzer_profil").select("bundesland").eq("id", userId).single(),
   ]);
 
   const halbjahre = (halbjahreRows ?? []) as HalbjahrRow[];
   const aktivesHalbjahr = halbjahre.find((h) => h.aktiv) ?? halbjahre[0] ?? null;
   const fachRows = alleFachRows ?? [];
-  const bundesland = (profil?.bundesland as Bundesland | null | undefined) ?? null;
+  const bundesland = (cachedProfil?.bundesland as Bundesland | null | undefined) ?? null;
 
   const alleStunden = (stundeRows ?? []) as StundeRow[];
   // Stunden des aktiven Halbjahrs (für Header-Zähler)
