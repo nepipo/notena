@@ -382,6 +382,7 @@ export type Database = {
       }
       stundenplan_entfall: {
         Row: {
+          begruendung: string | null
           created_at: string | null
           datum: string
           id: string
@@ -390,6 +391,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          begruendung?: string | null
           created_at?: string | null
           datum: string
           id?: string
@@ -398,6 +400,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          begruendung?: string | null
           created_at?: string | null
           datum?: string
           id?: string
