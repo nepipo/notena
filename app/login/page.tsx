@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { GoogleButton } from "@/components/auth/google-button";
 
 const ERROR_MESSAGES: Record<string, string> = {
   oauth: "Google-Login fehlgeschlagen. Bitte versuch es nochmal.",
@@ -33,7 +34,15 @@ export default async function LoginPage({
           {errorMessage}
         </p>
       )}
-      <LoginForm />
+      <div className="flex flex-col gap-4">
+        <GoogleButton />
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs text-text-mute">oder</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+        <LoginForm />
+      </div>
     </AuthShell>
   );
 }
