@@ -53,7 +53,6 @@ export function GewichtungDefaults({
     start(async () => {
       const res = await saveDefaultGewichtung(config);
       if (!res.ok) { toast.error(res.error); return; }
-      toast.success("Standard-Gewichtung gespeichert.");
       router.refresh();
     });
   }
@@ -66,7 +65,6 @@ export function GewichtungDefaults({
       ]);
       if (!saveRes.ok) { toast.error(saveRes.error); return; }
       if (!applyRes.ok) { toast.error(applyRes.error); return; }
-      toast.success("Auf alle Fächer des aktuellen Halbjahres angewendet.");
       router.refresh();
     });
   }

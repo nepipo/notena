@@ -28,10 +28,7 @@ export function ProfilForm({
     startTransition(async () => {
       const res = await updateProfil(name, klasseNum, schule);
       if (!res.ok) toast.error(res.error);
-      else {
-        toast.success("Profil gespeichert.");
-        router.refresh();
-      }
+      else router.refresh();
     });
   }
 

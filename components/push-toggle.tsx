@@ -61,7 +61,6 @@ export function PushToggle() {
       });
       if (!res.ok) throw new Error(await res.text());
       setStatus("subscribed");
-      toast.success("Benachrichtigungen aktiviert!");
     } catch (e) {
       toast.error(`Fehler: ${e instanceof Error ? e.message : "Unbekannt"}`);
     }
@@ -80,7 +79,6 @@ export function PushToggle() {
         await sub.unsubscribe();
       }
       setStatus("unsubscribed");
-      toast.success("Benachrichtigungen deaktiviert.");
     } catch (e) {
       toast.error(`Fehler: ${e instanceof Error ? e.message : "Unbekannt"}`);
     }
@@ -90,7 +88,6 @@ export function PushToggle() {
     start(async () => {
       const res = await testPushAnMich();
       if (!res.ok) toast.error(`Fehler: ${res.error}`);
-      else toast.success("Test-Push gesendet — sieh in die Benachrichtigungen.");
     });
   }
 

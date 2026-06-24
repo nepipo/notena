@@ -28,14 +28,6 @@ export function NotensystemWahl({ initialValue, noteAnzahl }: Props) {
       const res = await setNotensystem(next);
       if (res.ok) {
         setSaved(true);
-        // Warnung nicht-blockierend NACH dem Wechsel, wenn schon Noten da sind.
-        if (noteAnzahl > 0) {
-          const label = ALLE_SYSTEME.find((s) => s.id === next)?.label ?? next;
-          toast.success(
-            `Auf „${label}" umgestellt. Deine Noten werden jetzt entsprechend angezeigt.`,
-            { duration: 4000 },
-          );
-        }
         router.refresh();
         setTimeout(() => setSaved(false), 2000);
       } else {

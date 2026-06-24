@@ -29,7 +29,6 @@ export function HalbjahrWechsler({ current }: { current: string }) {
         toast.error(res.error);
         return;
       }
-      toast.success(`Gewechselt zu ${halbjahrLabel(hj)}`);
       router.refresh();
     });
   }
@@ -43,7 +42,6 @@ export function HalbjahrWechsler({ current }: { current: string }) {
         toast.error(res.error);
         return;
       }
-      toast.success(`${halbjahrLabel(hj)} gelöscht`);
       router.refresh();
     });
   }

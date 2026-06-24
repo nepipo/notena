@@ -190,7 +190,6 @@ export function FotoImport({ faecher }: { faecher: FachRow[] }) {
     startImporting(async () => {
       const result = await importStunden(final);
       if (!result.ok) { toast.error(result.error); return; }
-      toast.success(`${final.length} Stunden eingetragen.`);
       setStunden(null);
       router.refresh();
     });

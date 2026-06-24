@@ -74,7 +74,6 @@ export function FaecherVerwaltung({
     start(async () => {
       const res = await updateFach(fachId, { name: trimmed });
       if (!res.ok) { toast.error(res.error); return; }
-      toast.success("Fach umbenannt.");
       setEditingId(null);
       router.refresh();
     });
@@ -93,7 +92,6 @@ export function FaecherVerwaltung({
     start(async () => {
       const res = await removeFach(fachId);
       if (!res.ok) { toast.error(res.error); return; }
-      toast.success("Fach gelöscht.");
       setConfirmDeleteId(null);
       router.refresh();
     });
@@ -105,7 +103,6 @@ export function FaecherVerwaltung({
     start(async () => {
       const res = await addFach(trimmed, halbjahr, neuesNiveau);
       if (!res.ok) { toast.error(res.error); return; }
-      toast.success(`${trimmed} hinzugefügt.`);
       setNeuerName("");
       setNeuesNiveau("grund");
       setShowAddForm(false);
