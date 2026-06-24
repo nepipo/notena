@@ -73,6 +73,15 @@ export default async function DashboardPage() {
     .order("zeit_start");
   if (stundeErr) console.error("[dashboard] stundenplan_stunde fetch error:", stundeErr);
 
+  // Entfall/Krank für heute (lokales Datum, konsistent mit dem Stundenplan-Board)
+  const jetzt = new Date();
+  const heuteLokal = `${jetzt.getFullYear()}-${String(jetzt.getMonth() + 1).padStart(2, "0")}-${String(jetzt.getDate()).padStart(2, "0")}`;
+  const { data: entfallRows, error: entfallErr } = await supabase
+    .from("stundenplan_entfall")
+    .select("stunde_id, typ, begruendung")
+    .eq("datum", heuteLokal);
+  if (entfallErr) console.error("[dashboard] stundenplan_entfall fetch error:", entfallErr);
+
   const { count: offeneHA, error: haErr } = await supabase
     .from("hausaufgabe")
     .select("*", { count: "exact", head: true })
@@ -94,6 +103,13 @@ export default async function DashboardPage() {
   const fachInfo = new Map((alleFachRows ?? []).map((f) => [f.id, { name: f.name as string, farbe: f.farbe as string | null }]));
   const naechste = ((klausurRows ?? []) as KlausurRow[])[0] ?? null;
   const heutigeStunden = (stundeRows ?? []) as StundeRow[];
+  const entfallHeute = new Map(
+    (entfallRows ?? []).map((e) => [e.stunde_id as string, { typ: e.typ as "entfall" | "krank", begruendung: (e.begruendung as string | null) ?? null }]),
+  );
+  const entfalleneStunden = heutigeStunden.filter((s) => entfallHeute.has(s.id));
+  const tagKomplettWeg = heutigeStunden.length > 0 && entfalleneStunden.length === heutigeStunden.length;
+  const tagKrank = tagKomplettWeg && entfalleneStunden.every((s) => entfallHeute.get(s.id)?.typ === "krank");
+  const tagGrund = entfalleneStunden.map((s) => entfallHeute.get(s.id)?.begruendung).find((g) => g) ?? null;
   const gesamtNoten = faecher.reduce((s, f) => s + f.noten.length, 0);
 
   return (
@@ -193,17 +209,35 @@ export default async function DashboardPage() {
           className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
         >
-          <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
-            Heute · {heutigeStunden.length > 0 ? `${heutigeStunden.length} Stunde${heutigeStunden.length !== 1 ? "n" : ""}` : "Stundenplan"}
+          <div
+            className="font-mono text-[10px] font-semibold uppercase tracking-[.2em]"
+            style={{ color: tagKomplettWeg ? (tagKrank ? "#f59e0b" : "#ff3050") : "var(--brand)" }}
+          >
+            Heute · {tagKomplettWeg
+              ? tagKrank ? "Krankgemeldet" : "Fällt aus"
+              : heutigeStunden.length > 0 ? `${heutigeStunden.length} Stunde${heutigeStunden.length !== 1 ? "n" : ""}` : "Stundenplan"}
           </div>
-          {heutigeStunden.length > 0 ? (
+          {tagKomplettWeg ? (
+            <>
+              <div
+                className="mt-2 font-display text-xl font-extrabold leading-tight"
+                style={{ color: tagKrank ? "#f59e0b" : "#ff3050" }}
+              >
+                {tagKrank ? "Du bist krank" : "Heute frei"}
+              </div>
+              <div className="mt-1 font-mono text-xs text-text-mute">
+                {tagGrund ?? (tagKrank ? "Gute Besserung." : "Alle Stunden fallen aus")}
+              </div>
+            </>
+          ) : heutigeStunden.length > 0 ? (
             <div className="mt-2 space-y-1.5">
               {heutigeStunden.map((s) => {
                 const info = s.fach_id ? fachInfo.get(s.fach_id) : null;
                 const name = info?.name ?? s.bezeichnung ?? "–";
                 const farbe = info?.farbe ?? null;
+                const e = entfallHeute.get(s.id);
                 return (
-                  <div key={s.id} className="flex items-center gap-2">
+                  <div key={s.id} className={`flex items-center gap-2 ${e ? "opacity-45" : ""}`}>
                     <span className="w-[72px] shrink-0 font-mono text-[10px] text-text-mute tabular-nums">
                       {fmtZeit(s.zeit_start)}–{fmtZeit(s.zeit_end)}
                     </span>
@@ -215,10 +249,15 @@ export default async function DashboardPage() {
                     )}
                     <span
                       className="truncate font-display text-sm font-bold leading-tight"
-                      style={{ color: farbe ?? undefined }}
+                      style={{ color: farbe ?? undefined, textDecoration: e ? "line-through" : undefined }}
                     >
                       {name}
                     </span>
+                    {e && (
+                      <span className="shrink-0 font-mono text-[9px] uppercase tracking-wider" style={{ color: e.typ === "krank" ? "#f59e0b" : "#ff3050" }}>
+                        {e.typ === "krank" ? "krank" : "entfällt"}
+                      </span>
+                    )}
                   </div>
                 );
               })}

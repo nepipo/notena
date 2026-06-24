@@ -35,15 +35,34 @@ function baueKontext(params: {
   klausuren: KlausurRow[];
   hausaufgaben: HausaufgabeRow[];
   stundenHeute: StundeRow[];
+  entfallHeute: Map<string, { typ: "entfall" | "krank"; begruendung: string | null }>;
   fachMap: Map<string, string>;
 }): string {
-  const { name, halbjahr, gesamt, faecher, klausuren, hausaufgaben, stundenHeute, fachMap } = params;
+  const { name, halbjahr, gesamt, faecher, klausuren, hausaufgaben, stundenHeute, entfallHeute, fachMap } = params;
 
-  const stundenStr = stundenHeute.length
-    ? stundenHeute
-        .map((s) => `${s.zeit_start.slice(0, 5)}–${s.zeit_end.slice(0, 5)} ${fachMap.get(s.fach_id ?? "") ?? "Stunde"}`)
-        .join(", ")
-    : "Keine Stunden heute";
+  const entfaelleAmTag = stundenHeute.filter((s) => entfallHeute.has(s.id));
+  const alleEntfallen = stundenHeute.length > 0 && entfaelleAmTag.length === stundenHeute.length;
+  const krankHeute = entfaelleAmTag.length > 0 && entfaelleAmTag.every((s) => entfallHeute.get(s.id)?.typ === "krank");
+  const ersterGrund = entfaelleAmTag.map((s) => entfallHeute.get(s.id)?.begruendung).find((g) => g) ?? null;
+
+  let stundenStr: string;
+  if (!stundenHeute.length) {
+    stundenStr = "Keine Stunden heute";
+  } else if (alleEntfallen) {
+    stundenStr = krankHeute
+      ? `Ganzer Tag krankgemeldet${ersterGrund ? ` (${ersterGrund})` : ""}`
+      : `Heute fällt alles aus${ersterGrund ? ` (${ersterGrund})` : ""}`;
+  } else {
+    stundenStr = stundenHeute
+      .map((s) => {
+        const e = entfallHeute.get(s.id);
+        const basis = `${s.zeit_start.slice(0, 5)}–${s.zeit_end.slice(0, 5)} ${fachMap.get(s.fach_id ?? "") ?? "Stunde"}`;
+        if (!e) return basis;
+        const tag = e.typ === "krank" ? "krank" : "entfällt";
+        return `${basis} [${tag}${e.begruendung ? `: ${e.begruendung}` : ""}]`;
+      })
+      .join(", ");
+  }
 
   const baldKlausuren = klausuren
     .filter((k) => tageBis(k.datum) >= 0 && tageBis(k.datum) <= 14)
@@ -108,14 +127,19 @@ export async function holeBriefing(): Promise<string | null> {
   const name = profil?.name ?? "Schüler";
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
 
-  const [{ data: fachRows }, { data: noteRows }, { data: klausurRows }, { data: haRows }, { data: stundeRows }] =
+  const [{ data: fachRows }, { data: noteRows }, { data: klausurRows }, { data: haRows }, { data: stundeRows }, { data: entfallRows }] =
     await Promise.all([
       supabase.from("schule_fach").select("*").eq("user_id", userId).eq("halbjahr", halbjahr),
       supabase.from("schule_note").select("fach_id, punkte, kategorie, gewicht").eq("user_id", userId),
       supabase.from("schule_klausur").select("*").eq("user_id", userId).gte("datum", heute).order("datum").limit(10),
       supabase.from("hausaufgabe").select("*").eq("user_id", userId).eq("erledigt", false),
       supabase.from("stundenplan_stunde").select("*").eq("user_id", userId).eq("wochentag", new Date().getDay() || 7),
+      supabase.from("stundenplan_entfall").select("stunde_id, typ, begruendung").eq("user_id", userId).eq("datum", heute),
     ]);
+
+  const entfallHeute = new Map(
+    (entfallRows ?? []).map((e) => [e.stunde_id as string, { typ: e.typ as "entfall" | "krank", begruendung: (e.begruendung as string | null) ?? null }]),
+  );
 
   const faecher = assembleFaecher(
     (fachRows ?? []) as FachRow[],
@@ -135,6 +159,7 @@ export async function holeBriefing(): Promise<string | null> {
     klausuren: (klausurRows ?? []) as KlausurRow[],
     hausaufgaben: (haRows ?? []) as HausaufgabeRow[],
     stundenHeute: (stundeRows ?? []) as StundeRow[],
+    entfallHeute,
     fachMap,
   });
 
@@ -150,7 +175,7 @@ Schreib wie jemand der tippt, nicht wie jemand der eine Meldung verfasst.
 Priorität was du erwähnst (in dieser Reihenfolge, nur was wirklich zutrifft):
 1. Klausuren in ≤ 3 Tagen → immer, konkret ("Mathe morgen" nicht "bald eine Klausur")
 2. Hausaufgaben fällig heute oder morgen → nur wenn vorhanden
-3. Stundenplan heute → nur wenn ungewöhnlich viel oder wenig
+3. Stundenplan heute → wenn ganzer Tag ausfällt oder krankgemeldet ist, das ruhig erwähnen (kurz, locker). Einzelne ausgefallene Stunden nur wenn relevant. Sonst nur erwähnen wenn ungewöhnlich viel oder wenig.
 4. Gesamtschnitt → nur wenn bemerkenswert oder sich was verändert hat
 
 Wenn nichts Besonderes ansteht: kurz und entspannt sagen dass gerade Ruhe ist.
