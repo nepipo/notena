@@ -235,24 +235,24 @@ export async function addKlausur(
   titel: string,
   datum: string,
   fachId?: string,
-): Promise<ActionResult> {
+): Promise<ActionResult & { id?: string }> {
   const trimmed = titel.trim();
   if (!trimmed) return { ok: false, error: "Bitte einen Titel eingeben." };
   if (!datum) return { ok: false, error: "Bitte ein Datum angeben." };
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
-    const { error } = await supabase.from("schule_klausur").insert({
+    const { data: neu, error } = await supabase.from("schule_klausur").insert({
       user_id: userId,
       titel: trimmed,
       datum,
       fach_id: fachId ?? null,
-    });
+    }).select("id").single();
     if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
-    return { ok: true };
+    return { ok: true, id: neu.id };
   } catch (e) {
     return { ok: false, error: dbError(e) };
   }

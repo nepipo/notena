@@ -17,7 +17,7 @@ export async function addHausaufgabe(params: {
   fachId: string | null;
   beschreibung: string;
   faelligAm: string; // "YYYY-MM-DD"
-}): Promise<ActionResult> {
+}): Promise<ActionResult & { id?: string }> {
   if (!params.beschreibung.trim()) {
     return { ok: false, error: "Bitte eine Beschreibung eingeben." };
   }
@@ -27,16 +27,16 @@ export async function addHausaufgabe(params: {
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
-    const { error } = await supabase.from("hausaufgabe").insert({
+    const { data: neu, error } = await supabase.from("hausaufgabe").insert({
       user_id: userId,
       fach_id: params.fachId || null,
       beschreibung: params.beschreibung.trim(),
       faellig_am: params.faelligAm,
-    });
+    }).select("id").single();
     if (error) return { ok: false, error: error.message };
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
-    return { ok: true };
+    return { ok: true, id: neu.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }

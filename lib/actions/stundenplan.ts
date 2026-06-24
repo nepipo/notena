@@ -93,7 +93,7 @@ export async function addStunde(params: {
   raum: string | null;
   lehrer: string | null;
   wocheTyp: "A" | "B" | null;
-}): Promise<ActionResult> {
+}): Promise<ActionResult & { id?: string; halbjahrId?: string }> {
   if (params.wochentag < 1 || params.wochentag > 7) {
     return { ok: false, error: "Ungültiger Wochentag." };
   }
@@ -122,7 +122,7 @@ export async function addStunde(params: {
       aktiv = neues;
     }
 
-    const { error } = await supabase.from("stundenplan_stunde").insert({
+    const { data: neu, error } = await supabase.from("stundenplan_stunde").insert({
       user_id: userId,
       halbjahr_id: aktiv.id,
       fach_id: params.fachId,
@@ -133,10 +133,10 @@ export async function addStunde(params: {
       raum: params.raum || null,
       lehrer: params.lehrer || null,
       woche_typ: params.wocheTyp,
-    });
+    }).select("id, halbjahr_id").single();
     if (error) return { ok: false, error: error.message };
     revalidatePath("/stundenplan");
-    return { ok: true };
+    return { ok: true, id: neu.id, halbjahrId: neu.halbjahr_id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
   }

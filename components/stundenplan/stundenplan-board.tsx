@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, X, CalendarDays, ChevronLeft, ChevronRight, BanIcon, Thermometer, History, Check, Copy } from "lucide-react";
@@ -203,7 +203,6 @@ function NeuesHalbjahrModal({
         kopieren && aktivId ? aktivId : undefined,
       );
       if (!res.ok) { toast.error(res.error); return; }
-      toast.success(`Halbjahr "${bezeichnung.trim()}" angelegt.`);
       onClose();
       router.refresh();
     });
@@ -293,12 +292,12 @@ function NeuesHalbjahrModal({
 export function StundenplanBoard({
   halbjahre,
   aktivesHalbjahrId,
-  stunden: alleStunden,
+  stunden: stundenInit,
   faecher,
   alleFaecher,
   hausaufgaben,
   klausuren,
-  entfaelle,
+  entfaelle: entfaelleInit,
   bundesland,
 }: {
   halbjahre: HalbjahrRow[];
@@ -311,8 +310,26 @@ export function StundenplanBoard({
   entfaelle: EntfallRow[];
   bundesland: Bundesland | null;
 }) {
+  const [alleStunden, setAlleStunden] = useState<StundeRow[]>(stundenInit);
+  const [localEntfaelle, setLocalEntfaelle] = useState<EntfallRow[]>(entfaelleInit);
   const [gewaehlteHalbjahrId, setGewaehlteHalbjahrId] = useState<string | null>(aktivesHalbjahrId);
   const [showNeuesHj, setShowNeuesHj] = useState(false);
+
+  // Props syncen nach router.refresh() (FotoImport, NeuesHalbjahr)
+  const prevStundenRef = useRef(stundenInit);
+  const prevEntfaelleRef = useRef(entfaelleInit);
+  useEffect(() => {
+    if (stundenInit !== prevStundenRef.current) {
+      prevStundenRef.current = stundenInit;
+      setAlleStunden(stundenInit);
+    }
+  }, [stundenInit]);
+  useEffect(() => {
+    if (entfaelleInit !== prevEntfaelleRef.current) {
+      prevEntfaelleRef.current = entfaelleInit;
+      setLocalEntfaelle(entfaelleInit);
+    }
+  }, [entfaelleInit]);
 
   const stunden = gewaehlteHalbjahrId
     ? alleStunden.filter((s) => s.halbjahr_id === gewaehlteHalbjahrId)
@@ -327,7 +344,7 @@ export function StundenplanBoard({
   }));
 
   const entfallMap = new Map(
-    entfaelle.map((e) => [`${e.stunde_id}:${e.datum}`, { typ: e.typ, begruendung: e.begruendung }]),
+    localEntfaelle.map((e) => [`${e.stunde_id}:${e.datum}`, { typ: e.typ, begruendung: e.begruendung }]),
   );
 
   const [weekOffset, setWeekOffset] = useState(0);
@@ -408,6 +425,24 @@ export function StundenplanBoard({
 
   function submitAdd() {
     if (!validiereZeiten(addWerte)) return;
+    const halbjahrId = gewaehlteHalbjahrId ?? aktivesHalbjahrId ?? "";
+    const optId = `temp-${Date.now()}`;
+    const opt: StundeRow = {
+      id: optId,
+      user_id: "",
+      halbjahr_id: halbjahrId,
+      fach_id: addWerte.fachId || null,
+      bezeichnung: addWerte.bezeichnung.trim() || null,
+      wochentag: addWerte.wochentag,
+      zeit_start: addWerte.zeitStart,
+      zeit_end: addWerte.zeitEnd,
+      raum: addWerte.raum.trim() || null,
+      lehrer: addWerte.lehrer.trim() || null,
+      woche_typ: null,
+    };
+    setAlleStunden((prev) => [...prev, opt]);
+    setShowAddForm(false);
+    setAddWerte(FORM_LEER);
     start(async () => {
       const res = await addStunde({
         fachId: addWerte.fachId || null,
@@ -419,21 +454,39 @@ export function StundenplanBoard({
         lehrer: addWerte.lehrer.trim() || null,
         wocheTyp: null,
       });
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      setShowAddForm(false);
-      setAddWerte(FORM_LEER);
-      router.refresh();
+      if (!res.ok) {
+        setAlleStunden((prev) => prev.filter((s) => s.id !== optId));
+        toast.error(`Fehler: ${res.error}`);
+      } else if (res.id) {
+        setAlleStunden((prev) => prev.map((s) => s.id === optId ? { ...s, id: res.id!, halbjahr_id: res.halbjahrId ?? s.halbjahr_id } : s));
+      }
     });
   }
 
   function submitEdit() {
     if (!editingStunde || !validiereZeiten(editWerte)) return;
+    const snapshot = alleStunden;
+    setAlleStunden((prev) => prev.map((s) => s.id === editingStunde.id ? {
+      ...s,
+      fach_id: editWerte.fachId || null,
+      bezeichnung: editWerte.bezeichnung.trim() || null,
+      wochentag: editWerte.wochentag,
+      zeit_start: editWerte.zeitStart,
+      zeit_end: editWerte.zeitEnd,
+      raum: editWerte.raum.trim() || null,
+      lehrer: editWerte.lehrer.trim() || null,
+    } : s));
+    setEditingStunde(null);
     start(async () => {
       const neuerName = editFachName.trim();
       const alterName = editingStunde.fach?.name ?? "";
       if (editWerte.fachId && neuerName && neuerName !== alterName) {
         const renameRes = await updateFach(editWerte.fachId, { name: neuerName });
-        if (!renameRes.ok) { toast.error(`Fach umbenennen: ${renameRes.error}`); return; }
+        if (!renameRes.ok) {
+          setAlleStunden(snapshot);
+          toast.error(`Fach umbenennen: ${renameRes.error}`);
+          return;
+        }
       }
       const res = await updateStunde(editingStunde.id, {
         fachId: editWerte.fachId || null,
@@ -445,38 +498,71 @@ export function StundenplanBoard({
         lehrer: editWerte.lehrer.trim() || null,
         wocheTyp: editingStunde.woche_typ,
       });
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      setEditingStunde(null);
-      router.refresh();
+      if (!res.ok) {
+        setAlleStunden(snapshot);
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
   function deleteStunde(id: string) {
+    const snapshot = alleStunden;
+    setAlleStunden((prev) => prev.filter((s) => s.id !== id));
+    setEditingStunde(null);
     start(async () => {
       const res = await removeStunde(id);
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      setEditingStunde(null);
-      router.refresh();
+      if (!res.ok) {
+        setAlleStunden(snapshot);
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
   function setStundeTyp(stundeId: string, datum: string, typ: "entfall" | "krank" | null, begruendung?: string | null) {
+    const snapshot = localEntfaelle;
+    if (typ === null) {
+      setLocalEntfaelle((prev) => prev.filter((e) => !(e.stunde_id === stundeId && e.datum === datum)));
+    } else {
+      const opt: EntfallRow = { id: `temp-${Date.now()}`, user_id: "", stunde_id: stundeId, datum, typ, begruendung: begruendung ?? null, created_at: new Date().toISOString() };
+      setLocalEntfaelle((prev) => [...prev.filter((e) => !(e.stunde_id === stundeId && e.datum === datum)), opt]);
+    }
     start(async () => {
       const res = typ === null
         ? await removeEntfall(stundeId, datum)
         : await addEntfall(stundeId, datum, typ, begruendung ?? null);
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      router.refresh();
+      if (!res.ok) {
+        setLocalEntfaelle(snapshot);
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
   function setTagTyp(datum: string, typ: "entfall" | "krank" | null, begruendung?: string | null) {
+    const snapshot = localEntfaelle;
+    const tagIdx = tagIsos.indexOf(datum);
+    const stundenAmTag = tagIdx >= 0 ? proTag[tagIdx] : [];
+    if (typ === null) {
+      setLocalEntfaelle((prev) => prev.filter((e) => e.datum !== datum));
+    } else {
+      const neu: EntfallRow[] = stundenAmTag.map((s) => ({
+        id: `temp-${Date.now()}-${s.id}`,
+        user_id: "",
+        stunde_id: s.id,
+        datum,
+        typ,
+        begruendung: begruendung ?? null,
+        created_at: new Date().toISOString(),
+      }));
+      setLocalEntfaelle((prev) => [...prev.filter((e) => e.datum !== datum), ...neu]);
+    }
     start(async () => {
       const res = typ === null
         ? await removeTagEntfall(datum)
         : await addTagEntfall(datum, typ, begruendung ?? null);
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      router.refresh();
+      if (!res.ok) {
+        setLocalEntfaelle(snapshot);
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
@@ -563,7 +649,6 @@ export function StundenplanBoard({
               start(async () => {
                 const res = await setAktivesHalbjahr(gewaehlteHalbjahrId!);
                 if (!res.ok) { toast.error(res.error); return; }
-                toast.success("Halbjahr als aktiv gesetzt.");
                 router.refresh();
               });
             }}

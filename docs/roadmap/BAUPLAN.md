@@ -2,7 +2,7 @@
 
 **Launch:** 13.08.2026  
 **Stand:** 24.06.2026  
-**Fortschritt:** 12 / 67 Tasks erledigt (c01, c02, r02, r04, r05 waren bereits gebaut)
+**Fortschritt:** 14 / 67 Tasks erledigt
 
 > Diese Datei ist mein (Claudes) Gedächtnis für den Projektfortschritt.  
 > Wenn Nepomuk fragt "was ist als nächstes?" — hier nachschauen.  
@@ -37,9 +37,9 @@ Sortiert nach Deadline:
 - [ ] `u01` **Onboarding: iPhone Safari + Chrome testen** ← 24.06 · BLOCKER (manuell)
 - [ ] `m01` **App-Namen final entscheiden + Social Handles sichern** ← 24.06 · BLOCKER (manuell)
 - [ ] `f01` **Mit Vater: Kleinunternehmer §19 UStG klären** ← 24.06 · BLOCKER (manuell)
-- [ ] `r01` **Impressum: Adresse eintragen** ← 01.07 · BLOCKER (Seite existiert, nur `[DEIN NAME]`/`[ADRESSE]` Platzhalter fehlen — Vaters Daten nötig)
+- [x] `r01` Impressum: Adresse eingetragen ✅ (Moritz-Kolja Polonius, Osterbekstraße 90b, 22083 Hamburg)
 - [x] `r02` Datenschutzerklärung ✅ (vollständig, nur Adress-Platzhalter wie r01)
-- [ ] `r03` **AGB inkl. Widerrufsbelehrung (14 Tage)** ← 15.07 · BLOCKER
+- [x] `r03` AGB inkl. Widerrufsbelehrung ✅ (unter /agb, 13 Abschnitte, Minderjährige + Widerruf drin)
 - [x] `r04` §312j BGB Button-Text ✅ (Worktree: "Zahlungspflichtig abonnieren")
 - [x] `r05` Datenschutz + Impressum in Einstellungen verlinkt ✅
 - [ ] `c19` **Final Bug-Bash + Regression-Test** ← 12.08 · BLOCKER

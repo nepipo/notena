@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,12 +52,15 @@ const URGENCY_LABEL: Record<Urgency, string> = {
   vorbei:   "Erledigt & Vorbei",
 };
 
+let tempCounter = 0;
+const tempId = () => `temp-${tempCounter++}`;
+
 // ── Komponente ────────────────────────────────────────────────────────────────
 
 export function AufgabenListe({
   faecher,
-  hausaufgaben,
-  klausuren,
+  hausaufgaben: hausaufgabenInit,
+  klausuren: klausurenInit,
 }: {
   faecher: FachRow[];
   hausaufgaben: HausaufgabeRow[];
@@ -66,6 +68,8 @@ export function AufgabenListe({
 }) {
   const fachMap = new Map(faecher.map((f) => [f.id, f]));
 
+  const [hausaufgaben, setHausaufgaben] = useState<HausaufgabeRow[]>(hausaufgabenInit);
+  const [klausuren, setKlausuren] = useState<KlausurRow[]>(klausurenInit);
   const [tab, setTab] = useState<Tab>("alle");
   const [aktiverFach, setAktiverFach] = useState<string>("alle");
   const [showFachFilter, setShowFachFilter] = useState(false);
@@ -84,7 +88,6 @@ export function AufgabenListe({
   const [kFachId, setKFachId] = useState("");
 
   const [pending, start] = useTransition();
-  const router = useRouter();
 
   // ── Daten aufbereiten ───────────────────────────────────────────────────────
 
@@ -118,55 +121,96 @@ export function AufgabenListe({
     gruppen.get(item.urgency)!.push(item);
   }
 
-  // Fächer, die tatsächlich vorkommen (für Filter-Pills)
-  const vorkommendeFachIds = new Set(alleItems.map((i) => (i.typ === "ha" ? i.data.fach_id : i.data.fach_id) ?? "").filter(Boolean));
+  const vorkommendeFachIds = new Set(alleItems.map((i) => i.data.fach_id ?? "").filter(Boolean));
   const filterFaecher = faecher.filter((f) => vorkommendeFachIds.has(f.id));
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
   function addHA() {
     if (!haBeschreibung.trim() || !haFaellig) { toast.error("Beschreibung und Datum fehlen."); return; }
+    const optId = tempId();
+    const opt: HausaufgabeRow = {
+      id: optId,
+      user_id: "",
+      fach_id: haFachId || null,
+      beschreibung: haBeschreibung.trim(),
+      faellig_am: haFaellig,
+      erledigt: false,
+      created_at: new Date().toISOString(),
+    };
+    setHausaufgaben((prev) => [...prev, opt]);
+    setHaBeschreibung(""); setHaFaellig(""); setHaFachId("");
+    setShowForm(false);
     start(async () => {
-      const res = await addHausaufgabe({ fachId: haFachId || null, beschreibung: haBeschreibung, faelligAm: haFaellig });
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      setHaBeschreibung(""); setHaFaellig(""); setHaFachId("");
-      setShowForm(false);
-      router.refresh();
+      const res = await addHausaufgabe({ fachId: haFachId || null, beschreibung: opt.beschreibung, faelligAm: haFaellig });
+      if (!res.ok) {
+        setHausaufgaben((prev) => prev.filter((h) => h.id !== optId));
+        toast.error(`Fehler: ${res.error}`);
+      } else if (res.id) {
+        setHausaufgaben((prev) => prev.map((h) => h.id === optId ? { ...h, id: res.id! } : h));
+      }
     });
   }
 
   function addK() {
     if (!kTitel.trim() || !kDatum) { toast.error("Titel und Datum fehlen."); return; }
+    const optId = tempId();
+    const opt: KlausurRow = {
+      id: optId,
+      user_id: "",
+      fach_id: kFachId || null,
+      titel: kTitel.trim(),
+      datum: kDatum + "T12:00:00.000Z",
+      vorbereitung_prozent: 0,
+      notiz: null,
+      created_at: new Date().toISOString(),
+    };
+    setKlausuren((prev) => [...prev, opt]);
+    setKTitel(""); setKDatum(""); setKFachId("");
+    setShowForm(false);
     start(async () => {
-      const res = await addKlausur(kTitel, kDatum + "T12:00:00.000Z", kFachId || undefined);
-      if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      setKTitel(""); setKDatum(""); setKFachId("");
-      setShowForm(false);
-      router.refresh();
+      const res = await addKlausur(kTitel.trim(), kDatum + "T12:00:00.000Z", kFachId || undefined);
+      if (!res.ok) {
+        setKlausuren((prev) => prev.filter((k) => k.id !== optId));
+        toast.error(`Fehler: ${res.error}`);
+      } else if (res.id) {
+        setKlausuren((prev) => prev.map((k) => k.id === optId ? { ...k, id: res.id! } : k));
+      }
     });
   }
 
   function toggleHA(id: string, erledigt: boolean) {
+    setHausaufgaben((prev) => prev.map((h) => h.id === id ? { ...h, erledigt } : h));
     start(async () => {
       const res = await toggleErledigt(id, erledigt);
-      if (!res.ok) toast.error(`Fehler: ${res.error}`);
-      else router.refresh();
+      if (!res.ok) {
+        setHausaufgaben((prev) => prev.map((h) => h.id === id ? { ...h, erledigt: !erledigt } : h));
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
   function deleteHA(id: string) {
+    const snapshot = hausaufgaben;
+    setHausaufgaben((prev) => prev.filter((h) => h.id !== id));
     start(async () => {
       const res = await removeHausaufgabe(id);
-      if (!res.ok) toast.error(`Fehler: ${res.error}`);
-      else router.refresh();
+      if (!res.ok) {
+        setHausaufgaben(snapshot);
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
   function deleteK(id: string) {
+    const snapshot = klausuren;
+    setKlausuren((prev) => prev.filter((k) => k.id !== id));
     start(async () => {
       const res = await removeKlausur(id);
-      if (!res.ok) toast.error(`Fehler: ${res.error}`);
-      else router.refresh();
+      if (!res.ok) {
+        setKlausuren(snapshot);
+        toast.error(`Fehler: ${res.error}`);
+      }
     });
   }
 
