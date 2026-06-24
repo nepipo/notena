@@ -1,26 +1,109 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { signup, type AuthState } from "@/app/auth/actions";
+import { useActionState, useState, useEffect, useRef } from "react";
+import { Eye, EyeOff, RefreshCw } from "lucide-react";
+import { signup, resendConfirmationEmail, type AuthState } from "@/app/auth/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
+const RESEND_COOLDOWN = 20;
+
+function EmailSentScreen({ email }: { email: string }) {
+  const [resendState, resendAction, isResending] = useActionState<AuthState, FormData>(
+    resendConfirmationEmail,
+    null,
+  );
+  const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current!);
+  }, []);
+
+  // Reset countdown after successful resend
+  useEffect(() => {
+    if (resendState?.success) {
+      setCountdown(RESEND_COOLDOWN);
+      intervalRef.current = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            clearInterval(intervalRef.current!);
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+    }
+  }, [resendState?.success]);
+
+  const canResend = countdown === 0 && !isResending;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-2xl border border-success/30 bg-success/10 p-5 text-center">
+        <p className="font-display text-lg font-bold text-success">Check deine Mails!</p>
+        <p className="mt-2 text-sm text-text-dim">
+          Wir haben einen Link an <span className="font-medium text-foreground">{email}</span> geschickt.
+          Bestätige ihn, um loszulegen.
+        </p>
+        <p className="mt-1 text-xs text-text-mute">Schau auch im Spam-Ordner nach.</p>
+      </div>
+
+      <form action={resendAction}>
+        <input type="hidden" name="email" value={email} />
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={!canResend}
+          className="w-full gap-2"
+        >
+          <RefreshCw className="size-4" />
+          {isResending
+            ? "Wird gesendet…"
+            : countdown > 0
+            ? `Erneut senden (${countdown}s)`
+            : "Erneut senden"}
+        </Button>
+      </form>
+
+      {resendState?.success && (
+        <p className="text-center text-sm text-success">{resendState.success}</p>
+      )}
+      {resendState?.error && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
+          {resendState.error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function SignupForm() {
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [state, formAction, isPending] = useActionState<AuthState, FormData>(
-    signup,
+    async (prevState: AuthState, formData: FormData) => {
+      const result = await signup(prevState, formData);
+      if (result?.success) {
+        setSubmittedEmail(String(formData.get("email") ?? "").trim());
+      }
+      return result;
+    },
     null,
   );
   const [showPassword, setShowPassword] = useState(false);
 
-  if (state?.success) {
-    return (
-      <div className="rounded-2xl border border-success/30 bg-success/10 p-5 text-center">
-        <p className="font-display text-lg font-bold text-success">Check deine Mails!</p>
-        <p className="mt-2 text-sm text-text-dim">{state.success}</p>
-      </div>
-    );
+  if (state?.success && submittedEmail) {
+    return <EmailSentScreen email={submittedEmail} />;
   }
 
   return (

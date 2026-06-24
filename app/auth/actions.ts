@@ -142,6 +142,29 @@ export async function updatePassword(
   redirect("/dashboard");
 }
 
+export async function resendConfirmationEmail(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "E-Mail fehlt." };
+
+  const supabase = await createClient();
+  const origin = getOrigin(await headers());
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${origin}/auth/confirm?next=/onboarding` },
+  });
+
+  if (error) {
+    return { error: "Zu viele Versuche. Bitte kurz warten." };
+  }
+
+  return { success: "E-Mail erneut gesendet! Schau auch im Spam-Ordner nach." };
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut({ scope: "local" });
