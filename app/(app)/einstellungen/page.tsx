@@ -242,6 +242,7 @@ export default async function EinstellungenPage() {
         <div className="flex flex-wrap gap-4 font-mono text-sm text-text-dim">
           <Link href="/datenschutz" className="transition-colors hover:text-brand">Datenschutzerklärung</Link>
           <Link href="/impressum" className="transition-colors hover:text-brand">Impressum</Link>
+          <Link href="/agb" className="transition-colors hover:text-brand">AGB</Link>
         </div>
       </section>
 

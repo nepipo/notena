@@ -234,9 +234,12 @@ export default function DatenschutzPage() {
         </section>
       </div>
 
-      <div className="mt-14 border-t border-border/30 pt-6 flex gap-6 font-mono text-xs text-text-mute">
+      <div className="mt-14 border-t border-border/30 pt-6 flex flex-wrap gap-6 font-mono text-xs text-text-mute">
         <Link href="/impressum" className="hover:text-text-dim transition-colors">
           Impressum
+        </Link>
+        <Link href="/agb" className="hover:text-text-dim transition-colors">
+          AGB
         </Link>
         <Link href="/" className="hover:text-text-dim transition-colors">
           Startseite
