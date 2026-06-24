@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, X, CalendarDays, ChevronLeft, ChevronRight, BanIcon, Thermometer } from "lucide-react";
+import { Plus, X, CalendarDays, ChevronLeft, ChevronRight, BanIcon, Thermometer, History, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,10 +14,12 @@ import {
   removeEntfall,
   addTagEntfall,
   removeTagEntfall,
+  createHalbjahr,
+  setAktivesHalbjahr,
 } from "@/lib/actions/stundenplan";
 import { updateFach } from "@/lib/actions/schule";
 import { hexToRgba, fmtZeit, FACH_FALLBACK_FARBE } from "@/lib/stundenplan/types";
-import type { StundeRow, HausaufgabeRow, EntfallRow } from "@/lib/stundenplan/types";
+import type { StundeRow, HausaufgabeRow, EntfallRow, HalbjahrRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
 import { FotoImport } from "@/components/stundenplan/foto-import";
 import { FERIEN, type Bundesland } from "@/lib/ferien/ferien-data";
@@ -180,9 +182,118 @@ function StundeFormFelder({
   );
 }
 
+// ── Neues-Halbjahr-Modal ──────────────────────────────────────────────────────
+function NeuesHalbjahrModal({
+  aktivId,
+  onClose,
+}: {
+  aktivId: string | null;
+  onClose: () => void;
+}) {
+  const [bezeichnung, setBezeichnung] = useState("");
+  const [kopieren, setKopieren] = useState(false);
+  const [pending, start] = useTransition();
+  const router = useRouter();
+
+  function submit() {
+    if (!bezeichnung.trim()) return;
+    start(async () => {
+      const res = await createHalbjahr(
+        bezeichnung.trim(),
+        kopieren && aktivId ? aktivId : undefined,
+      );
+      if (!res.ok) { toast.error(res.error); return; }
+      toast.success(`Halbjahr "${bezeichnung.trim()}" angelegt.`);
+      onClose();
+      router.refresh();
+    });
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-x-4 bottom-4 z-50 rounded-3xl border border-border p-5 sm:inset-x-auto sm:left-1/2 sm:w-full sm:max-w-md sm:-translate-x-1/2"
+        style={{ background: "var(--surface-1)" }}
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-mono text-[10px] font-bold uppercase tracking-[.1em] text-text-mute">
+            Neues Halbjahr
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex size-6 items-center justify-center rounded-full text-text-mute transition-colors hover:text-foreground"
+            style={{ background: "var(--surface-2)" }}
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="font-mono text-[10px] uppercase tracking-widest text-text-mute">
+              Bezeichnung
+            </label>
+            <Input
+              value={bezeichnung}
+              onChange={(e) => setBezeichnung(e.target.value)}
+              placeholder="z. B. 11/2, 12/1, Q1 …"
+              className="h-9 bg-surface-2 font-display text-sm font-bold"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+            />
+          </div>
+
+          {aktivId && (
+            <button
+              onClick={() => setKopieren((v) => !v)}
+              className="flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors"
+              style={{
+                borderColor: kopieren ? "color-mix(in srgb, var(--brand) 50%, transparent)" : "var(--border)",
+                background: kopieren ? "color-mix(in srgb, var(--brand) 8%, transparent)" : "var(--surface-2)",
+              }}
+            >
+              <div
+                className="flex size-5 flex-shrink-0 items-center justify-center rounded"
+                style={{ background: kopieren ? "var(--brand)" : "var(--surface-3, var(--border))" }}
+              >
+                {kopieren && <Check className="size-3 text-white" />}
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 font-display text-sm font-bold">
+                  <Copy className="size-3.5" style={{ color: "var(--brand)" }} />
+                  Stunden aus aktuellem Halbjahr übernehmen
+                </div>
+                <div className="font-mono text-[10px] text-text-mute">
+                  Fächer &amp; Zeiten kopieren — Entfälle bleiben nicht erhalten
+                </div>
+              </div>
+            </button>
+          )}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <Button
+            onClick={submit}
+            disabled={pending || !bezeichnung.trim()}
+            className="font-display font-bold"
+          >
+            Anlegen
+          </Button>
+          <Button variant="ghost" onClick={onClose} className="font-display text-text-dim">
+            Abbrechen
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Haupt-Komponente ──────────────────────────────────────────────────────────
 export function StundenplanBoard({
-  stunden,
+  halbjahre,
+  aktivesHalbjahrId,
+  stunden: alleStunden,
   faecher,
   alleFaecher,
   hausaufgaben,
@@ -190,6 +301,8 @@ export function StundenplanBoard({
   entfaelle,
   bundesland,
 }: {
+  halbjahre: HalbjahrRow[];
+  aktivesHalbjahrId: string | null;
   stunden: StundeRow[];
   faecher: FachRow[];
   alleFaecher: FachRow[];
@@ -198,13 +311,24 @@ export function StundenplanBoard({
   entfaelle: EntfallRow[];
   bundesland: Bundesland | null;
 }) {
+  const [gewaehlteHalbjahrId, setGewaehlteHalbjahrId] = useState<string | null>(aktivesHalbjahrId);
+  const [showNeuesHj, setShowNeuesHj] = useState(false);
+
+  const stunden = gewaehlteHalbjahrId
+    ? alleStunden.filter((s) => s.halbjahr_id === gewaehlteHalbjahrId)
+    : alleStunden;
+
+  const istAktivesHalbjahr = !aktivesHalbjahrId || gewaehlteHalbjahrId === aktivesHalbjahrId;
+
   const fachMap = new Map(alleFaecher.map((f) => [f.id, f]));
   const angereichert: StundeAngereichert[] = stunden.map((s) => ({
     ...s,
     fach: s.fach_id ? fachMap.get(s.fach_id) : undefined,
   }));
 
-  const entfallMap = new Map(entfaelle.map((e) => [`${e.stunde_id}:${e.datum}`, e.typ]));
+  const entfallMap = new Map(
+    entfaelle.map((e) => [`${e.stunde_id}:${e.datum}`, { typ: e.typ, begruendung: e.begruendung }]),
+  );
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -212,6 +336,7 @@ export function StundenplanBoard({
   const [addWerte, setAddWerte] = useState<FormWerte>(FORM_LEER);
   const [editWerte, setEditWerte] = useState<FormWerte>(FORM_LEER);
   const [editFachName, setEditFachName] = useState<string>("");
+  const [grundEntwurf, setGrundEntwurf] = useState<string>("");
   const [pending, start] = useTransition();
   const router = useRouter();
 
@@ -256,13 +381,13 @@ export function StundenplanBoard({
   );
 
   function entfallTyp(stundeId: string, tagIndex: number): "entfall" | "krank" | null {
-    return entfallMap.get(`${stundeId}:${tagIsos[tagIndex]}`) ?? null;
+    return entfallMap.get(`${stundeId}:${tagIsos[tagIndex]}`)?.typ ?? null;
   }
 
   function tagAlleTyp(tagIndex: number): "entfall" | "krank" | "gemischt" | null {
     const stundenAmTag = proTag[tagIndex];
     if (!stundenAmTag.length) return null;
-    const typen = stundenAmTag.map((s) => entfallMap.get(`${s.id}:${tagIsos[tagIndex]}`) ?? null);
+    const typen = stundenAmTag.map((s) => entfallMap.get(`${s.id}:${tagIsos[tagIndex]}`)?.typ ?? null);
     if (typen.every((t) => t === null)) return null;
     if (typen.every((t) => t === "entfall")) return "entfall";
     if (typen.every((t) => t === "krank")) return "krank";
@@ -270,9 +395,10 @@ export function StundenplanBoard({
   }
 
   const editDatum = editingStunde ? tagIsos[editingStunde.wochentag - 1] : null;
-  const editTyp = editingStunde && editDatum
+  const editEntfall = editingStunde && editDatum
     ? entfallMap.get(`${editingStunde.id}:${editDatum}`) ?? null
     : null;
+  const editTyp = editEntfall?.typ ?? null;
 
   function validiereZeiten(w: FormWerte): boolean {
     if (!w.zeitStart || !w.zeitEnd) { toast.error("Start- und Endzeit sind nötig."); return false; }
@@ -294,7 +420,6 @@ export function StundenplanBoard({
         wocheTyp: null,
       });
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      toast.success("Stunde eingetragen.");
       setShowAddForm(false);
       setAddWerte(FORM_LEER);
       router.refresh();
@@ -321,7 +446,6 @@ export function StundenplanBoard({
         wocheTyp: editingStunde.woche_typ,
       });
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      toast.success("Stunde aktualisiert.");
       setEditingStunde(null);
       router.refresh();
     });
@@ -331,32 +455,27 @@ export function StundenplanBoard({
     start(async () => {
       const res = await removeStunde(id);
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      toast.success("Stunde gelöscht.");
       setEditingStunde(null);
       router.refresh();
     });
   }
 
-  function setStundeTyp(stundeId: string, datum: string, typ: "entfall" | "krank" | null) {
+  function setStundeTyp(stundeId: string, datum: string, typ: "entfall" | "krank" | null, begruendung?: string | null) {
     start(async () => {
       const res = typ === null
         ? await removeEntfall(stundeId, datum)
-        : await addEntfall(stundeId, datum, typ);
+        : await addEntfall(stundeId, datum, typ, begruendung ?? null);
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      const label = typ === null ? "Markierung aufgehoben." : typ === "krank" ? "Als Krank markiert." : "Als Entfall markiert.";
-      toast.success(label);
       router.refresh();
     });
   }
 
-  function setTagTyp(datum: string, typ: "entfall" | "krank" | null) {
+  function setTagTyp(datum: string, typ: "entfall" | "krank" | null, begruendung?: string | null) {
     start(async () => {
       const res = typ === null
         ? await removeTagEntfall(datum)
-        : await addTagEntfall(datum, typ);
+        : await addTagEntfall(datum, typ, begruendung ?? null);
       if (!res.ok) { toast.error(`Fehler: ${res.error}`); return; }
-      const label = typ === null ? "Markierung aufgehoben." : typ === "krank" ? "Tag als Krank markiert." : "Ganzer Tag als Entfall markiert.";
-      toast.success(label);
       router.refresh();
     });
   }
@@ -365,6 +484,8 @@ export function StundenplanBoard({
     setShowAddForm(false);
     setEditingStunde(s);
     setEditFachName(s.fach?.name ?? "");
+    const datum = tagIsos[s.wochentag - 1];
+    setGrundEntwurf(entfallMap.get(`${s.id}:${datum}`)?.begruendung ?? "");
     setEditWerte({
       wochentag: s.wochentag,
       zeitStart: s.zeit_start.slice(0, 5),
@@ -379,6 +500,82 @@ export function StundenplanBoard({
   return (
     <div className="animate-fade-up space-y-4">
 
+      {/* ── Halbjahr-Switcher ────────────────────────────────────────────── */}
+      {halbjahre.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {halbjahre.map((hj) => {
+            const istGewählt = hj.id === gewaehlteHalbjahrId;
+            const istAktiv = hj.id === aktivesHalbjahrId;
+            return (
+              <button
+                key={hj.id}
+                onClick={() => {
+                  setGewaehlteHalbjahrId(hj.id);
+                  setShowAddForm(false);
+                  setEditingStunde(null);
+                }}
+                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-mono text-xs font-bold transition-all"
+                style={
+                  istGewählt
+                    ? { background: "color-mix(in srgb, var(--brand) 18%, transparent)", color: "var(--brand)", border: "1px solid color-mix(in srgb, var(--brand) 40%, transparent)" }
+                    : { background: "var(--surface-2)", color: "var(--text-mute)", border: "1px solid var(--border)" }
+                }
+              >
+                {istAktiv && <span className="size-1.5 rounded-full bg-current opacity-80" />}
+                {!istAktiv && <History className="size-3 opacity-60" />}
+                {hj.bezeichnung}
+                {istAktiv && (
+                  <span
+                    className="rounded px-1 py-px font-mono text-[9px]"
+                    style={{ background: "color-mix(in srgb, var(--brand) 25%, transparent)" }}
+                  >
+                    aktiv
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => setShowNeuesHj(true)}
+            className="flex items-center gap-1 rounded-xl border border-dashed px-3 py-1.5 font-mono text-xs text-text-mute transition-colors hover:border-brand/40 hover:text-brand"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <Plus className="size-3" />
+            Neues Halbjahr
+          </button>
+        </div>
+      )}
+
+      {/* Read-only Banner für altes Halbjahr */}
+      {!istAktivesHalbjahr && (
+        <div
+          className="flex items-center justify-between rounded-2xl border px-4 py-2.5"
+          style={{ background: "color-mix(in srgb, var(--brand) 5%, transparent)", borderColor: "color-mix(in srgb, var(--brand) 25%, transparent)" }}
+        >
+          <div className="flex items-center gap-2">
+            <History className="size-4" style={{ color: "var(--brand)" }} />
+            <span className="font-mono text-sm" style={{ color: "var(--brand)" }}>
+              Verlauf — {halbjahre.find(h => h.id === gewaehlteHalbjahrId)?.bezeichnung ?? "altes Halbjahr"} · nur ansehen
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              start(async () => {
+                const res = await setAktivesHalbjahr(gewaehlteHalbjahrId!);
+                if (!res.ok) { toast.error(res.error); return; }
+                toast.success("Halbjahr als aktiv gesetzt.");
+                router.refresh();
+              });
+            }}
+            disabled={pending}
+            className="font-mono text-xs font-bold transition-colors hover:text-foreground"
+            style={{ color: "var(--brand)" }}
+          >
+            Als aktiv setzen →
+          </button>
+        </div>
+      )}
+
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
@@ -390,18 +587,24 @@ export function StundenplanBoard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <FotoImport faecher={faecher} />
-          <Button
-            onClick={() => { setShowAddForm((v) => !v); setEditingStunde(null); }}
-            size="sm"
-            className="gap-1.5 font-display font-bold"
-            style={showAddForm ? { background: "var(--surface-2)", color: "var(--foreground)" } : undefined}
-          >
-            <Plus className={`size-4 transition-transform ${showAddForm ? "rotate-45" : ""}`} />
-            Stunde
-          </Button>
+          {istAktivesHalbjahr && <FotoImport faecher={faecher} />}
+          {istAktivesHalbjahr && (
+            <Button
+              onClick={() => { setShowAddForm((v) => !v); setEditingStunde(null); }}
+              size="sm"
+              className="gap-1.5 font-display font-bold"
+              style={showAddForm ? { background: "var(--surface-2)", color: "var(--foreground)" } : undefined}
+            >
+              <Plus className={`size-4 transition-transform ${showAddForm ? "rotate-45" : ""}`} />
+              Stunde
+            </Button>
+          )}
         </div>
       </div>
+
+      {showNeuesHj && (
+        <NeuesHalbjahrModal aktivId={aktivesHalbjahrId} onClose={() => setShowNeuesHj(false)} />
+      )}
 
       {/* ── Wochen-Navigation ───────────────────────────────────────────── */}
       <div
@@ -782,8 +985,8 @@ export function StundenplanBoard({
                       }}
                     >
                       <div
-                        onClick={() => openEdit(s)}
-                        className="group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-xl p-2 transition-[filter] hover:brightness-110"
+                        onClick={() => istAktivesHalbjahr && openEdit(s)}
+                        className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-2 transition-[filter] ${istAktivesHalbjahr ? "cursor-pointer hover:brightness-110" : "cursor-default opacity-80"}`}
                         style={{
                           background: eTyp === "entfall"
                             ? "rgba(255,48,80,.08)"
@@ -934,6 +1137,21 @@ export function StundenplanBoard({
                     Krank
                   </button>
                 </div>
+                {editTyp && (
+                  <input
+                    type="text"
+                    value={grundEntwurf}
+                    maxLength={280}
+                    onChange={(e) => setGrundEntwurf(e.target.value)}
+                    onBlur={() => {
+                      if ((grundEntwurf.trim() || null) !== (editEntfall?.begruendung ?? null) && editDatum) {
+                        setStundeTyp(editingStunde.id, editDatum, editTyp, grundEntwurf);
+                      }
+                    }}
+                    placeholder={editTyp === "krank" ? "Grund (optional) – z. B. Erkältung" : "Grund (optional) – z. B. Lehrer krank"}
+                    className="mt-2 w-full rounded-xl border border-border bg-surface-2 px-3 py-2 font-mono text-xs text-foreground placeholder:text-text-mute focus:border-brand/40 focus:outline-none"
+                  />
+                )}
                 <p className="mt-1 font-mono text-[10px] text-text-mute">
                   Nochmal tippen = aufheben · Ganzen Tag: Buttons im Wochenraster
                 </p>

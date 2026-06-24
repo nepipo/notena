@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { StundenplanBoard } from "@/components/stundenplan/stundenplan-board";
-import type { StundeRow, HausaufgabeRow, EntfallRow } from "@/lib/stundenplan/types";
+import type { StundeRow, HausaufgabeRow, EntfallRow, HalbjahrRow } from "@/lib/stundenplan/types";
 import type { FachRow, KlausurRow } from "@/lib/grades/db";
 import type { Bundesland } from "@/lib/ferien/ferien-data";
 
@@ -16,26 +16,40 @@ export default async function StundenplanPage() {
   const vonDatum = new Date(heute); vonDatum.setDate(heute.getDate() - 56);
   const bisDatum = new Date(heute); bisDatum.setDate(heute.getDate() + 56);
 
-  const [{ data: stundeRows }, { data: alleFachRows }, { data: haRows }, { data: klausurRows }, { data: entfallRows }, { data: profil }] =
-    await Promise.all([
-      supabase.from("stundenplan_stunde").select("*").order("wochentag").order("zeit_start"),
-      supabase.from("schule_fach").select("*").order("name"),
-      supabase.from("hausaufgabe").select("*").order("faellig_am"),
-      supabase.from("schule_klausur").select("*").order("datum"),
-      supabase.from("stundenplan_entfall").select("*")
-        .gte("datum", vonDatum.toISOString().slice(0, 10))
-        .lte("datum", bisDatum.toISOString().slice(0, 10)),
-      supabase.from("nutzer_profil").select("bundesland").eq("id", userId).single(),
-    ]);
+  const [
+    { data: halbjahreRows },
+    { data: stundeRows },
+    { data: alleFachRows },
+    { data: haRows },
+    { data: klausurRows },
+    { data: entfallRows },
+    { data: profil },
+  ] = await Promise.all([
+    supabase.from("stundenplan_halbjahr").select("*").eq("user_id", userId).order("created_at"),
+    supabase.from("stundenplan_stunde").select("*").order("wochentag").order("zeit_start"),
+    supabase.from("schule_fach").select("*").order("name"),
+    supabase.from("hausaufgabe").select("*").order("faellig_am"),
+    supabase.from("schule_klausur").select("*").order("datum"),
+    supabase.from("stundenplan_entfall").select("*")
+      .gte("datum", vonDatum.toISOString().slice(0, 10))
+      .lte("datum", bisDatum.toISOString().slice(0, 10)),
+    supabase.from("nutzer_profil").select("bundesland").eq("id", userId).single(),
+  ]);
 
+  const halbjahre = (halbjahreRows ?? []) as HalbjahrRow[];
+  const aktivesHalbjahr = halbjahre.find((h) => h.aktiv) ?? halbjahre[0] ?? null;
   const fachRows = alleFachRows ?? [];
   const bundesland = (profil?.bundesland as Bundesland | null | undefined) ?? null;
 
-  const stunden = (stundeRows ?? []) as StundeRow[];
-  const heuteWochentag = heute.getDay(); // 0=So…6=Sa
+  const alleStunden = (stundeRows ?? []) as StundeRow[];
+  // Stunden des aktiven Halbjahrs (für Header-Zähler)
+  const aktivStunden = aktivesHalbjahr
+    ? alleStunden.filter((s) => s.halbjahr_id === aktivesHalbjahr.id)
+    : alleStunden;
+  const heuteWochentag = heute.getDay();
   const heuteIso = heuteWochentag === 0 || heuteWochentag === 6 ? null : heuteWochentag;
   const heutigeStundenAnzahl = heuteIso
-    ? stunden.filter((s) => s.wochentag === heuteIso).length
+    ? aktivStunden.filter((s) => s.wochentag === heuteIso).length
     : 0;
 
   return (
@@ -58,7 +72,9 @@ export default async function StundenplanPage() {
       </header>
 
       <StundenplanBoard
-        stunden={stunden}
+        halbjahre={halbjahre}
+        aktivesHalbjahrId={aktivesHalbjahr?.id ?? null}
+        stunden={alleStunden}
         faecher={fachRows as FachRow[]}
         alleFaecher={(alleFachRows ?? []) as FachRow[]}
         hausaufgaben={(haRows ?? []) as HausaufgabeRow[]}

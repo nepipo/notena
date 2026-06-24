@@ -1,6 +1,15 @@
+export interface HalbjahrRow {
+  id: string;
+  user_id: string;
+  bezeichnung: string;
+  aktiv: boolean;
+  created_at: string;
+}
+
 export interface StundeRow {
   id: string;
   user_id: string;
+  halbjahr_id: string | null;
   fach_id: string | null;
   bezeichnung: string | null;
   wochentag: number;       // 1=Mo … 7=So
@@ -17,6 +26,7 @@ export interface EntfallRow {
   stunde_id: string;
   datum: string; // "YYYY-MM-DD"
   typ: "entfall" | "krank";
+  begruendung: string | null;
   created_at: string;
 }
 
