@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { useCustomKategorien } from "@/components/kategorien-provider";
 import type { Kategorie, CustomKategorie } from "@/lib/grades/types";
@@ -53,16 +54,29 @@ export function KategorieSelector({
 }) {
   const custom = useCustomKategorien();
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (
+        buttonRef.current && !buttonRef.current.contains(e.target as Node) &&
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node)
+      ) setOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
+
+  function handleToggle() {
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 4, left: rect.left });
+    }
+    setOpen((v) => !v);
+  }
 
   const alleOptionen = [
     ...BUILTIN_OPTIONEN,
@@ -72,30 +86,36 @@ export function KategorieSelector({
   const aktuelle = alleOptionen.find((o) => o.wert === value) ?? alleOptionen[0];
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggle}
         className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-[11px] font-semibold transition-colors active:scale-[0.96] ${open ? "border-brand/40 bg-brand/10 text-brand" : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"}`}
       >
         {aktuelle.label}
         <ChevronDown className={`size-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
-      <div
-        className={`absolute left-0 top-full z-50 mt-1 min-w-[10rem] rounded-2xl border border-border/60 bg-surface-1/95 p-1.5 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-150 origin-top-left ${open ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"}`}
-      >
-        {alleOptionen.map((opt) => (
-          <button
-            key={opt.wert}
-            type="button"
-            onClick={() => { onChange(opt.wert); setOpen(false); }}
-            className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] text-left transition-colors ${value === opt.wert ? "bg-brand font-semibold text-black" : "text-text-dim hover:bg-surface-3"}`}
-          >
-            <span className="w-4 shrink-0 text-center opacity-60">{opt.kurz}</span>
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      {typeof document !== "undefined" && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{ top: dropdownPos.top, left: dropdownPos.left }}
+          className={`fixed z-[9999] min-w-[10rem] rounded-2xl border border-border/60 bg-surface-1/95 p-1.5 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-150 origin-top-left ${open ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"}`}
+        >
+          {alleOptionen.map((opt) => (
+            <button
+              key={opt.wert}
+              type="button"
+              onClick={() => { onChange(opt.wert); setOpen(false); }}
+              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] text-left transition-colors ${value === opt.wert ? "bg-brand font-semibold text-black" : "text-text-dim hover:bg-surface-3"}`}
+            >
+              <span className="w-4 shrink-0 text-center opacity-60">{opt.kurz}</span>
+              {opt.label}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
