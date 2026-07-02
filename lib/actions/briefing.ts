@@ -7,6 +7,7 @@ import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet } from "@/lib/grades/calc";
 import type { HausaufgabeRow } from "@/lib/stundenplan/types";
 import type { StundeRow } from "@/lib/stundenplan/types";
+import { FERIEN, type Bundesland } from "@/lib/ferien/ferien-data";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -27,6 +28,39 @@ function tageBis(iso: string): number {
   return Math.round((ziel.getTime() - h.getTime()) / 86400000);
 }
 
+function ferienHinweis(bundesland: string | null, heute: string): string | null {
+  const bl = bundesland as Bundesland | null;
+  const perioden = bl ? FERIEN[bl] : null;
+  if (!perioden) return null;
+
+  const heuteMs = new Date(heute).getTime();
+
+  const aktuell = perioden.find(f => {
+    const von = new Date(f.von).getTime();
+    const bis = new Date(f.bis).getTime() + 86400000;
+    return heuteMs >= von && heuteMs < bis;
+  });
+
+  if (aktuell) {
+    const restTage = Math.ceil((new Date(aktuell.bis).getTime() + 86400000 - heuteMs) / 86400000);
+    if (restTage <= 2) return `${aktuell.name} enden in ${restTage} Tag(en) — danach geht Schule wieder los.`;
+    return `Aktuell ${aktuell.name} (noch ${restTage} Tage bis ${aktuell.bis}).`;
+  }
+
+  const naechste = perioden.find(f => new Date(f.von).getTime() > heuteMs);
+  if (!naechste) return null;
+
+  const inTagen = Math.ceil((new Date(naechste.von).getTime() - heuteMs) / 86400000);
+
+  if (inTagen <= 10) return `${naechste.name} starten in ${inTagen} Tag(en) (${naechste.von}).`;
+
+  // Gelegentlicher Motivator: jeden 7. Tag basierend auf Datums-Hash
+  const dayOfYear = Math.floor((heuteMs - new Date(new Date(heute).getFullYear(), 0, 0).getTime()) / 86400000);
+  if (dayOfYear % 7 !== 0) return null;
+
+  return `${naechste.name} kommen in ${inTagen} Tagen (${naechste.von}).`;
+}
+
 function baueKontext(params: {
   name: string;
   halbjahr: string;
@@ -37,8 +71,9 @@ function baueKontext(params: {
   stundenHeute: StundeRow[];
   entfallHeute: Map<string, { typ: "entfall" | "krank"; begruendung: string | null }>;
   fachMap: Map<string, string>;
+  ferienHinweis: string | null;
 }): string {
-  const { name, halbjahr, gesamt, faecher, klausuren, hausaufgaben, stundenHeute, entfallHeute, fachMap } = params;
+  const { name, halbjahr, gesamt, faecher, klausuren, hausaufgaben, stundenHeute, entfallHeute, fachMap, ferienHinweis: ferien } = params;
 
   const entfaelleAmTag = stundenHeute.filter((s) => entfallHeute.has(s.id));
   const alleEntfallen = stundenHeute.length > 0 && entfaelleAmTag.length === stundenHeute.length;
@@ -93,7 +128,7 @@ Gesamtschnitt: ${gesamt ?? "–"}/15
 Stundenplan heute: ${stundenStr}
 Nächste Klausuren: ${baldKlausuren}
 Hausaufgaben: ${haStr}
-Aktuelle Fachschnitte: ${notenStr}
+Aktuelle Fachschnitte: ${notenStr}${ferien ? `\nFerieninfo: ${ferien}` : ""}
 `.trim();
 }
 
@@ -118,7 +153,7 @@ export async function holeBriefing(): Promise<string | null> {
   // Userdaten laden
   const { data: profil } = await supabase
     .from("nutzer_profil")
-    .select("name, aktuelles_halbjahr, briefing_aktiv")
+    .select("name, aktuelles_halbjahr, briefing_aktiv, bundesland")
     .eq("id", userId)
     .single();
 
@@ -126,6 +161,7 @@ export async function holeBriefing(): Promise<string | null> {
 
   const name = profil?.name ?? "Schüler";
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+  const bundesland = (profil?.bundesland as string | null) ?? null;
 
   const [{ data: fachRows }, { data: noteRows }, { data: klausurRows }, { data: haRows }, { data: stundeRows }, { data: entfallRows }] =
     await Promise.all([
@@ -161,6 +197,7 @@ export async function holeBriefing(): Promise<string | null> {
     stundenHeute: (stundeRows ?? []) as StundeRow[],
     entfallHeute,
     fachMap,
+    ferienHinweis: ferienHinweis(bundesland, heute),
   });
 
   const msg = await anthropic.messages.create({
@@ -176,7 +213,8 @@ Priorität was du erwähnst (in dieser Reihenfolge, nur was wirklich zutrifft):
 1. Klausuren in ≤ 3 Tagen → immer, konkret ("Mathe morgen" nicht "bald eine Klausur")
 2. Hausaufgaben fällig heute oder morgen → nur wenn vorhanden
 3. Stundenplan heute → wenn ganzer Tag ausfällt oder krankgemeldet ist, das ruhig erwähnen (kurz, locker). Einzelne ausgefallene Stunden nur wenn relevant. Sonst nur erwähnen wenn ungewöhnlich viel oder wenig.
-4. Gesamtschnitt → nur wenn bemerkenswert oder sich was verändert hat
+4. Ferieninfo (wenn im Kontext vorhanden) → locker einbauen. Kurz vor Ferien: als Motivator ("noch 3 Tage, dann Ferien"). In den Ferien: kurz erwähnen, aber kein Schul-Fokus. Ferien enden bald: sanft auf Schulstart hinweisen.
+5. Gesamtschnitt → nur wenn bemerkenswert oder sich was verändert hat
 
 Wenn nichts Besonderes ansteht: kurz und entspannt sagen dass gerade Ruhe ist.
 Nichts erfinden oder aufbauschen. Nur was aus den Daten hervorgeht.
