@@ -4,6 +4,7 @@ import { assembleFaecher, type FachRow, type NoteRow, type KlausurRow } from "@/
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet } from "@/lib/grades/calc";
 import type { HausaufgabeRow, StundeRow } from "@/lib/stundenplan/types";
+import { FERIEN, BUNDESLAND_LABEL, type Bundesland } from "@/lib/ferien/ferien-data";
 
 export type CoachRawData = {
   userId: string;
@@ -20,6 +21,38 @@ export type CoachKontext = {
   systemPrompt: string;
   raw: CoachRawData;
 };
+
+function ferienKontext(bundesland: string | null, heute: string): string {
+  const bl = (bundesland as Bundesland | null);
+  const perioden = bl && FERIEN[bl] ? FERIEN[bl] : null;
+  if (!perioden) return "Keine Ferien-Daten verfügbar";
+
+  const blName = bl ? (BUNDESLAND_LABEL[bl] ?? bl) : "unbekannt";
+  const heuteMs = new Date(heute).getTime();
+
+  const aktuell = perioden.find(f => {
+    const von = new Date(f.von).getTime();
+    const bis = new Date(f.bis).getTime() + 86400000;
+    return heuteMs >= von && heuteMs < bis;
+  });
+
+  const kommend = perioden
+    .filter(f => new Date(f.von).getTime() > heuteMs)
+    .slice(0, 4);
+
+  const lines: string[] = [`Bundesland: ${blName}`];
+  if (aktuell) {
+    const restTage = Math.ceil((new Date(aktuell.bis).getTime() + 86400000 - heuteMs) / 86400000);
+    lines.push(`AKTUELL IN FERIEN: ${aktuell.name} (bis ${aktuell.bis}, noch ${restTage} Tage)`);
+  } else {
+    lines.push("Aktuell: Schule (kein Ferienzeitraum)");
+  }
+  for (const f of kommend) {
+    const inTagen = Math.ceil((new Date(f.von).getTime() - heuteMs) / 86400000);
+    lines.push(`Nächste: ${f.name} ${f.von} bis ${f.bis} (in ${inTagen} Tagen)`);
+  }
+  return lines.join("\n");
+}
 
 function wochentagName(n: number): string {
   return ["", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"][n] ?? String(n);
@@ -41,12 +74,13 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
 
   const { data: profil } = await supabase
     .from("nutzer_profil")
-    .select("name, aktuelles_halbjahr")
+    .select("name, aktuelles_halbjahr, bundesland")
     .eq("id", userId)
     .single();
 
   const name = profil?.name ?? "Schüler";
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+  const bundesland = (profil?.bundesland as string | null) ?? null;
   const heute = new Date().toISOString().slice(0, 10);
 
   // Fächer zuerst — brauchen wir die IDs für den Noten-Filter
@@ -166,35 +200,32 @@ export async function baueCoachKontext(): Promise<CoachKontext> {
         .join("\n")
     : "Kein Stundenplan";
 
+  const ferienStr = ferienKontext(bundesland, heute);
+
   const systemPrompt = `Du bist der Coach in Project X — einer Schul-App für ${name} (17, Gymnasium, ${halbjahr}).
 
 ── STIMME & TON ───────────────────────────────────────────────────────
-Du klingst wie ein 20-jähriger, der selbst Gymnasium durchgezogen hat und jetzt studiert.
-Kennt die Situation, sagt direkt was Sache ist — kein Coaching-Blabla, keine Motivations-Phrasen.
+Du klingst wie ein 20-jähriger der selbst Gymnasium durchgezogen hat und jetzt studiert. Kennt die Situation, sagt direkt was Sache ist.
 
-du-Form. Kurz. Schreib wie jemand der tippt, nicht wie jemand der einen Aufsatz formuliert.
+Du-Form. Schreib fließend wie jemand der tippt — keine Aufzählungszeichen, keine Bindestriche als Trenner, keine "—" als Füllzeichen in deinen Antworten. Einfache Sätze hintereinander, kein Aufsatzstil.
 
-Wenn ${name} etwas Emotionales schreibt ("ich pack das nicht", "hab wieder versagt"):
-→ Einen kurzen Satz Verständnis, dann sofort konkret auf die Daten eingehen.
-→ Beispiel: "Kenn ich. Dein Mathe-Schnitt liegt bei 9 — was war die letzte Klausur?"
-→ NICHT: "Das verstehe ich total! Es ist wichtig, dass du dir keine Vorwürfe machst..."
+Wenn ${name} etwas Emotionales schreibt ("ich pack das nicht", "hab wieder versagt"): einen kurzen Satz Verständnis, dann direkt auf die Daten eingehen. Beispiel: "Kenn ich. Dein Mathe-Schnitt liegt bei 9, was war die letzte Klausur?" — NICHT: "Das verstehe ich total! Es ist wichtig, dass du dir keine Vorwürfe machst..."
 
-Länge:
-- Bestätigung nach Dateneintrag → 1 Satz
-- Einfache Frage → 1–2 Sätze
-- Komplexe Situation → max 4 Sätze, nie mehr
+Wenn ${name} einfach redet ("hey", "wie geht's", "was machst du", "langweilig"): normal menschlich antworten, kurz und locker, kein Daten-Fokus. Wenn Ferien sind dann gerne darauf eingehen.
 
-Nur auf das eingehen was ${name} gerade angesprochen hat — nichts von sich aus aufwerfen.
+Länge: Bestätigung nach Dateneintrag = 1 Satz. Einfache Frage = 1 bis 2 Sätze. Komplexe Situation = maximal 4 Sätze, nie mehr.
 
-VERBOTEN: "Es gilt" · "Fokus liegt auf" · "Ich würde empfehlen" · "Großartig!" · "Super!" · "Weiter so!" · "Als dein KI-Coach" · Bullet-Point-Listen · mehr als 4 Sätze
+Nur auf das eingehen was ${name} gerade angesprochen hat.
+
+VERBOTEN: "Es gilt" / "Fokus liegt auf" / "Ich würde empfehlen" / "Großartig!" / "Super!" / "Weiter so!" / "Als dein KI-Coach" / Bullet-Point-Listen / mehr als 4 Sätze / Sonderzeichen wie "·" oder "──" in Antworten
 
 ── TOOL-REGELN ────────────────────────────────────────────────────────
 Du MUSST bei JEDER Antwort genau ein Tool aufrufen — ohne Ausnahme.
-- Für Text-Antworten (Fragen beantworten, erklären, kommentieren): → "respond_to_user"
-- Für Daten schreiben (eintragen, löschen, ändern): → das passende Mutations-Tool
+Für Text-Antworten (Fragen beantworten, erklären, kommentieren): "respond_to_user".
+Für Daten schreiben (eintragen, löschen, ändern): das passende Mutations-Tool.
 
 Mutations-Tools sind echte Datenbankaufrufe, keine Simulation. Du hast Schreibrecht.
-"Trag ein / lösch / ändere" → sofort das passende Tool, nicht respond_to_user.
+"Trag ein / lösch / ändere" = sofort das passende Tool, nicht respond_to_user.
 Keine Erklärungen vor oder nach einem Mutations-Tool-Aufruf — nur das Tool.
 Nach tool_result: kurze Bestätigung via respond_to_user (1 Satz).
 
@@ -212,6 +243,9 @@ ${klausurStr}
 
 HAUSAUFGABEN (offen):
 ${haStr}
+
+SCHULFERIEN:
+${ferienStr}
 
 STUNDENPLAN:
 ${stundenStr}
