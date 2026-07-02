@@ -179,6 +179,88 @@ function SchnittVerlauf({ noten }: { noten: Note[] }) {
   );
 }
 
+// ── Unterfach-Inline-Section ──────────────────────────────────────────────────
+function UnterfachSection({
+  uf,
+  onAddNote,
+  onRemoveNote,
+  onOpenDialog,
+}: {
+  uf: Fach;
+  onAddNote: (fachId: string, punkte: number, kategorie: Kategorie, bezeichnung?: string, gewicht?: number) => void;
+  onRemoveNote: (fachId: string, noteId: string) => void;
+  onOpenDialog: (fachId: string) => void;
+}) {
+  const system = useNotensystem();
+  const custom = useCustomKategorien();
+  const [punkte, setPunkte] = useState("");
+  const [kategorie, setKategorie] = useState<Kategorie>("klausur");
+  const ufS = fachSchnittGerundet(uf.noten, uf.gewichtungConfig, system);
+
+  function submit() {
+    const p = system.parse(punkte);
+    if (p === null) return;
+    onAddNote(uf.id, p, kategorie);
+    setPunkte("");
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-surface-2/50 p-3">
+      <div className="flex items-center gap-2">
+        <span className="flex-1 font-mono text-xs font-semibold text-text-dim">{uf.name}</span>
+        {uf.subfachGewicht != null && (
+          <span className="font-mono text-[10px] text-text-mute">{Math.round(uf.subfachGewicht * 100)}%</span>
+        )}
+        <span className="font-mono text-sm font-bold" style={{ color: schnittFarbe(ufS, system) }}>
+          {ufS === null ? "–" : system.formatSchnitt(ufS)}
+        </span>
+        <button
+          onClick={() => onOpenDialog(uf.id)}
+          title="Unterfach konfigurieren"
+          className="text-text-mute transition-colors hover:text-foreground"
+        >
+          <Settings2 className="size-3.5" />
+        </button>
+      </div>
+
+      {uf.noten.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {uf.noten.map((n) => (
+            <span key={n.id} className="inline-flex items-center gap-0.5 rounded-full border border-border bg-surface-1 font-mono text-[11px]">
+              <span className="px-2 py-0.5">
+                <span className="font-semibold">{system.formatNote(n.punkte)}</span>
+                <span className="ml-0.5 text-text-mute">{katKuerzel(n.kategorie, custom)}</span>
+                {n.bezeichnung && <span className="ml-0.5 text-text-mute">·{n.bezeichnung.slice(0, 8)}</span>}
+              </span>
+              <button
+                onClick={() => onRemoveNote(uf.id, n.id!)}
+                title="Löschen"
+                className="py-0.5 pr-2 text-text-mute hover:text-destructive"
+              >×</button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-2 flex items-center gap-2 border-t border-border pt-2">
+        <KategorieSelector value={kategorie} onChange={setKategorie} />
+        <Input
+          type="number"
+          min={system.min}
+          max={system.max}
+          step={system.step}
+          value={punkte}
+          onChange={(e) => setPunkte(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          placeholder={`${system.min}–${system.max}`}
+          className="h-7 w-16 bg-surface-1 font-mono text-xs"
+        />
+        <Button onClick={submit} size="sm" className="h-7 px-2 font-display text-xs font-bold">+</Button>
+      </div>
+    </div>
+  );
+}
+
 // ── Haupt-Komponente ──────────────────────────────────────────────────────────
 export function FachCard({
   fach,
@@ -289,24 +371,16 @@ export function FachCard({
       <KategorienSplit noten={fach.noten} />
       {verlaufOffen && <SchnittVerlauf noten={fach.noten} />}
       {unterfaecher && unterfaecher.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {unterfaecher.map((uf) => {
-            const ufS = fachSchnittGerundet(uf.noten, uf.gewichtungConfig, system);
-            return (
-              <div key={uf.id} className="flex items-center gap-2 rounded-lg bg-surface-2/60 px-2.5 py-1.5">
-                <span className="flex-1 font-mono text-[11px] text-text-dim">{uf.name}</span>
-                <span className="font-mono text-[10px] text-text-mute">
-                  {uf.subfachGewicht != null ? `${Math.round(uf.subfachGewicht * 100)}%` : ""}
-                </span>
-                {ufS !== null && (
-                  <span className="font-mono text-xs font-bold" style={{ color: schnittFarbe(ufS, system) }}>
-                    {system.formatSchnitt(ufS)}
-                  </span>
-                )}
-                {ufS === null && <span className="font-mono text-xs text-text-mute">–</span>}
-              </div>
-            );
-          })}
+        <div className="mt-3 space-y-2">
+          {unterfaecher.map((uf) => (
+            <UnterfachSection
+              key={uf.id}
+              uf={uf}
+              onAddNote={onAddNote}
+              onRemoveNote={onRemoveNote}
+              onOpenDialog={onOpenDialog}
+            />
+          ))}
         </div>
       )}
 

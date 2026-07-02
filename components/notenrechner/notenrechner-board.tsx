@@ -68,13 +68,11 @@ export function NotenrechnerBoard({
     }
   }
 
-  // Sortierung: Elternfach direkt gefolgt von seinen Unterfächern
+  // Nur Top-Level-Fächer im Grid — Unterfächer sind im Elternfach-Card sichtbar
   const faecherGeordnet: typeof faecher = [];
   for (const f of faecher) {
-    if (f.parentFachId) continue; // wird beim Elternteil eingefügt
+    if (f.parentFachId) continue;
     faecherGeordnet.push(f);
-    const subs = unterfachMap.get(f.id) ?? [];
-    faecherGeordnet.push(...subs);
   }
   // Verwaiste Unterfächer (Elternteil gelöscht) am Ende anhängen
   for (const f of faecher) {
