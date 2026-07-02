@@ -19,14 +19,14 @@ function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
-let probeCounter = 0;
+let noteCounter = 0;
 
 function SchnittBalken({ wert }: { wert: number | null }) {
   const system = useNotensystem();
   const range = system.max - system.min;
   const pct = wert === null ? 0 : ((wert - system.min) / range) * 100;
   return (
-    <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-3">
+    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
       <div
         className="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-500"
         style={{ width: `${pct}%`, background: schnittFarbe(wert, system) }}
@@ -36,140 +36,408 @@ function SchnittBalken({ wert }: { wert: number | null }) {
 }
 
 function DeltaBadge({ vorher, nachher }: { vorher: number | null; nachher: number | null }) {
-  if (vorher === null || nachher === null || vorher === nachher) return null;
+  if (vorher === null || nachher === null || Math.abs(vorher - nachher) < 0.05) return null;
   const delta = nachher - vorher;
   const positiv = delta > 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-mono text-xs font-bold ${positiv ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"}`}>
+    <span
+      className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-mono text-xs font-bold ${
+        positiv ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+      }`}
+    >
       {positiv ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}
     </span>
+  );
+}
+
+function PunkteBadge({
+  wert,
+  label,
+}: {
+  wert: number | "erreicht" | "unmoeglich" | null;
+  label: string;
+}) {
+  const system = useNotensystem();
+  if (wert === null) return null;
+  if (wert === "erreicht") {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="font-mono text-[10px] text-text-mute">{label}</span>
+        <span className="font-mono text-xs font-bold text-emerald-400">✓ reicht</span>
+      </div>
+    );
+  }
+  if (wert === "unmoeglich") {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="font-mono text-[10px] text-text-mute">{label}</span>
+        <span className="font-mono text-xs font-bold text-red-400">nicht schaffbar</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="font-mono text-[10px] text-text-mute">{label}</span>
+      <span className="font-mono text-sm font-extrabold tabular-nums" style={{ color: schnittFarbe(wert, system) }}>
+        {wert}
+      </span>
+      <span className="font-mono text-[10px] text-text-mute">({system.formatNote(wert)})</span>
+    </div>
   );
 }
 
 export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
   const system = useNotensystem();
   const custom = useCustomKategorien();
-  const [fachId, setFachId] = useState<string>(faecher[0]?.id ?? "");
+
+  // ── Kombinations-Simulator ──────────────────────────────────────────────────
+  const [simNoten, setSimNoten] = useState<Record<string, Note[]>>({});
+  const [simKat, setSimKat] = useState<Record<string, Kategorie>>({});
+  const [simInput, setSimInput] = useState<Record<string, string>>({});
+
+  // ── Ziel-Gesamtschnitt ─────────────────────────────────────────────────────
+  const [gesamtZiel, setGesamtZiel] = useState("");
+
+  // ── Einzel-Fach ────────────────────────────────────────────────────────────
+  const [fachId, setFachId] = useState(faecher[0]?.id ?? "");
   const [proben, setProben] = useState<Note[]>([]);
   const [probePunkte, setProbePunkte] = useState("");
   const [probeKat, setProbeKat] = useState<Kategorie>("klausur");
   const [ziel, setZiel] = useState("");
   const [zielKat, setZielKat] = useState<Kategorie>("klausur");
-  const [gesamtZiel, setGesamtZiel] = useState("");
 
+  // ── Quick-Pick Werte ────────────────────────────────────────────────────────
+  const alleWerte: number[] = [];
+  for (let v = system.min; v <= system.max + 1e-9; v = Math.round((v + system.step) * 1000) / 1000) {
+    alleWerte.push(v);
+  }
+  const quickWerte =
+    alleWerte.length <= 16
+      ? alleWerte
+      : alleWerte.filter(
+          (_, i, arr) =>
+            i === 0 || i === arr.length - 1 || i % Math.ceil(arr.length / 12) === 0
+        );
+
+  // ── Berechnungen Kombinations-Simulator ────────────────────────────────────
+  const faecherMitSim = faecher.map((f) => ({
+    ...f,
+    noten: [...f.noten, ...(simNoten[f.id] ?? [])],
+  }));
+  const gesamtVorher = gesamtSchnittGerundet(faecher, system);
+  const gesamtNachherSim = gesamtSchnittGerundet(faecherMitSim, system);
+  const hatSimNoten = Object.values(simNoten).some((v) => v.length > 0);
+
+  // ── Berechnungen Ziel ──────────────────────────────────────────────────────
+  const gesamtZielZahl = Number(gesamtZiel);
+  const gesamtZielGueltig =
+    gesamtZiel !== "" &&
+    !Number.isNaN(gesamtZielZahl) &&
+    gesamtZielZahl >= system.min &&
+    gesamtZielZahl <= system.max;
+
+  const zielErgebnisse = gesamtZielGueltig
+    ? faecher
+        .filter((f) => !f.ausgeschlossen && !f.parentFachId)
+        .map((f) => {
+          const aktuell = fachSchnittGerundet(f.noten, f.gewichtungConfig, system);
+          const benoetigterSchnitt = benoetigterFachschnittFuerGesamtziel(
+            f,
+            faecher,
+            gesamtZielZahl,
+            system
+          );
+          const klausurPunkte =
+            typeof benoetigterSchnitt === "number"
+              ? benoetigtePunkte(f.noten, f.gewichtungConfig, "klausur", 1, benoetigterSchnitt, system)
+              : null;
+          const muendlichPunkte =
+            typeof benoetigterSchnitt === "number"
+              ? benoetigtePunkte(f.noten, f.gewichtungConfig, "muendlich", 1, benoetigterSchnitt, system)
+              : null;
+          return { fach: f, aktuell, benoetigterSchnitt, klausurPunkte, muendlichPunkte };
+        })
+    : [];
+
+  // ── Berechnungen Einzel-Fach ───────────────────────────────────────────────
   const fach = faecher.find((f) => f.id === fachId) ?? null;
   const istSchnittFach = fach ? fachSchnittGerundet(fach.noten, fach.gewichtungConfig, system) : null;
-  const mitProbenFach = fach ? fachSchnittGerundet([...fach.noten, ...proben], fach.gewichtungConfig, system) : null;
-  const gesamtVorher = gesamtSchnittGerundet(faecher, system);
-  const faecherMitProben = fach ? faecher.map((f) => (f.id === fachId ? { ...f, noten: [...f.noten, ...proben] } : f)) : faecher;
-  const gesamtNachher = gesamtSchnittGerundet(faecherMitProben, system);
+  const mitProbenFach = fach
+    ? fachSchnittGerundet([...fach.noten, ...proben], fach.gewichtungConfig, system)
+    : null;
+  const faecherMitProben = fach
+    ? faecher.map((f) => (f.id === fachId ? { ...f, noten: [...f.noten, ...proben] } : f))
+    : faecher;
+  const gesamtNachherEinzel = gesamtSchnittGerundet(faecherMitProben, system);
+  const zielZahl = Number(ziel);
+  const zielGueltig =
+    ziel !== "" && !Number.isNaN(zielZahl) && zielZahl >= system.min && zielZahl <= system.max;
+  const ergebnis =
+    zielGueltig && fach
+      ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl, system)
+      : null;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function addSimNote(fId: string, punkte?: number) {
+    const p = punkte !== undefined ? punkte : system.parse(simInput[fId] ?? "");
+    if (p === null) return;
+    const kat = simKat[fId] ?? "klausur";
+    setSimNoten((prev) => ({
+      ...prev,
+      [fId]: [...(prev[fId] ?? []), { id: `sim-${noteCounter++}`, punkte: p, kategorie: kat }],
+    }));
+    if (punkte === undefined) setSimInput((prev) => ({ ...prev, [fId]: "" }));
+  }
+
+  function removeSimNote(fId: string, noteId: string) {
+    setSimNoten((prev) => ({
+      ...prev,
+      [fId]: (prev[fId] ?? []).filter((n) => n.id !== noteId),
+    }));
+  }
 
   function addProbe(p?: number) {
     if (p !== undefined) {
-      setProben((prev) => [...prev, { id: `probe-${probeCounter++}`, punkte: p, kategorie: probeKat }]);
+      setProben((prev) => [...prev, { id: `probe-${noteCounter++}`, punkte: p, kategorie: probeKat }]);
       return;
     }
     const parsed = system.parse(probePunkte);
     if (parsed === null) return;
-    setProben((prev) => [...prev, { id: `probe-${probeCounter++}`, punkte: parsed, kategorie: probeKat }]);
+    setProben((prev) => [...prev, { id: `probe-${noteCounter++}`, punkte: parsed, kategorie: probeKat }]);
     setProbePunkte("");
   }
-
-  const zielZahl = Number(ziel);
-  const zielGueltig = ziel !== "" && !Number.isNaN(zielZahl) && zielZahl >= system.min && zielZahl <= system.max;
-  const ergebnis = zielGueltig && fach
-    ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl, system)
-    : null;
-
-  // Gesamtschnitt-Ziel: für jedes Fach berechnen
-  const gesamtZielZahl = Number(gesamtZiel);
-  const gesamtZielGueltig = gesamtZiel !== "" && !Number.isNaN(gesamtZielZahl) && gesamtZielZahl >= system.min && gesamtZielZahl <= system.max;
-  const gesamtZielErgebnisse = gesamtZielGueltig
-    ? faecher
-        .filter((f) => !f.ausgeschlossen && !f.parentFachId)
-        .map((f) => ({
-          fach: f,
-          ergebnis: benoetigterFachschnittFuerGesamtziel(f, faecher, gesamtZielZahl, system),
-          aktuell: fachSchnittGerundet(f.noten, f.gewichtungConfig, system),
-        }))
-    : [];
-
-  // System-spezifische Quick-Pick-Werte
-  const quickPickWerte: number[] = [];
-  for (let v = system.min; v <= system.max + 1e-9; v = Math.round((v + system.step) * 1000) / 1000) {
-    quickPickWerte.push(v);
-  }
-  const gefilterteWerte = quickPickWerte.length <= 16
-    ? quickPickWerte
-    : quickPickWerte.filter((_, i, arr) => i === 0 || i === arr.length - 1 || i % Math.ceil(arr.length / 12) === 0);
 
   if (faecher.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
         <div className="text-5xl">🔮</div>
         <p className="font-display text-xl font-bold">Noch keine Fächer</p>
-        <p className="font-mono text-sm text-text-mute">Leg im Notenrechner erst Fächer &amp; Noten an.</p>
+        <p className="font-mono text-sm text-text-mute">Leg im Notenrechner erst Fächer & Noten an.</p>
       </div>
     );
   }
 
+  const hauptfaecher = faecher.filter((f) => !f.parentFachId && !f.ausgeschlossen);
+
   return (
     <div className="space-y-6">
-      {/* Gesamtschnitt-Impact Hero */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          BLOCK A — Kombinations-Simulator
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         className="animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-6 sm:p-8"
-        style={{ background: "var(--hero-grad)", borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)" }}
+        style={{
+          background: "var(--hero-grad)",
+          borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
+        }}
       >
-        <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full opacity-40" style={{ background: "radial-gradient(circle, var(--brand) 0%, transparent 65%)" }} />
+        <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full opacity-30"
+          style={{ background: "radial-gradient(circle, var(--brand) 0%, transparent 65%)" }}
+        />
         <div className="relative z-[2]">
-          <div className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">Gesamtschnitt-Impact</div>
-          <div className="flex flex-wrap items-end gap-4 sm:gap-8">
-            <div>
-              <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-mute">Jetzt</div>
-              <div className="font-display text-5xl font-extrabold leading-none tracking-tight sm:text-6xl" style={{ color: schnittFarbe(gesamtVorher, system) }}>
-                {fmt(gesamtVorher)}
+          {/* Live-Schnitt */}
+          <div className="mb-5">
+            <div className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
+              Kombinations-Simulator
+            </div>
+            <div className="flex flex-wrap items-end gap-6 sm:gap-10">
+              <div>
+                <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-mute">Aktuell</div>
+                <div
+                  className="font-display text-5xl font-extrabold leading-none tracking-tight sm:text-6xl"
+                  style={{ color: schnittFarbe(gesamtVorher, system) }}
+                >
+                  {fmt(gesamtVorher)}
+                </div>
               </div>
-              {gesamtVorher !== null && (
-                <div className="mt-1 font-mono text-xs text-text-dim">Note {system.formatNote(gesamtVorher)}</div>
+              {hatSimNoten && (
+                <>
+                  <div className="pb-1 text-2xl text-text-mute">→</div>
+                  <div>
+                    <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-mute">
+                      Mit deinen Noten
+                    </div>
+                    <div
+                      className="font-display text-5xl font-extrabold leading-none tracking-tight sm:text-6xl"
+                      style={{ color: schnittFarbe(gesamtNachherSim, system) }}
+                    >
+                      {fmt(gesamtNachherSim)}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      {gesamtNachherSim !== null && (
+                        <span className="font-mono text-xs text-text-dim">
+                          {system.formatNote(gesamtNachherSim)}
+                        </span>
+                      )}
+                      <DeltaBadge vorher={gesamtVorher} nachher={gesamtNachherSim} />
+                    </div>
+                  </div>
+                </>
               )}
             </div>
-            {proben.length > 0 && (
-              <>
-                <div className="text-2xl text-text-mute">→</div>
-                <div>
-                  <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-mute">Hochgerechnet</div>
-                  <div className="font-display text-5xl font-extrabold leading-none tracking-tight sm:text-6xl" style={{ color: schnittFarbe(gesamtNachher, system) }}>
-                    {fmt(gesamtNachher)}
+            <div className="mt-4 space-y-1.5">
+              <SchnittBalken wert={gesamtVorher} />
+              {hatSimNoten && <SchnittBalken wert={gesamtNachherSim} />}
+            </div>
+          </div>
+
+          <p className="mb-4 font-mono text-xs text-text-mute">
+            Trag geplante Noten in beliebig viele Fächer ein — der Gesamtschnitt passt sich sofort an.
+          </p>
+
+          {/* Fächer-Grid */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {hauptfaecher.map((f) => {
+              const simFach = simNoten[f.id] ?? [];
+              const schnittVorher = fachSchnittGerundet(f.noten, f.gewichtungConfig, system);
+              const schnittNachher = fachSchnittGerundet(
+                [...f.noten, ...simFach],
+                f.gewichtungConfig,
+                system
+              );
+              const hatSim = simFach.length > 0;
+              const kat = simKat[f.id] ?? "klausur";
+
+              return (
+                <div
+                  key={f.id}
+                  className="rounded-2xl border border-border/60 bg-surface-1/80 p-3.5 backdrop-blur-sm"
+                >
+                  {/* Fach-Kopf */}
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {f.farbe && (
+                        <span className="size-2 shrink-0 rounded-full" style={{ background: f.farbe }} />
+                      )}
+                      <span className="truncate font-sans text-sm font-semibold">{f.name}</span>
+                      {f.niveau === "erhoeht" && (
+                        <span className="shrink-0 rounded-md bg-brand/15 px-1 py-0.5 font-mono text-[9px] font-bold text-brand">
+                          LK
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span
+                        className="font-mono text-sm font-bold tabular-nums"
+                        style={{ color: schnittFarbe(schnittVorher, system) }}
+                      >
+                        {fmt(schnittVorher)}
+                      </span>
+                      {hatSim && schnittNachher !== schnittVorher && (
+                        <>
+                          <span className="text-text-mute">→</span>
+                          <span
+                            className="font-mono text-sm font-bold tabular-nums"
+                            style={{ color: schnittFarbe(schnittNachher, system) }}
+                          >
+                            {fmt(schnittNachher)}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    {gesamtNachher !== null && (
-                      <span className="font-mono text-xs text-text-dim">Note {system.formatNote(gesamtNachher)}</span>
-                    )}
-                    <DeltaBadge vorher={gesamtVorher} nachher={gesamtNachher} />
+
+                  {/* Geplante Noten */}
+                  {hatSim && (
+                    <div className="mb-2.5 flex flex-wrap gap-1.5">
+                      {simFach.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => removeSimNote(f.id, n.id!)}
+                          className="inline-flex items-center gap-1 rounded-full border border-dashed border-brand/50 bg-brand/10 px-2 py-1 font-mono text-xs text-brand transition-colors hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <span className="font-bold">{n.punkte}</span>
+                          <span className="opacity-60">{katKuerzel(n.kategorie, custom)}</span>
+                          <span className="text-[10px]">×</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Eingabe */}
+                  <div className="space-y-2">
+                    <KategorieSelector
+                      value={kat}
+                      onChange={(k) => setSimKat((prev) => ({ ...prev, [f.id]: k }))}
+                    />
+                    <div className="flex flex-wrap gap-1">
+                      {quickWerte.map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => addSimNote(f.id, p)}
+                          className="min-w-[1.9rem] rounded-lg border border-border/60 bg-surface-2 px-1.5 py-1 font-mono text-xs font-bold transition-colors hover:border-brand/40 hover:bg-brand/10"
+                          style={{ color: schnittFarbe(p, system) }}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        type="number"
+                        min={system.min}
+                        max={system.max}
+                        step={system.step}
+                        value={simInput[f.id] ?? ""}
+                        onChange={(e) =>
+                          setSimInput((prev) => ({ ...prev, [f.id]: e.target.value }))
+                        }
+                        onKeyDown={(e) => e.key === "Enter" && addSimNote(f.id)}
+                        placeholder={`andere (${system.min}–${system.max})`}
+                        className="h-8 flex-1 bg-surface-2 font-mono text-xs"
+                      />
+                      <Button
+                        onClick={() => addSimNote(f.id)}
+                        size="sm"
+                        className="h-8 px-3 font-display font-bold"
+                      >
+                        +
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </>
-            )}
+              );
+            })}
           </div>
-          <div className="mt-5 space-y-1.5">
-            <SchnittBalken wert={gesamtVorher} />
-            {proben.length > 0 && <SchnittBalken wert={gesamtNachher} />}
-          </div>
+
+          {hatSimNoten && (
+            <button
+              onClick={() => setSimNoten({})}
+              className="mt-4 rounded-xl border border-border/60 bg-surface-2/60 px-4 py-2 font-mono text-xs text-text-mute transition-colors hover:border-destructive/40 hover:text-destructive"
+            >
+              Alle zurücksetzen
+            </button>
+          )}
         </div>
       </section>
 
-      {/* ── Gesamtschnitt-Ziel ─────────────────────────────── */}
-      <section className="animate-fade-up rounded-[24px] border border-border p-5" style={{ background: "var(--card-grad)", animationDelay: "0.03s" }}>
-        <div className="mb-1 font-display text-base font-extrabold">Ziel-Gesamtschnitt erreichen</div>
-        <div className="mb-4 font-mono text-xs text-text-mute">Gib deinen Wunsch-Gesamtschnitt ein — ich zeige dir, was du pro Fach bräuchtest.</div>
+      {/* ══════════════════════════════════════════════════════════════════════
+          BLOCK B — Ziel-Gesamtschnitt
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        className="animate-fade-up rounded-[24px] border border-border p-5 sm:p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.04s" }}
+      >
+        <div className="mb-1 font-display text-base font-extrabold">
+          Was brauche ich für Gesamtschnitt X?
+        </div>
+        <div className="mb-4 font-mono text-xs text-text-mute">
+          Ich zeige dir pro Fach: welchen Schnitt du dort bräuchtest — und was das konkret als nächste
+          Klausur oder mündliche Note bedeutet.
+        </div>
 
+        {/* Ziel-Eingabe */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex flex-wrap gap-1.5">
-            {gefilterteWerte.filter((v) => v > system.min).map((z) => (
+            {quickWerte.filter((v) => v > system.min).map((z) => (
               <button
                 key={z}
                 onClick={() => setGesamtZiel(String(z))}
-                className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${gesamtZiel === String(z) ? "border-brand bg-brand/15 text-brand" : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"}`}
+                className={`min-w-[2.4rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${
+                  gesamtZiel === String(z)
+                    ? "border-brand bg-brand/15 text-brand"
+                    : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"
+                }`}
                 style={{ color: gesamtZiel === String(z) ? undefined : schnittFarbe(z, system) }}
               >
                 {system.formatSchnitt(z)}
@@ -177,116 +445,230 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
             ))}
           </div>
           <Input
-            type="number" min={system.min} max={system.max} step={system.step}
-            value={gesamtZiel} onChange={(e) => setGesamtZiel(e.target.value)}
+            type="number"
+            min={system.min}
+            max={system.max}
+            step={system.step}
+            value={gesamtZiel}
+            onChange={(e) => setGesamtZiel(e.target.value)}
             placeholder={`${system.min}–${system.max}`}
-            className="h-10 w-36 bg-surface-2 font-mono"
+            className="h-10 w-32 bg-surface-2 font-mono"
           />
         </div>
 
-        {gesamtZielGueltig && gesamtZielErgebnisse.length > 0 && (
-          <div className="mt-5 space-y-2">
-            <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
-              Benötigter Fachschnitt — wenn nur dieses Fach sich ändert:
-            </div>
-            {gesamtZielErgebnisse.map(({ fach: f, ergebnis: res, aktuell }) => (
-              <div
-                key={f.id}
-                className="flex items-center gap-3 rounded-2xl border border-border/60 bg-surface-2 px-4 py-3"
-              >
-                {f.farbe && <span className="size-2.5 shrink-0 rounded-full" style={{ background: f.farbe }} />}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-sans text-sm font-semibold truncate">{f.name}</span>
-                    {f.niveau === "erhoeht" && <span className="shrink-0 font-mono text-[9px] font-bold text-brand opacity-70">LK</span>}
-                  </div>
-                  <div className="mt-0.5 font-mono text-[10px] text-text-mute">
-                    Aktuell:{" "}
-                    <span style={{ color: schnittFarbe(aktuell, system) }}>
-                      {aktuell !== null ? system.formatSchnitt(aktuell) : "–"}
+        {/* Ergebnisse */}
+        {gesamtZielGueltig && zielErgebnisse.length > 0 && (
+          <div className="mt-5 space-y-2.5">
+            {zielErgebnisse.map(({ fach: f, aktuell, benoetigterSchnitt, klausurPunkte, muendlichPunkte }) => {
+              const istErreicht = benoetigterSchnitt === "erreicht";
+              const istUnmoeglich = benoetigterSchnitt === "unmoeglich";
+
+              return (
+                <div
+                  key={f.id}
+                  className={`rounded-2xl border p-4 ${
+                    istErreicht
+                      ? "border-emerald-500/30 bg-emerald-500/5"
+                      : istUnmoeglich
+                      ? "border-red-500/30 bg-red-500/5"
+                      : "border-border/60 bg-surface-2"
+                  }`}
+                >
+                  {/* Fach-Kopf */}
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {f.farbe && (
+                        <span className="size-2 shrink-0 rounded-full" style={{ background: f.farbe }} />
+                      )}
+                      <span className="font-sans text-sm font-semibold">{f.name}</span>
+                      {f.niveau === "erhoeht" && (
+                        <span className="rounded-md bg-brand/15 px-1 py-0.5 font-mono text-[9px] font-bold text-brand">
+                          LK
+                        </span>
+                      )}
+                      {f.niveau === "grundlegend" && (
+                        <span className="rounded-md bg-surface-3 px-1 py-0.5 font-mono text-[9px] font-bold text-text-dim">
+                          GK
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-mono text-xs text-text-mute">
+                      jetzt{" "}
+                      <span style={{ color: schnittFarbe(aktuell, system) }}>{fmt(aktuell)}</span>
                     </span>
                   </div>
-                </div>
-                <div className="shrink-0 text-right">
-                  {res === "erreicht" ? (
-                    <span className="rounded-xl bg-emerald-500/15 px-2.5 py-1 font-mono text-xs font-bold text-emerald-400">✓ Erreicht</span>
-                  ) : res === "unmoeglich" ? (
-                    <span className="rounded-xl bg-red-500/15 px-2.5 py-1 font-mono text-xs font-bold text-red-400">Zu weit weg</span>
-                  ) : (
-                    <div className="text-right">
-                      <div className="font-display text-xl font-extrabold" style={{ color: schnittFarbe(res, system) }}>
-                        {system.formatSchnitt(res)}
+
+                  {/* Ergebnis */}
+                  {istErreicht ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">✅</span>
+                      <span className="font-mono text-sm font-bold text-emerald-400">Schon erreicht</span>
+                    </div>
+                  ) : istUnmoeglich ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🚫</span>
+                      <div>
+                        <span className="font-mono text-sm font-bold text-red-400">
+                          Mit diesem Fach allein nicht schaffbar
+                        </span>
+                        <div className="mt-0.5 font-mono text-[10px] text-text-mute">
+                          Selbst mit {system.max} Punkten überall reicht es nicht — du musst in mehreren
+                          Fächern besser werden.
+                        </div>
                       </div>
-                      <div className="font-mono text-[10px] text-text-mute">{system.formatNote(res)}</div>
-                      {aktuell !== null && (
-                        <DeltaBadge vorher={aktuell} nachher={res} />
-                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Benötigter Fachschnitt */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] text-text-mute">Fachschnitt nötig</span>
+                        <span
+                          className="font-mono text-lg font-extrabold tabular-nums"
+                          style={{ color: schnittFarbe(benoetigterSchnitt as number, system) }}
+                        >
+                          {fmt(benoetigterSchnitt as number)}
+                        </span>
+                        <DeltaBadge vorher={aktuell} nachher={benoetigterSchnitt as number} />
+                      </div>
+
+                      {/* Konkrete nächste Noten */}
+                      <div className="rounded-xl border border-border/40 bg-surface-1/50 px-3 py-2.5">
+                        <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[.2em] text-text-mute">
+                          Das heißt konkret — nächste Note:
+                        </div>
+                        <div className="space-y-1.5">
+                          <PunkteBadge wert={klausurPunkte} label="Klausur mind." />
+                          <PunkteBadge wert={muendlichPunkte} label="Mündlich mind." />
+                          {klausurPunkte === "unmoeglich" && muendlichPunkte === "unmoeglich" && (
+                            <div className="font-mono text-[10px] text-amber-400">
+                              Nicht mit einer Note schaffbar — du brauchst mehrere gute Noten in diesem
+                              Fach.
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
+      {/* ══════════════════════════════════════════════════════════════════════
+          BLOCK C — Einzel-Fach
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
         {/* Fächerliste */}
-        <div className="space-y-1.5">
-          <div className="mb-2 px-1 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">Fach wählen</div>
+        <div className="space-y-1">
+          <div className="mb-2 px-1 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+            Fach auswählen
+          </div>
           {faecher.map((f) => {
             const schnitt = fachSchnittGerundet(f.noten, f.gewichtungConfig, system);
             const istAktiv = f.id === fachId;
             return (
               <button
                 key={f.id}
-                onClick={() => { setFachId(f.id); setProben([]); setProbePunkte(""); setZiel(""); }}
-                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[background-color,border-color] ${istAktiv ? "border-brand/40 bg-brand/10" : "border-transparent bg-surface-2 hover:bg-surface-3"}`}
+                onClick={() => {
+                  setFachId(f.id);
+                  setProben([]);
+                  setProbePunkte("");
+                  setZiel("");
+                }}
+                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[background-color,border-color] ${
+                  istAktiv
+                    ? "border-brand/40 bg-brand/10"
+                    : "border-transparent bg-surface-2 hover:bg-surface-3"
+                }`}
               >
                 {f.farbe ? (
                   <span className="size-2.5 shrink-0 rounded-full" style={{ background: f.farbe }} />
                 ) : (
                   <span className="size-2.5 shrink-0 rounded-full bg-surface-3" />
                 )}
-                <span className={`flex-1 font-sans text-sm font-semibold ${istAktiv ? "text-brand" : "text-foreground"}`}>{f.name}</span>
-                {f.niveau === "erhoeht" && <span className="font-mono text-[9px] font-bold text-brand opacity-70">LK</span>}
-                <span className="font-mono text-sm font-bold tabular-nums" style={{ color: schnittFarbe(schnitt, system) }}>{fmt(schnitt)}</span>
+                <span
+                  className={`flex-1 truncate font-sans text-sm font-semibold ${
+                    istAktiv ? "text-brand" : "text-foreground"
+                  }`}
+                >
+                  {f.name}
+                </span>
+                {f.niveau === "erhoeht" && (
+                  <span className="font-mono text-[9px] font-bold text-brand opacity-70">LK</span>
+                )}
+                <span
+                  className="font-mono text-sm font-bold tabular-nums"
+                  style={{ color: schnittFarbe(schnitt, system) }}
+                >
+                  {fmt(schnitt)}
+                </span>
               </button>
             );
           })}
         </div>
 
-        {/* Panel */}
+        {/* Fach-Panel */}
         {fach && (
           <div className="animate-fade-up space-y-4">
-            {/* Fach-Schnitt */}
+            {/* Fach-Schnitt Card */}
             <div
               className="rounded-[24px] border p-5"
-              style={{ background: "var(--card-grad)", borderColor: fach.farbe ? `color-mix(in srgb, ${fach.farbe} 40%, transparent)` : "var(--border)" }}
+              style={{
+                background: "var(--card-grad)",
+                borderColor: fach.farbe
+                  ? `color-mix(in srgb, ${fach.farbe} 40%, transparent)`
+                  : "var(--border)",
+              }}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
-                    {fach.farbe && <span className="size-3 rounded-full" style={{ background: fach.farbe }} />}
+                  <div className="mb-3 flex items-center gap-2">
+                    {fach.farbe && (
+                      <span className="size-3 rounded-full" style={{ background: fach.farbe }} />
+                    )}
                     <span className="font-display text-2xl font-extrabold">{fach.name}</span>
                     {fach.niveau && (
-                      <span className={`rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] ${fach.niveau === "erhoeht" ? "bg-brand/15 text-brand" : "bg-surface-3 text-text-dim"}`}>
+                      <span
+                        className={`rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[.1em] ${
+                          fach.niveau === "erhoeht"
+                            ? "bg-brand/15 text-brand"
+                            : "bg-surface-3 text-text-dim"
+                        }`}
+                      >
                         {fach.niveau === "erhoeht" ? "LK" : "GK"}
                       </span>
                     )}
                   </div>
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <span className="font-display text-4xl font-extrabold" style={{ color: schnittFarbe(istSchnittFach, system) }}>{fmt(istSchnittFach)}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className="font-display text-4xl font-extrabold"
+                      style={{ color: schnittFarbe(istSchnittFach, system) }}
+                    >
+                      {fmt(istSchnittFach)}
+                    </span>
                     {proben.length > 0 && (
                       <>
                         <span className="text-xl text-text-mute">→</span>
-                        <span className="font-display text-4xl font-extrabold" style={{ color: schnittFarbe(mitProbenFach, system) }}>{fmt(mitProbenFach)}</span>
+                        <span
+                          className="font-display text-4xl font-extrabold"
+                          style={{ color: schnittFarbe(mitProbenFach, system) }}
+                        >
+                          {fmt(mitProbenFach)}
+                        </span>
                         <DeltaBadge vorher={istSchnittFach} nachher={mitProbenFach} />
                       </>
                     )}
                   </div>
-                  {mitProbenFach !== null && proben.length > 0 && (
-                    <div className="mt-1 font-mono text-xs text-text-dim">Note {system.formatNote(mitProbenFach)}</div>
+                  {proben.length > 0 && (
+                    <div className="mt-1 font-mono text-xs text-text-dim">
+                      Gesamtschnitt: {fmt(gesamtVorher)} →{" "}
+                      <span style={{ color: schnittFarbe(gesamtNachherEinzel, system) }}>
+                        {fmt(gesamtNachherEinzel)}
+                      </span>
+                      <DeltaBadge vorher={gesamtVorher} nachher={gesamtNachherEinzel} />
+                    </div>
                   )}
                 </div>
                 {proben.length > 0 && (
@@ -302,23 +684,38 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 <div className="flex items-center gap-2">
                   <span className="w-16 font-mono text-[10px] text-text-mute">Aktuell</span>
                   <SchnittBalken wert={istSchnittFach} />
-                  <span className="w-8 text-right font-mono text-xs font-bold tabular-nums" style={{ color: schnittFarbe(istSchnittFach, system) }}>{fmt(istSchnittFach)}</span>
+                  <span
+                    className="w-8 text-right font-mono text-xs font-bold tabular-nums"
+                    style={{ color: schnittFarbe(istSchnittFach, system) }}
+                  >
+                    {fmt(istSchnittFach)}
+                  </span>
                 </div>
                 {proben.length > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="w-16 font-mono text-[10px] text-text-mute">Fiktiv</span>
                     <SchnittBalken wert={mitProbenFach} />
-                    <span className="w-8 text-right font-mono text-xs font-bold tabular-nums" style={{ color: schnittFarbe(mitProbenFach, system) }}>{fmt(mitProbenFach)}</span>
+                    <span
+                      className="w-8 text-right font-mono text-xs font-bold tabular-nums"
+                      style={{ color: schnittFarbe(mitProbenFach, system) }}
+                    >
+                      {fmt(mitProbenFach)}
+                    </span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Was wenn ich X schreibe? */}
-            <div className="rounded-[24px] border border-border p-5" style={{ background: "var(--card-grad)" }}>
+            {/* Probe-Noten simulieren */}
+            <div
+              className="rounded-[24px] border border-border p-5"
+              style={{ background: "var(--card-grad)" }}
+            >
               <div className="mb-4">
-                <div className="font-display text-base font-extrabold">Was wäre, wenn ich X schreibe?</div>
-                <div className="mt-0.5 font-mono text-xs text-text-mute">Tipp eine fiktive Note ein — der Schnitt oben aktualisiert sich sofort.</div>
+                <div className="font-display text-base font-extrabold">Noten simulieren</div>
+                <div className="mt-0.5 font-mono text-xs text-text-mute">
+                  Tipp eine fiktive Note — Fachschnitt und Gesamtschnitt aktualisieren sich sofort.
+                </div>
               </div>
               {proben.length > 0 && (
                 <div className="mb-4 flex flex-wrap gap-2">
@@ -340,7 +737,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
               </div>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-1.5">
-                  {gefilterteWerte.map((p) => (
+                  {quickWerte.map((p) => (
                     <button
                       key={p}
                       onClick={() => addProbe(p)}
@@ -353,29 +750,47 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
-                    type="number" min={system.min} max={system.max} step={system.step}
-                    value={probePunkte} onChange={(e) => setProbePunkte(e.target.value)}
+                    type="number"
+                    min={system.min}
+                    max={system.max}
+                    step={system.step}
+                    value={probePunkte}
+                    onChange={(e) => setProbePunkte(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && addProbe()}
                     placeholder={`Andere (${system.min}–${system.max})`}
                     className="h-10 flex-1 bg-surface-2 font-mono"
                   />
-                  <Button onClick={() => addProbe()} className="h-10 font-display font-bold">Eintragen</Button>
+                  <Button onClick={() => addProbe()} className="h-10 font-display font-bold">
+                    Eintragen
+                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* Was muss ich schreiben? */}
-            <div className="rounded-[24px] border border-border p-5" style={{ background: "var(--card-grad)" }}>
+            {/* Was muss ich im Fach schreiben? */}
+            <div
+              className="rounded-[24px] border border-border p-5"
+              style={{ background: "var(--card-grad)" }}
+            >
               <div className="mb-4">
-                <div className="font-display text-base font-extrabold">Was muss ich schreiben, um X zu erreichen?</div>
-                <div className="mt-0.5 font-mono text-xs text-text-mute">Zielschnitt wählen — ich rechne aus, welche Punkte du mindestens brauchst.</div>
+                <div className="font-display text-base font-extrabold">
+                  Was muss ich in {fach.name} schreiben?
+                </div>
+                <div className="mt-0.5 font-mono text-xs text-text-mute">
+                  Ziel-Fachschnitt wählen — ich rechne aus, was du mindestens in der nächsten Note
+                  brauchst.
+                </div>
               </div>
               <div className="mb-3 flex flex-wrap gap-1.5">
-                {gefilterteWerte.filter((v) => v > system.min).map((z) => (
+                {quickWerte.filter((v) => v > system.min).map((z) => (
                   <button
                     key={z}
                     onClick={() => setZiel(String(z))}
-                    className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${ziel === String(z) ? "border-brand bg-brand/15 text-brand" : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"}`}
+                    className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${
+                      ziel === String(z)
+                        ? "border-brand bg-brand/15 text-brand"
+                        : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"
+                    }`}
                     style={{ color: ziel === String(z) ? undefined : schnittFarbe(z, system) }}
                   >
                     {z}
@@ -384,12 +799,16 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Input
-                  type="number" min={system.min} max={system.max} step={system.step}
-                  value={ziel} onChange={(e) => setZiel(e.target.value)}
+                  type="number"
+                  min={system.min}
+                  max={system.max}
+                  step={system.step}
+                  value={ziel}
+                  onChange={(e) => setZiel(e.target.value)}
                   placeholder={`Zielschnitt (${system.min}–${system.max})`}
                   className="h-10 w-36 bg-surface-2 font-mono"
                 />
-                <span className="font-mono text-sm text-text-dim">in</span>
+                <span className="font-mono text-sm text-text-dim">via</span>
                 <KategorieSelector value={zielKat} onChange={setZielKat} />
               </div>
               {ergebnis !== null && (
@@ -399,30 +818,46 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                       <span className="text-2xl">🎉</span>
                       <div>
                         <div className="font-display font-bold text-emerald-400">Ziel schon erreicht!</div>
-                        <div className="font-mono text-xs text-text-dim">Dein Schnitt liegt bereits bei oder über {ziel}.</div>
+                        <div className="font-mono text-xs text-text-dim">
+                          Dein Schnitt liegt bereits bei oder über {ziel}.
+                        </div>
                       </div>
                     </div>
                   ) : ergebnis === "unmoeglich" ? (
                     <div className="flex items-center gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
                       <span className="text-2xl">💀</span>
                       <div>
-                        <div className="font-display font-bold text-red-400">Mit einer Note nicht erreichbar</div>
-                        <div className="font-mono text-xs text-text-dim">Selbst mit {system.max} würdest du {ziel} nicht erreichen.</div>
+                        <div className="font-display font-bold text-red-400">
+                          Mit einer Note nicht erreichbar
+                        </div>
+                        <div className="font-mono text-xs text-text-dim">
+                          Selbst mit {system.max} Punkten würdest du {ziel} nicht erreichen. Du
+                          brauchst mehrere gute Noten.
+                        </div>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4">
                       <div
                         className="flex size-14 shrink-0 items-center justify-center rounded-2xl font-display text-3xl font-extrabold"
-                        style={{ background: `color-mix(in srgb, ${schnittFarbe(ergebnis, system)} 20%, transparent)`, color: schnittFarbe(ergebnis, system) }}
+                        style={{
+                          background: `color-mix(in srgb, ${schnittFarbe(ergebnis, system)} 20%, transparent)`,
+                          color: schnittFarbe(ergebnis, system),
+                        }}
                       >
                         {ergebnis}
                       </div>
                       <div>
                         <div className="font-display font-bold">
-                          Mindestens <span style={{ color: schnittFarbe(ergebnis, system) }}>{ergebnis} Punkte</span>
+                          Mindestens{" "}
+                          <span style={{ color: schnittFarbe(ergebnis, system) }}>
+                            {ergebnis} Punkte
+                          </span>
                         </div>
-                        <div className="font-mono text-xs text-text-dim">Note {system.formatNote(ergebnis)} — dann erreichst du Schnitt {ziel}.</div>
+                        <div className="font-mono text-xs text-text-dim">
+                          {system.formatNote(ergebnis)} — dann erreichst du Schnitt {ziel} in{" "}
+                          {fach.name}.
+                        </div>
                       </div>
                     </div>
                   )}
