@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fachSchnittGerundet, gesamtSchnittGerundet, benoetigtePunkte } from "@/lib/grades/calc";
+import {
+  fachSchnittGerundet,
+  gesamtSchnittGerundet,
+  benoetigtePunkte,
+  benoetigterFachschnittFuerGesamtziel,
+} from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { useNotensystem } from "@/components/notensystem-provider";
+import { KategorieSelector, katKuerzel } from "@/components/notenrechner/kategorie-selector";
+import { useCustomKategorien } from "@/components/kategorien-provider";
 import type { Fach, Kategorie, Note } from "@/lib/grades/types";
-
-const KATEGORIEN: { wert: Kategorie; label: string; kurz: string }[] = [
-  { wert: "klausur", label: "Klausur", kurz: "K" },
-  { wert: "muendlich", label: "Mündlich", kurz: "M" },
-  { wert: "test", label: "Test", kurz: "T" },
-  { wert: "referat", label: "Referat", kurz: "R" },
-];
 
 function fmt(n: number | null): string {
   return n === null ? "–" : n.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -48,12 +48,14 @@ function DeltaBadge({ vorher, nachher }: { vorher: number | null; nachher: numbe
 
 export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
   const system = useNotensystem();
+  const custom = useCustomKategorien();
   const [fachId, setFachId] = useState<string>(faecher[0]?.id ?? "");
   const [proben, setProben] = useState<Note[]>([]);
   const [probePunkte, setProbePunkte] = useState("");
   const [probeKat, setProbeKat] = useState<Kategorie>("klausur");
   const [ziel, setZiel] = useState("");
   const [zielKat, setZielKat] = useState<Kategorie>("klausur");
+  const [gesamtZiel, setGesamtZiel] = useState("");
 
   const fach = faecher.find((f) => f.id === fachId) ?? null;
   const istSchnittFach = fach ? fachSchnittGerundet(fach.noten, fach.gewichtungConfig, system) : null;
@@ -78,6 +80,19 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
   const ergebnis = zielGueltig && fach
     ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl, system)
     : null;
+
+  // Gesamtschnitt-Ziel: für jedes Fach berechnen
+  const gesamtZielZahl = Number(gesamtZiel);
+  const gesamtZielGueltig = gesamtZiel !== "" && !Number.isNaN(gesamtZielZahl) && gesamtZielZahl >= system.min && gesamtZielZahl <= system.max;
+  const gesamtZielErgebnisse = gesamtZielGueltig
+    ? faecher
+        .filter((f) => !f.ausgeschlossen && !f.parentFachId)
+        .map((f) => ({
+          fach: f,
+          ergebnis: benoetigterFachschnittFuerGesamtziel(f, faecher, gesamtZielZahl, system),
+          aktuell: fachSchnittGerundet(f.noten, f.gewichtungConfig, system),
+        }))
+    : [];
 
   // System-spezifische Quick-Pick-Werte
   const quickPickWerte: number[] = [];
@@ -141,6 +156,74 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
             {proben.length > 0 && <SchnittBalken wert={gesamtNachher} />}
           </div>
         </div>
+      </section>
+
+      {/* ── Gesamtschnitt-Ziel ─────────────────────────────── */}
+      <section className="animate-fade-up rounded-[24px] border border-border p-5" style={{ background: "var(--card-grad)", animationDelay: "0.03s" }}>
+        <div className="mb-1 font-display text-base font-extrabold">Ziel-Gesamtschnitt erreichen</div>
+        <div className="mb-4 font-mono text-xs text-text-mute">Gib deinen Wunsch-Gesamtschnitt ein — ich zeige dir, was du pro Fach bräuchtest.</div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1.5">
+            {gefilterteWerte.filter((v) => v > system.min).slice(0, 8).map((z) => (
+              <button
+                key={z}
+                onClick={() => setGesamtZiel(String(z))}
+                className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${gesamtZiel === String(z) ? "border-brand bg-brand/15 text-brand" : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"}`}
+                style={{ color: gesamtZiel === String(z) ? undefined : schnittFarbe(z, system) }}
+              >
+                {z}
+              </button>
+            ))}
+          </div>
+          <Input
+            type="number" min={system.min} max={system.max} step={system.step}
+            value={gesamtZiel} onChange={(e) => setGesamtZiel(e.target.value)}
+            placeholder={`Ziel (${system.min}–${system.max})`}
+            className="h-10 w-36 bg-surface-2 font-mono"
+          />
+        </div>
+
+        {gesamtZielGueltig && gesamtZielErgebnisse.length > 0 && (
+          <div className="mt-5 space-y-2">
+            <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+              Benötigter Fachschnitt — wenn nur dieses Fach sich ändert:
+            </div>
+            {gesamtZielErgebnisse.map(({ fach: f, ergebnis: res, aktuell }) => (
+              <div
+                key={f.id}
+                className="flex items-center gap-3 rounded-2xl border border-border/60 bg-surface-2 px-4 py-3"
+              >
+                {f.farbe && <span className="size-2.5 shrink-0 rounded-full" style={{ background: f.farbe }} />}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-sans text-sm font-semibold truncate">{f.name}</span>
+                    {f.niveau === "erhoeht" && <span className="shrink-0 font-mono text-[9px] font-bold text-brand opacity-70">LK</span>}
+                  </div>
+                  <div className="mt-0.5 font-mono text-[10px] text-text-mute">
+                    Aktuell: <span style={{ color: schnittFarbe(aktuell, system) }}>{fmt(aktuell)}</span>
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  {res === "erreicht" ? (
+                    <span className="rounded-xl bg-emerald-500/15 px-2.5 py-1 font-mono text-xs font-bold text-emerald-400">✓ Erreicht</span>
+                  ) : res === "unmoeglich" ? (
+                    <span className="rounded-xl bg-red-500/15 px-2.5 py-1 font-mono text-xs font-bold text-red-400">Zu weit weg</span>
+                  ) : (
+                    <div className="text-right">
+                      <div className="font-display text-xl font-extrabold" style={{ color: schnittFarbe(res, system) }}>
+                        {fmt(res)}
+                      </div>
+                      {aktuell !== null && (
+                        <DeltaBadge vorher={aktuell} nachher={res} />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
@@ -242,22 +325,14 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                       className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-brand/50 bg-brand/10 px-3 py-1.5 font-mono text-sm text-brand transition-colors hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                     >
                       <span className="font-bold">{p.punkte}</span>
-                      <span className="opacity-60">{KATEGORIEN.find((k) => k.wert === p.kategorie)?.kurz ?? "?"}</span>
+                      <span className="opacity-60">{katKuerzel(p.kategorie, custom)}</span>
                       <span className="text-xs">×</span>
                     </button>
                   ))}
                 </div>
               )}
-              <div className="mb-3 flex flex-wrap gap-1.5">
-                {KATEGORIEN.map((k) => (
-                  <button
-                    key={k.wert}
-                    onClick={() => setProbeKat(k.wert)}
-                    className={`rounded-xl px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${probeKat === k.wert ? "bg-brand text-black" : "bg-surface-2 text-text-dim hover:bg-surface-3"}`}
-                  >
-                    {k.label}
-                  </button>
-                ))}
+              <div className="mb-3">
+                <KategorieSelector value={probeKat} onChange={setProbeKat} />
               </div>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-1.5">
@@ -311,17 +386,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                   className="h-10 w-36 bg-surface-2 font-mono"
                 />
                 <span className="font-mono text-sm text-text-dim">in</span>
-                <div className="flex overflow-hidden rounded-xl border border-border">
-                  {KATEGORIEN.slice(0, 3).map((k) => (
-                    <button
-                      key={k.wert}
-                      onClick={() => setZielKat(k.wert)}
-                      className={`px-3 py-2 font-mono text-xs font-semibold transition-colors ${zielKat === k.wert ? "bg-brand text-black" : "bg-surface-2 text-text-dim hover:bg-surface-3"}`}
-                    >
-                      {k.label}
-                    </button>
-                  ))}
-                </div>
+                <KategorieSelector value={zielKat} onChange={setZielKat} />
               </div>
               {ergebnis !== null && (
                 <div className="mt-5">

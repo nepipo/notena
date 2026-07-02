@@ -16,7 +16,7 @@ export const getCachedProfil = cache(async () => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("nutzer_profil")
-    .select("name, onboarding_abgeschlossen, notensystem, aktuelles_halbjahr, bundesland")
+    .select("name, onboarding_abgeschlossen, notensystem, aktuelles_halbjahr, bundesland, custom_kategorien")
     .eq("id", claims.sub)
     .single();
   return data;

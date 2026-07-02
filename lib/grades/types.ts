@@ -3,13 +3,16 @@
  * Reine Typen — keine Logik, kein React, keine DB.
  */
 
-export type Kategorie =
-  | "klausur"
-  | "muendlich"
-  | "test"
-  | "referat"
-  | "hausaufgabe"
-  | "sonstige";
+export type Kategorie = string;
+
+export const BUILTIN_KATEGORIEN = ["klausur", "muendlich", "test", "referat", "hausaufgabe", "sonstige"] as const;
+export type BuiltinKategorie = (typeof BUILTIN_KATEGORIEN)[number];
+
+export interface CustomKategorie {
+  id: string;
+  name: string;
+  kurzname: string;
+}
 
 export interface Note {
   id?: string;

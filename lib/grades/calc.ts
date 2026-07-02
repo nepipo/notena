@@ -190,6 +190,63 @@ export function wasWaereWenn(
   return fachSchnitt([...noten, hypothese], config, system);
 }
 
+/**
+ * Berechnet den benötigten Fachschnitt für ein bestimmtes Fach, damit der
+ * Gesamtschnitt das Ziel erreicht (alle anderen Fächer bleiben unverändert).
+ * Gibt den nötigen Fachschnitt zurück, oder "erreicht" / "unmoeglich".
+ */
+export function benoetigterFachschnittFuerGesamtziel(
+  fach: Fach,
+  alleFaecher: Fach[],
+  ziel: number,
+  system: Notensystem = DE_0_15,
+): number | "erreicht" | "unmoeglich" {
+  if (fach.ausgeschlossen) return "unmoeglich";
+
+  const aktuell = gesamtSchnitt(alleFaecher, system);
+  const zielErreicht = (s: number) =>
+    system.richtung === "hoeher_besser" ? runde(s) >= ziel : runde(s) <= ziel;
+  if (aktuell !== null && zielErreicht(aktuell)) return "erreicht";
+
+  // Unterfach-Map
+  const unterfachMap = new Map<string, Fach[]>();
+  for (const f of alleFaecher) {
+    if (f.parentFachId) {
+      const list = unterfachMap.get(f.parentFachId) ?? [];
+      list.push(f);
+      unterfachMap.set(f.parentFachId, list);
+    }
+  }
+
+  // Beitrag aller anderen Fächer (ohne das Ziel-Fach)
+  let anderesW = 0;
+  let anderesS = 0;
+  for (const f of alleFaecher) {
+    if (f.id === fach.id) continue;
+    if (f.ausgeschlossen) continue;
+    if (f.parentFachId) continue;
+    const unterfaecher = unterfachMap.get(f.id) ?? [];
+    const s =
+      unterfaecher.length > 0
+        ? fachSchnittMitUnterfaecher(f, unterfaecher, system)
+        : fachSchnitt(f.noten, f.gewichtungConfig, system);
+    if (s === null) continue;
+    const fw = f.fachGewicht ?? 1;
+    anderesW += fw;
+    anderesS += s * fw;
+  }
+
+  const w_f = fach.fachGewicht ?? 1;
+  // (anderesS + x * w_f) / (anderesW + w_f) = ziel
+  // => x = (ziel * (anderesW + w_f) - anderesS) / w_f
+  const required = (ziel * (anderesW + w_f) - anderesS) / w_f;
+
+  if (required <= system.min) return "erreicht";
+  if (required > system.max) return "unmoeglich";
+
+  return runde(required);
+}
+
 export function benoetigtePunkte(
   noten: Note[],
   config: Partial<GewichtungConfig> | undefined,

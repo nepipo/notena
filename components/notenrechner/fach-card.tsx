@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { TrendingUp, Sparkles, Settings2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,21 +12,10 @@ import {
 } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { useNotensystem } from "@/components/notensystem-provider";
+import { useCustomKategorien } from "@/components/kategorien-provider";
+import { KategorieSelector, katKuerzel, katLabel } from "./kategorie-selector";
 import { WasWaereWennPanel } from "./was-waere-wenn-panel";
 import type { Fach, Kategorie, Note } from "@/lib/grades/types";
-
-const KAT_KUERZEL: Record<Kategorie, string> = {
-  klausur: "K", muendlich: "M", test: "T",
-  referat: "R", hausaufgabe: "H", sonstige: "S",
-};
-const KAT_LABEL: Record<Kategorie, string> = {
-  klausur: "Klausur", muendlich: "Mündlich", test: "Test",
-  referat: "Referat", hausaufgabe: "Hausaufgabe", sonstige: "Sonstige",
-};
-
-const ALLE_KATEGORIEN: Kategorie[] = [
-  "klausur", "test", "muendlich", "referat", "hausaufgabe", "sonstige",
-];
 
 function tageBis(datumIso: string): number {
   const [y, m, d] = datumIso.slice(0, 10).split("-").map(Number);
@@ -96,6 +85,7 @@ function KategorienSplit({ noten }: { noten: Note[] }) {
 // ── Schnitt-Verlauf Chart ─────────────────────────────────────────────────────
 function SchnittVerlauf({ noten }: { noten: Note[] }) {
   const system = useNotensystem();
+  const custom = useCustomKategorien();
   const range = system.max - system.min;
 
   if (noten.length < 2) return null;
@@ -159,7 +149,7 @@ function SchnittVerlauf({ noten }: { noten: Note[] }) {
                 textAnchor="middle" fontSize={7}
                 fill="var(--text-mute)" fontFamily="monospace"
               >
-                {KAT_KUERZEL[n.kategorie]}
+                {katKuerzel(n.kategorie, custom)}
               </text>
             </g>
           );
@@ -214,6 +204,7 @@ export function FachCard({
   onOpenDialog: (fachId: string) => void;
 }) {
   const system = useNotensystem();
+  const custom = useCustomKategorien();
   const [wwwOffen, setWwwOffen] = useState(false);
   const [verlaufOffen, setVerlaufOffen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -348,11 +339,11 @@ export function FachCard({
             <span key={n.id} className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 font-mono text-xs">
               <button
                 onClick={() => setEditingNoteId(n.id!)}
-                title={`${n.bezeichnung ?? KAT_LABEL[n.kategorie]} — klick zum Bearbeiten`}
+                title={`${n.bezeichnung ?? katLabel(n.kategorie, custom)} — klick zum Bearbeiten`}
                 className="inline-flex items-center gap-1 px-2.5 py-1 hover:text-brand"
               >
                 <span className="font-semibold">{system.formatNote(n.punkte)}</span>
-                <span className="text-text-mute">{KAT_KUERZEL[n.kategorie]}</span>
+                <span className="text-text-mute">{katKuerzel(n.kategorie, custom)}</span>
                 {n.bezeichnung && <span className="text-text-mute">·{n.bezeichnung.slice(0, 8)}</span>}
               </button>
               <button
@@ -370,47 +361,6 @@ export function FachCard({
       <AddNote onAdd={(p, k, bez, gew) => onAddNote(fach.id, p, k, bez, gew)} />
       {wwwOffen && <WasWaereWennPanel fach={fach} />}
     </section>
-  );
-}
-
-function KategorieSelector({ value, onChange }: { value: Kategorie; onChange: (k: Kategorie) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-[11px] font-semibold transition-colors active:scale-[0.96] ${open ? "border-brand/40 bg-brand/10 text-brand" : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"}`}
-      >
-        {KAT_LABEL[value]}
-        <ChevronDown className={`size-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-      <div
-        className={`absolute left-0 top-0 z-50 flex flex-wrap gap-1.5 rounded-2xl border border-border/60 bg-surface-1/95 p-2 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-150 origin-top-left ${open ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"}`}
-      >
-        {ALLE_KATEGORIEN.map((k) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => { onChange(k); setOpen(false); }}
-            className={`rounded-xl border px-3 py-1.5 font-mono text-[11px] transition-colors active:scale-[0.94] ${value === k ? "border-brand bg-brand font-semibold text-black" : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"}`}
-          >
-            {KAT_LABEL[k]}
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 

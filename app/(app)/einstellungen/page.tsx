@@ -17,9 +17,10 @@ import { NotensystemWahl } from "@/components/einstellungen/notensystem-wahl";
 import { ProfilForm } from "@/components/profil-form";
 import { DeleteAccountButton } from "@/components/delete-account-button";
 import { Button } from "@/components/ui/button";
+import { CustomKategorienVerwaltung } from "@/components/einstellungen/custom-kategorien";
 import { aktuellesHalbjahr, halbjahrLabel } from "@/lib/grades/halbjahr";
 import type { FachRow } from "@/lib/grades/db";
-import type { GewichtungConfig } from "@/lib/grades/types";
+import type { CustomKategorie, GewichtungConfig } from "@/lib/grades/types";
 import type { Theme, AccentColor } from "@/lib/actions/theme";
 
 export default async function EinstellungenPage() {
@@ -33,7 +34,7 @@ export default async function EinstellungenPage() {
 
   const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
-    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem")
+    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem, custom_kategorien")
     .single();
   if (profilErr) console.error("[einstellungen] profil fetch error:", profilErr);
 
@@ -50,6 +51,9 @@ export default async function EinstellungenPage() {
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
   const bundesland = (profil as Record<string, unknown> | null)?.bundesland as string | null ?? null;
   const notensystem = profil?.notensystem ?? "de_0_15";
+  const customKategorien = (Array.isArray((profil as Record<string, unknown> | null)?.custom_kategorien)
+    ? (profil as Record<string, unknown>).custom_kategorien
+    : []) as CustomKategorie[];
   const anzahlNoten = await noteAnzahl();
   const faecher = (fachRows ?? []) as FachRow[];
 
@@ -178,6 +182,20 @@ export default async function EinstellungenPage() {
           Vorlage für neue Fächer — oder auf alle bestehenden anwenden.
         </p>
         <GewichtungDefaults initialConfig={defaultGewichtung} aktuellesHalbjahr={halbjahr} />
+      </section>
+
+      {/* ── BEWERTUNGSARTEN ───────────────────────────────── */}
+      <section
+        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        style={{ background: "var(--card-grad)", animationDelay: "0.22s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">
+          Eigene Bewertungsarten
+        </div>
+        <p className="mt-1 mb-4 text-sm text-text-dim">
+          Neben Klausur, Mündlich & Co. — eigene Typen die überall auftauchen.
+        </p>
+        <CustomKategorienVerwaltung initial={customKategorien} />
       </section>
 
       {/* ── FÄCHER ────────────────────────────────────────── */}
