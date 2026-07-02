@@ -42,8 +42,9 @@
 **Markt:** ~50–100k in Deutschland. Klein, aber hoch-LTV, Influencer-Multiplikatoren.
 
 **Marketing-Strategie:**
-- Nepomuk postet auf TikTok/Instagram (Build-in-Public)
-- Influencer-Kooperationen mit Student-YouTubern
+- Anonyme Marke — kein Gesicht, kein Name, kein Build-in-Public. Wirkt wie eine Firma, nicht wie ein Schüler-Projekt.
+- Faceless Content auf TikTok/Instagram (Slideshows, App-Demos, Chart-Content)
+- Influencer-Kooperationen mit Student-YouTubern (Creator zeigt das Produkt, nicht Nepomuk)
 - Schule + Freundeskreis als Closed Beta
 
 **Pricing-Vision:** Komplett Free zum Start. Premium-Features (KI-Coach, Briefing-Audio, mehr Module) für 3–5€/Monat ab v1.0.
@@ -104,10 +105,11 @@
 - Externe API-Calls mit Kosten: Kosten nennen, bevor ausgeführt wird
 - Sensible Daten (Passwörter, API-Keys): NIE in Code committen, immer .env + .gitignore
 - Bei Unsicherheit: erst fragen, nie raten
+- **ROADMAP SYNC (PFLICHT):** Nach JEDER erledigten Roadmap-Task `docs/roadmap/state.js` sofort updaten — die entsprechende ID auf `true` setzen. Kein Task gilt als "fertig" bis state.js aktualisiert ist. Task-IDs: c01-c19 (Coding), m01-m11 (Marketing), f01-f07 (Finanzen), r01-r06 (Recht), u01-u08 (UX), g01-g09 (General), k01-k07 (Metriken).
 
 ### Ehrliche Tensions (immer spiegeln)
 - **1-Jahres-Horizont vs. 12-Wochen-MVP-Plan** — wenn Scope explodiert, stoppen
-- **Build-in-Public vs. Schul-Klausuren** — wenn Klausuren kommen, Sprint runterfahren
+- **Content-Produktion vs. Schul-Klausuren** — wenn Klausuren kommen, Sprint runterfahren
 - **Persönliches Tool vs. Produkt** — wenn ein Feature nur Nepomuk nutzt, raus
 
 ---
