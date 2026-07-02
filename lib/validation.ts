@@ -37,7 +37,7 @@ export const UpdateFachSchema = z.object({
   niveau: z.enum(["grund", "erhoeht"]).optional(),
   farbe: z.string().max(20).nullable().optional(),
   gewicht_klausur: z.number().min(0).max(1).optional(),
-  gewicht_muendlich: z.number().min(0).max(1).optional(),
+  gewicht_muendlich: z.number().min(0).optional(),
   fach_gewicht: z.number().min(0).max(10).optional(),
   ausgeschlossen: z.boolean().optional(),
   gewichtung_config: z.record(z.string(), z.unknown()).nullable().optional(),

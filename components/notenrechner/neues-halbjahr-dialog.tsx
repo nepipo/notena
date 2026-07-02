@@ -70,8 +70,6 @@ export function NeuesHalbjahrDialog({
           niveau: a.fach.niveau ?? "grund",
           farbe: a.fach.farbe ?? null,
           fach_gewicht: a.fach.fachGewicht ?? 1,
-          gewicht_klausur: cfg.klausurDynamisch ? 0 : cfg.klausur,
-          gewicht_muendlich: cfg.muendlich + cfg.test + cfg.referat + cfg.hausaufgabe + cfg.sonstige,
           gewichtung_config: cfg,
         };
       });

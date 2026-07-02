@@ -97,9 +97,6 @@ export function FachDialog({
         fach_gewicht: fachGewicht,
         ausgeschlossen,
         gewichtung_config: config,
-        // Legacy-Spalten sync
-        gewicht_klausur: config.klausurDynamisch ? 0 : config.klausur,
-        gewicht_muendlich: config.muendlich + config.test + config.referat + config.hausaufgabe + config.sonstige,
         parent_fach_id: resolvedParentId,
         subfach_gewicht: resolvedGewicht,
       });
