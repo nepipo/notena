@@ -172,14 +172,14 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${gesamtZiel === String(z) ? "border-brand bg-brand/15 text-brand" : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"}`}
                 style={{ color: gesamtZiel === String(z) ? undefined : schnittFarbe(z, system) }}
               >
-                {z}
+                {system.formatSchnitt(z)}
               </button>
             ))}
           </div>
           <Input
             type="number" min={system.min} max={system.max} step={system.step}
             value={gesamtZiel} onChange={(e) => setGesamtZiel(e.target.value)}
-            placeholder={`Ziel (${system.min}–${system.max})`}
+            placeholder={`${system.min}–${system.max}`}
             className="h-10 w-36 bg-surface-2 font-mono"
           />
         </div>
@@ -201,7 +201,10 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                     {f.niveau === "erhoeht" && <span className="shrink-0 font-mono text-[9px] font-bold text-brand opacity-70">LK</span>}
                   </div>
                   <div className="mt-0.5 font-mono text-[10px] text-text-mute">
-                    Aktuell: <span style={{ color: schnittFarbe(aktuell, system) }}>{fmt(aktuell)}</span>
+                    Aktuell:{" "}
+                    <span style={{ color: schnittFarbe(aktuell, system) }}>
+                      {aktuell !== null ? system.formatSchnitt(aktuell) : "–"}
+                    </span>
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
@@ -212,8 +215,9 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                   ) : (
                     <div className="text-right">
                       <div className="font-display text-xl font-extrabold" style={{ color: schnittFarbe(res, system) }}>
-                        {fmt(res)}
+                        {system.formatSchnitt(res)}
                       </div>
+                      <div className="font-mono text-[10px] text-text-mute">{system.formatNote(res)}</div>
                       {aktuell !== null && (
                         <DeltaBadge vorher={aktuell} nachher={res} />
                       )}
