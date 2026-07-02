@@ -152,6 +152,7 @@ export type Database = {
           briefing_aktiv: boolean
           bundesland: string | null
           created_at: string
+          custom_kategorien: Json
           default_gewichtung: Json | null
           eingabe_modus: string
           geburtsdatum: string | null
@@ -176,6 +177,7 @@ export type Database = {
           briefing_aktiv?: boolean
           bundesland?: string | null
           created_at?: string
+          custom_kategorien?: Json
           default_gewichtung?: Json | null
           eingabe_modus?: string
           geburtsdatum?: string | null
@@ -200,6 +202,7 @@ export type Database = {
           briefing_aktiv?: boolean
           bundesland?: string | null
           created_at?: string
+          custom_kategorien?: Json
           default_gewichtung?: Json | null
           eingabe_modus?: string
           geburtsdatum?: string | null

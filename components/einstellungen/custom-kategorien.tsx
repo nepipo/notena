@@ -22,18 +22,18 @@ export function CustomKategorienVerwaltung({
       toast.error("Name und Kürzel sind Pflicht.");
       return;
     }
+    const nameVal = name.trim();
+    const kurzVal = kurzname.trim();
     startTransition(async () => {
-      const res = await addCustomKategorie(name.trim(), kurzname.trim());
+      const res = await addCustomKategorie(nameVal, kurzVal);
       if (!res.ok) {
         toast.error(res.error);
         return;
       }
-      // Optimistisch updaten — Layout-Revalidierung kommt via server action
-      const tempId = `custom_temp_${Date.now()}`;
-      setKategorien((prev) => [...prev, { id: tempId, name: name.trim(), kurzname: kurzname.trim() }]);
+      setKategorien((prev) => [...prev, res.entry]);
       setName("");
       setKurzname("");
-      toast.success(`"${name.trim()}" hinzugefügt.`);
+      toast.success(`"${nameVal}" hinzugefügt.`);
     });
   }
 

@@ -24,9 +24,7 @@ export default async function AppLayout({
   const email = typeof claims.email === "string" ? claims.email : "";
   const initiale = (profil?.name?.trim()?.[0] ?? email[0] ?? "?").toUpperCase();
   const notensystem = profil?.notensystem ?? "de_0_15";
-  const customKategorien = (Array.isArray((profil as Record<string, unknown> | null)?.custom_kategorien)
-    ? (profil as Record<string, unknown>).custom_kategorien
-    : []) as CustomKategorie[];
+  const customKategorien = (Array.isArray(profil?.custom_kategorien) ? profil.custom_kategorien : []) as CustomKategorie[];
 
   return (
     <NotensystemProvider systemId={notensystem}>

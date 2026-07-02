@@ -51,9 +51,7 @@ export default async function EinstellungenPage() {
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
   const bundesland = (profil as Record<string, unknown> | null)?.bundesland as string | null ?? null;
   const notensystem = profil?.notensystem ?? "de_0_15";
-  const customKategorien = (Array.isArray((profil as Record<string, unknown> | null)?.custom_kategorien)
-    ? (profil as Record<string, unknown>).custom_kategorien
-    : []) as CustomKategorie[];
+  const customKategorien = (Array.isArray(profil?.custom_kategorien) ? profil.custom_kategorien : []) as CustomKategorie[];
   const anzahlNoten = await noteAnzahl();
   const faecher = (fachRows ?? []) as FachRow[];
 

@@ -164,8 +164,8 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
         <div className="mb-4 font-mono text-xs text-text-mute">Gib deinen Wunsch-Gesamtschnitt ein — ich zeige dir, was du pro Fach bräuchtest.</div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex gap-1.5">
-            {gefilterteWerte.filter((v) => v > system.min).slice(0, 8).map((z) => (
+          <div className="flex flex-wrap gap-1.5">
+            {gefilterteWerte.filter((v) => v > system.min).map((z) => (
               <button
                 key={z}
                 onClick={() => setGesamtZiel(String(z))}

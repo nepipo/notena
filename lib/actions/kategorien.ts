@@ -24,7 +24,7 @@ export async function getCustomKategorien(): Promise<CustomKategorie[]> {
 export async function addCustomKategorie(
   name: string,
   kurzname: string,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<{ ok: true; entry: CustomKategorie } | { ok: false; error: string }> {
   const parsed = KategorieSchema.safeParse({ name, kurzname });
   if (!parsed.success) return { ok: false, error: "Ungültige Eingabe." };
 
@@ -49,7 +49,7 @@ export async function addCustomKategorie(
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/", "layout");
-  return { ok: true };
+  return { ok: true, entry: newEntry };
 }
 
 export async function removeCustomKategorie(
