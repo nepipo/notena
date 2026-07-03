@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Lokale Claude-Worktrees (inkl. deren .next-Builds) nicht linten.
+    ".claude/**",
   ]),
 ]);
 
