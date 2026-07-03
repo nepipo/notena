@@ -1,8 +1,8 @@
 # Project X — Bauplan & To-Do-Tracker
 
 **Launch:** 13.08.2026  
-**Stand:** 24.06.2026  
-**Fortschritt:** 14 / 67 Tasks erledigt
+**Stand:** 03.07.2026  
+**Fortschritt:** 15 / 67 Tasks erledigt
 
 > Diese Datei ist mein (Claudes) Gedächtnis für den Projektfortschritt.  
 > Wenn Nepomuk fragt "was ist als nächstes?" — hier nachschauen.  
@@ -141,13 +141,13 @@ Sortiert nach Deadline:
 - [ ] `r04` §312j BGB Button-Text: "Kostenpflichtig bestellen — 4,99€/Monat" ← 15.07 🚨 BLOCKER
 
 **✨ UX & Onboarding**
-- [ ] `u04` Welcome-Mail nach Signup (Resend, kurz + on-brand) ← 15.07
+- [x] `u04` Welcome-Mail nach Signup (Resend, kurz + on-brand) ← 15.07
 
 ---
 
 ## Woche 5 (16.–22.07) — Feature-Gates
 
-**2 / 8 Tasks** · ✅ Pro-Code vorab erledigt (19.06, Worktree-Branch)
+**3 / 8 Tasks** · ✅ Pro-Code vorab erledigt (19.06, Worktree-Branch)
 
 **💻 Coding**
 - [x] `c12` Pro: Feature-Gates (useProFeature Hook / Middleware) ← 22.07 — `istPro()`-Helper + serverseitiges Gating (Coach 402, Briefing)
@@ -165,7 +165,7 @@ Sortiert nach Deadline:
 - [ ] `r06` Cookie-/Consent-Pflicht prüfen (Plausible = cookiefrei → OK?) ← 22.07
 
 **✨ UX & Onboarding**
-- [ ] `u05` 404 + 500 Error-Pages designen (on-brand, nicht Next.js-Default) ← 22.07
+- [x] `u05` 404 + 500 Error-Pages designen (on-brand, nicht Next.js-Default) ← erledigt 03.07
 
 ---
 
