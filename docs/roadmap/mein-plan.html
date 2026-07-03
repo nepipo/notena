@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mein Plan — Beta Launch 13.08</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #1da1ff;
+      --indigo: #6366f1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --light: #f1f5f9;
+      --border: #e2e8f0;
+      --green: #16a34a;
+      --red: #dc2626;
+      --amber: #d97706;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Onest', sans-serif;
+      color: var(--text);
+      background: #fff;
+      padding: 2.5rem;
+      max-width: 780px;
+      margin: 0 auto;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .header-left h1 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #0f172a 30%, var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-left p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+      letter-spacing: 0.05em;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .launch-date {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .launch-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Erfolgskriterien ── */
+    .criteria {
+      background: var(--light);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .criterion {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.65rem;
+      text-align: center;
+    }
+
+    .criterion-icon {
+      font-size: 1.2rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .criterion-target {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue);
+      line-height: 1;
+    }
+
+    .criterion-label {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .definition {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 0.65rem;
+    }
+
+    .definition strong { color: var(--text); }
+
+    /* ── Weekly plan ── */
+    .weeks {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .week-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .week-card.launch-week {
+      border-color: var(--blue);
+      grid-column: 1 / -1;
+    }
+
+    .week-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.6rem 0.875rem;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .week-num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .week-range {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--muted);
+    }
+
+    .week-theme {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      font-style: italic;
+      padding: 0.2rem 0.875rem 0;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.3rem;
+    }
+
+    .week-tasks { padding: 0.5rem 0; }
+
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.3rem 0.875rem;
+    }
+
+    .task-cb {
+      width: 14px;
+      height: 14px;
+      min-width: 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 3px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .task-text {
+      font-size: 0.76rem;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .task-blocker {
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--red);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .task-dl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    /* Launch week special */
+    .week-card.launch-week .week-header {
+      background: rgba(29,161,255,0.08);
+      border-bottom-color: rgba(29,161,255,0.2);
+    }
+
+    .week-card.launch-week .week-num { color: var(--blue); }
+
+    .launch-tasks {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .launch-dept {
+      padding: 0.5rem 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .launch-dept:last-child { border-right: none; }
+
+    .launch-dept-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 0 0.875rem 0.25rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Review box ── */
+    .review-box {
+      margin-top: 1.25rem;
+      border: 1.5px solid var(--blue);
+      border-radius: 10px;
+      padding: 0.875rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .review-date {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .review-text { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+    .review-text strong { color: var(--text); }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 1.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: #cbd5e1;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { padding: 1.5rem; font-size: 13px; }
+      @page { size: A4; margin: 1.5cm; }
+      .criteria-grid { gap: 0.5rem; }
+      .weeks { gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Road to Beta</h1>
+      <p>Project X &nbsp;·&nbsp; Nepomuk Polonius &nbsp;·&nbsp; Stand 19.06.2026</p>
+    </div>
+    <div class="header-right">
+      <div class="launch-date">🚀 13.08.2026</div>
+      <div class="launch-sub">56 Tage &nbsp;·&nbsp; 8 Wochen</div>
+    </div>
+  </div>
+
+  <!-- ERFOLGSKRITERIEN -->
+  <div class="section-title">Beta-Erfolgskriterien — alle 5 grün = Runde 2 mit 50+ Usern</div>
+  <div class="criteria">
+    <div class="criteria-grid">
+      <div class="criterion">
+        <div class="criterion-icon">👤</div>
+        <div class="criterion-target">≥ 15</div>
+        <div class="criterion-label">von 20 Eingeladenen melden sich an</div>
+      </div>
+      <div class="criterion">
+        <div class="criterion-icon">✅</div>
+        <div class="criterion-target">≥ 12</div>
+        <div class="criterion-label">completen das Onboarding</div>
+      </div>
+      <div class="criterion">
+        <div class="criterion-icon">🔁</div>
+        <div class="criterion-target">≥ 10</div>
+        <div class="criterion-label">aktiv nach 14 Tagen</div>
+      </div>
+      <div class="criterion">
+        <div class="criterion-icon">💶</div>
+        <div class="criterion-target">≥ 3</div>
+        <div class="criterion-label">Pro-Conversions (4,99€/Monat)</div>
+      </div>
+      <div class="criterion">
+        <div class="criterion-icon">💬</div>
+        <div class="criterion-target">≥ 10</div>
+        <div class="criterion-label">ausgefüllte Feedback-Forms</div>
+      </div>
+    </div>
+    <div class="definition">
+      <strong>"Aktiver User"</strong> = mindestens 1 Login + 1 Noten-Aktion (Note hinzufügen / bearbeiten / Notenrechner aufrufen) in den letzten 7 Tagen.
+    </div>
+  </div>
+
+  <!-- WOCHENPLAN -->
+  <div class="section-title" style="margin-bottom:0.75rem">8-Wochen-Plan — Wichtigste Tasks pro Woche</div>
+  <div class="weeks">
+
+    <!-- W1 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 1</span>
+        <span class="week-range">18.–24.06</span>
+      </div>
+      <div class="week-theme">Onboarding & Name</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb"></div><div class="task-text">Onboarding-Flow: Migration 0005 anwenden</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Onboarding UI + iPhone testen</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">App-Namen final entscheiden</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Vater: Kleinunternehmer §19 klären</div><span class="task-blocker">!</span></div>
+      </div>
+    </div>
+
+    <!-- W2 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 2</span>
+        <span class="week-range">25.06.–01.07</span>
+      </div>
+      <div class="week-theme">Briefing Setup</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb"></div><div class="task-text">Briefing: Claude API + Daily Cron</div><span class="task-dl">01.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">TikTok + Instagram anlegen</div><span class="task-dl">01.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">LemonSqueezy Account einrichten</div><span class="task-dl">01.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Impressum schreiben</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Domain kaufen + verknüpfen</div><span class="task-dl">01.07</span></div>
+      </div>
+    </div>
+
+    <!-- W3 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 3</span>
+        <span class="week-range">02.–08.07</span>
+      </div>
+      <div class="week-theme">KI-Coach</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb"></div><div class="task-text">KI-Coach: Chat-UI + Streaming</div><span class="task-dl">08.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Datenschutzerklärung schreiben</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Content-Plan 4 Wochen vor Launch</div><span class="task-dl">08.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">LS-Produkte anlegen (3 Pläne)</div><span class="task-dl">08.07</span></div>
+      </div>
+    </div>
+
+    <!-- W4 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 4</span>
+        <span class="week-range">09.–15.07</span>
+      </div>
+      <div class="week-theme">Pro-Monetarisierung</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb" style="background:#dcfce7;border-color:#86efac"></div><div class="task-text" style="color:#64748b;text-decoration:line-through">Checkout-Flow + Webhook Handler</div><span style="font-size:0.6rem;color:#16a34a">✓</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">AGB + Widerrufsbelehrung</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">§312j Button-Text ("Kostenpflichtig bestellen")</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Finanzamt: Kleinunternehmer anmelden</div><span class="task-dl">15.07</span></div>
+      </div>
+    </div>
+
+    <!-- W5 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 5</span>
+        <span class="week-range">16.–22.07</span>
+      </div>
+      <div class="week-theme">Feature-Gates</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb" style="background:#dcfce7;border-color:#86efac"></div><div class="task-text" style="color:#64748b;text-decoration:line-through">Pro Feature-Gates + Pricing-Page</div><span style="font-size:0.6rem;color:#16a34a">✓</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Erste 3 TikToks drehen + posten</div><span class="task-dl">22.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Beta-Tester-Liste (20 Personen)</div><span class="task-dl">22.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Beta-Erfolgskriterien definieren</div><span class="task-dl">22.07</span></div>
+      </div>
+    </div>
+
+    <!-- W6 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 6</span>
+        <span class="week-range">23.–29.07</span>
+      </div>
+      <div class="week-theme">OAuth & i18n</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb"></div><div class="task-text">Google OAuth aktivieren</div><span class="task-dl">29.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">i18n Setup (next-intl, EN/DE)</div><span class="task-dl">29.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">KPI-Tracker anlegen (Spreadsheet)</div><span class="task-dl">29.07</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Influencer-Longlist (10+)</div><span class="task-dl">29.07</span></div>
+      </div>
+    </div>
+
+    <!-- W7 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 7</span>
+        <span class="week-range">30.07.–05.08</span>
+      </div>
+      <div class="week-theme">Beta-Prep</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb"></div><div class="task-text">i18n: EN-Strings übersetzen</div><span class="task-dl">05.08</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Landing Page + Screenshots</div><span class="task-dl">05.08</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Influencer: 5 DMs rausschicken</div><span class="task-dl">05.08</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Feedback-Kanal einrichten (Tally)</div><span class="task-dl">05.08</span></div>
+      </div>
+    </div>
+
+    <!-- W8 -->
+    <div class="week-card">
+      <div class="week-header">
+        <span class="week-num">Woche 8</span>
+        <span class="week-range">06.–12.08</span>
+      </div>
+      <div class="week-theme">Launch-Ready</div>
+      <div class="week-tasks">
+        <div class="task"><div class="task-cb"></div><div class="task-text">Performance-Audit (Lighthouse)</div><span class="task-dl">11.08</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Final Bug-Bash + alle Screens testen</div><span class="task-blocker">!</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Launch-TikTok drehen + terminieren</div><span class="task-dl">12.08</span></div>
+        <div class="task"><div class="task-cb"></div><div class="task-text">Beta-Einladungen vorbereiten</div><span class="task-blocker">!</span></div>
+      </div>
+    </div>
+
+    <!-- LAUNCH -->
+    <div class="week-card launch-week">
+      <div class="week-header">
+        <span class="week-num">🚀 Launch — 13.08.2026</span>
+        <span class="week-range">Donnerstag</span>
+      </div>
+      <div class="launch-tasks">
+        <div class="launch-dept">
+          <div class="launch-dept-label">Morgen</div>
+          <div class="task"><div class="task-cb"></div><div class="task-text">App live schalten + testen</div></div>
+          <div class="task"><div class="task-cb"></div><div class="task-text">Day-1 Baseline messen</div></div>
+        </div>
+        <div class="launch-dept">
+          <div class="launch-dept-label">Mittag</div>
+          <div class="task"><div class="task-cb"></div><div class="task-text">Einladungen persönlich verschicken</div></div>
+          <div class="task"><div class="task-cb"></div><div class="task-text">TikTok / Reel veröffentlichen</div></div>
+        </div>
+        <div class="launch-dept">
+          <div class="launch-dept-label">Abend</div>
+          <div class="task"><div class="task-cb"></div><div class="task-text">Signups zählen, Fehler checken</div></div>
+          <div class="task"><div class="task-cb"></div><div class="task-text">Erste User direkt anschreiben</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REVIEW -->
+  <div class="review-box">
+    <div class="review-date">27.08.2026</div>
+    <div class="review-text">
+      <strong>Post-Beta-Review</strong> — Zahlen auswerten: Alle 5 Kriterien erreicht?
+      Wichtigste Learnings notieren. Nächsten Sprint planen: 50+ User, v1.0-Features, oder Kurs korrigieren.
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>Project X · Nepomuk Polonius</span>
+    <span>! = Blocker &nbsp;·&nbsp; ✓ = bereits erledigt</span>
+    <span>docs/roadmap/mein-plan.html</span>
+  </div>
+
+</body>
+</html>

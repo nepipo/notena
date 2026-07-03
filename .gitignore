@@ -43,3 +43,8 @@ next-env.d.ts
 
 # brainstorming sessions
 .superpowers/
+
+# claude code local (worktrees + local scripts/settings)
+.claude/worktrees/
+.claude/scripts/
+.claude/settings.local.json

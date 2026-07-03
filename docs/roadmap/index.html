@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project X — Road to Beta 13.08</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Onest:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080810; --surface: #111118; --surface-2: #18181f;
+      --border: #1c1c28; --border-2: #252535;
+      --blue: #1da1ff; --indigo: #6366f1; --purple: #a855f7;
+      --green: #22c55e; --amber: #f59e0b; --red: #ef4444; --pink: #ec4899;
+      --text: #e2e8f0; --text-2: #8892a4; --text-3: #3d4a5c;
+      --ff-d: 'Bricolage Grotesque', sans-serif;
+      --ff-b: 'Onest', sans-serif;
+      --ff-m: 'JetBrains Mono', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--ff-b); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(29,161,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(29,161,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none; z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header { position: relative; z-index: 1; padding: 3rem 2rem 2.5rem; text-align: center; border-bottom: 1px solid var(--border); overflow: hidden; }
+    header::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 280px; background: radial-gradient(ellipse at top, rgba(29,161,255,0.13) 0%, transparent 65%); pointer-events: none; }
+    .eyebrow { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .tag-blue { font-family: var(--ff-m); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); }
+    .eyebrow-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border-2); }
+    .tag-amber { font-family: var(--ff-m); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--amber); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); padding: 0.15rem 0.6rem; border-radius: 4px; }
+    h1 { font-family: var(--ff-d); font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 800; line-height: 1; background: linear-gradient(140deg, #fff 20%, #a0b8d0 55%, var(--blue) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; position: relative; z-index: 1; }
+    .header-sub { font-size: 0.9rem; color: var(--text-2); margin-bottom: 2.5rem; }
+    .countdown { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: 14px; padding: 0.7rem 1.2rem; margin-bottom: 2rem; }
+    .cd-unit { display: flex; flex-direction: column; align-items: center; min-width: 50px; }
+    .cd-val { font-family: var(--ff-m); font-size: 1.65rem; font-weight: 500; color: var(--blue); line-height: 1; }
+    .cd-lbl { font-family: var(--ff-m); font-size: 0.58rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.2rem; }
+    .cd-sep { font-family: var(--ff-m); font-size: 1.4rem; color: var(--border-2); padding-bottom: 0.7rem; }
+    .overall-wrap { max-width: 460px; margin: 0 auto; }
+    .overall-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-2); margin-bottom: 0.5rem; }
+    .overall-label .perc { font-family: var(--ff-m); color: var(--blue); font-weight: 500; }
+    .pbar-wrap { height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+    .pbar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--blue), var(--indigo)); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ── MAIN ── */
+    main { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .section-lbl { font-family: var(--ff-m); font-size: 0.65rem; letter-spacing: 0.18em; color: var(--text-3); text-transform: uppercase; margin-bottom: 0.875rem; }
+
+    /* ── WOCHENPLAN ── */
+    .wochenplan { margin-bottom: 3rem; }
+    .wp-nav { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .wp-arrow {
+      background: var(--surface); border: 1px solid var(--border-2);
+      color: var(--text-2); font-size: 1rem; width: 34px; height: 34px;
+      border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0; line-height: 1;
+    }
+    .wp-arrow:hover { color: var(--text); border-color: var(--text-3); }
+    .wp-arrow:disabled { opacity: 0.3; cursor: default; }
+    .wp-dots { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .wp-dot {
+      font-family: var(--ff-m); font-size: 0.63rem; padding: 0.3rem 0.55rem;
+      border-radius: 6px; border: 1px solid var(--border-2);
+      background: var(--surface); color: var(--text-3);
+      cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
+    }
+    .wp-dot:hover { color: var(--text-2); border-color: var(--text-3); }
+    .wp-dot.past { opacity: 0.4; }
+    .wp-dot.active { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 500; }
+    .wp-dot.launch { border-color: rgba(245,158,11,0.3); color: var(--amber); }
+    .wp-dot.launch.active { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
+
+    .wp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .wp-week-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 1rem; padding: 1.2rem 1.5rem 0.8rem; flex-wrap: wrap;
+    }
+    .wp-week-info { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+    .wp-week-num { font-family: var(--ff-d); font-size: 1.05rem; font-weight: 700; color: var(--blue); }
+    .wp-week-sep { color: var(--text-3); }
+    .wp-week-range { font-family: var(--ff-m); font-size: 0.76rem; color: var(--text-2); }
+    .wp-week-theme { font-size: 0.84rem; color: var(--text-2); font-style: italic; }
+    .wp-week-stats { font-family: var(--ff-m); font-size: 0.7rem; color: var(--text-3); white-space: nowrap; }
+    .wp-pbar-wrap { height: 2px; background: var(--surface-2); margin: 0 1.5rem; }
+    .wp-pbar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--indigo)); border-radius: 99px; transition: width 0.5s ease; }
+
+    .wp-groups {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      padding: 0.5rem 0;
+    }
+    .wp-dept-group { padding-bottom: 0.5rem; border-right: 1px solid var(--border); }
+    .wp-dept-group:last-child { border-right: none; }
+    .wp-dept-hdr {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.25rem 0.4rem;
+      border-left: 3px solid transparent;
+    }
+    .wp-dept-icon { font-size: 0.9rem; }
+    .wp-dept-name { font-family: var(--ff-d); font-size: 0.78rem; font-weight: 700; color: var(--text-2); }
+
+    /* dept color accents in wp */
+    .wp-coding .wp-dept-hdr   { border-left-color: var(--blue);   }
+    .wp-marketing .wp-dept-hdr{ border-left-color: var(--purple); }
+    .wp-finanzen .wp-dept-hdr { border-left-color: var(--green);  }
+    .wp-recht .wp-dept-hdr    { border-left-color: var(--amber);  }
+    .wp-ux .wp-dept-hdr       { border-left-color: var(--pink);   }
+    .wp-general .wp-dept-hdr  { border-left-color: var(--indigo); }
+    .wp-metriken .wp-dept-hdr { border-left-color: #06b6d4; }
+
+    .wp-empty { grid-column: 1/-1; text-align: center; padding: 2.5rem; font-size: 0.85rem; color: var(--text-3); }
+
+    /* Launch special */
+    .wp-launch-card { text-align: center; padding: 3rem 2rem; }
+    .wp-launch-emoji { font-size: 3rem; margin-bottom: 0.75rem; display: block; }
+    .wp-launch-date { font-family: var(--ff-d); font-size: 2rem; font-weight: 800; color: var(--amber); margin-bottom: 0.25rem; }
+    .wp-launch-sub { font-size: 0.9rem; color: var(--text-2); }
+
+    /* ── TIMELINE ── */
+    .timeline { display: flex; gap: 0.4rem; align-items: stretch; margin-bottom: 3rem; overflow-x: auto; padding-bottom: 0.5rem; }
+    .tl-week { flex: 1; min-width: 88px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 0.5rem; text-align: center; }
+    .tl-week.past { opacity: 0.35; }
+    .tl-week.current { border-color: var(--blue); background: linear-gradient(135deg, rgba(29,161,255,0.08), rgba(99,102,241,0.04)); box-shadow: 0 0 0 1px rgba(29,161,255,0.15), 0 0 24px rgba(29,161,255,0.1); }
+    .tl-num { font-family: var(--ff-m); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
+    .tl-week.current .tl-num { color: var(--blue); }
+    .tl-range { font-size: 0.67rem; color: var(--text-2); margin: 0.2rem 0; }
+    .tl-week.current .tl-range { color: var(--text); }
+    .tl-theme { font-size: 0.64rem; color: var(--text-3); font-weight: 500; }
+    .tl-week.current .tl-theme { color: var(--text-2); }
+    .tl-launch { flex: 0 0 auto; width: 76px; background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.06)); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 0.75rem 0.5rem; text-align: center; }
+    .tl-launch .tl-num { color: var(--amber); }
+    .tl-launch .tl-range { color: var(--amber); font-weight: 700; font-size: 0.78rem; }
+    .tl-launch .tl-theme { color: rgba(245,158,11,0.65); }
+
+    /* ── DEPT GRID ── */
+    .dept-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .dept-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .dept-header { display: flex; align-items: center; gap: 0.875rem; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); border-left: 3px solid transparent; }
+    .dept-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .dept-name { font-family: var(--ff-d); font-size: 0.95rem; font-weight: 700; flex: 1; }
+    .dept-cnt { font-family: var(--ff-m); font-size: 0.75rem; color: var(--text-2); }
+    .dept-pbar { height: 3px; background: var(--surface-2); }
+    .dept-pbar-fill { height: 100%; transition: width 0.5s ease; }
+
+    .dept-coding .dept-header  { border-left-color: var(--blue);   } .dept-coding .dept-icon  { background: rgba(29,161,255,0.1); color: var(--blue);   } .dept-coding .dept-pbar-fill  { background: var(--blue);   }
+    .dept-marketing .dept-header{ border-left-color: var(--purple); } .dept-marketing .dept-icon{ background: rgba(168,85,247,0.1);color: var(--purple); } .dept-marketing .dept-pbar-fill{ background: var(--purple); }
+    .dept-finanzen .dept-header { border-left-color: var(--green);  } .dept-finanzen .dept-icon { background: rgba(34,197,94,0.1); color: var(--green);  } .dept-finanzen .dept-pbar-fill { background: var(--green);  }
+    .dept-recht .dept-header    { border-left-color: var(--amber);  } .dept-recht .dept-icon    { background: rgba(245,158,11,0.1);color: var(--amber);  } .dept-recht .dept-pbar-fill    { background: var(--amber);  }
+    .dept-ux .dept-header       { border-left-color: var(--pink);   } .dept-ux .dept-icon       { background: rgba(236,72,153,0.1);color: var(--pink);   } .dept-ux .dept-pbar-fill       { background: var(--pink);   }
+    .dept-general .dept-header  { border-left-color: var(--indigo); } .dept-general .dept-icon  { background: rgba(99,102,241,0.1);color: var(--indigo); } .dept-general .dept-pbar-fill  { background: var(--indigo); }
+    .dept-metriken .dept-header { border-left-color: #06b6d4; } .dept-metriken .dept-icon { background: rgba(6,182,212,0.1); color: #06b6d4; } .dept-metriken .dept-pbar-fill { background: #06b6d4; }
+
+    /* ── SHARED TODO ── */
+    .todo-list { padding: 0.5rem 0; }
+    .week-grp-hdr { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.4rem 0.25rem; }
+    .week-grp-hdr span { font-family: var(--ff-m); font-size: 0.6rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+    .week-grp-line { flex: 1; height: 1px; background: var(--border); }
+
+    .todo-item { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.55rem 1.4rem; cursor: pointer; transition: background 0.12s; user-select: none; }
+    .todo-item:hover { background: var(--surface-2); }
+    .todo-cb { width: 17px; height: 17px; min-width: 17px; border: 1.5px solid var(--border-2); border-radius: 4px; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.18s; font-size: 10px; color: transparent; }
+    .todo-item.done .todo-cb { background: var(--green); border-color: var(--green); color: #fff; }
+    .todo-body { flex: 1; min-width: 0; }
+    .todo-text { font-size: 0.845rem; color: var(--text); line-height: 1.45; transition: color 0.2s; }
+    .todo-item.done .todo-text { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-3); }
+    .todo-badges { display: flex; gap: 0.4rem; align-items: center; margin-top: 0.3rem; flex-wrap: wrap; }
+    .bdg { font-family: var(--ff-m); font-size: 0.62rem; padding: 0.1rem 0.38rem; border-radius: 3px; }
+    .bdg-ok      { color: var(--blue);  background: rgba(29,161,255,0.1);  }
+    .bdg-urgent  { color: var(--amber); background: rgba(245,158,11,0.1);  }
+    .bdg-overdue { color: var(--red);   background: rgba(239,68,68,0.1);   }
+    .bdg-done    { color: var(--text-3); background: transparent; }
+    .bdg-blocker { font-size: 0.6rem; font-weight: 700; color: var(--red); background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 3px; padding: 0.1rem 0.38rem; }
+    .bdg-launch  { font-size: 0.6rem; font-weight: 700; color: var(--amber); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 3px; padding: 0.1rem 0.38rem; }
+
+    /* ── FOOTER ── */
+    footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1.25rem; color: var(--text-3); font-size: 0.72rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .footer-btn { background: none; border: 1px solid var(--border-2); color: var(--text-3); font-family: var(--ff-m); font-size: 0.65rem; padding: 0.22rem 0.65rem; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+    .footer-btn:hover { color: var(--text-2); border-color: var(--text-3); }
+    .footer-btn.sync { color: var(--blue); border-color: rgba(29,161,255,0.3); }
+    .footer-btn.sync:hover { background: rgba(29,161,255,0.08); }
+    #sync-note { font-family: var(--ff-m); font-size: 0.65rem; color: var(--green); display: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 920px) { .dept-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      .countdown { gap: 0.2rem; } .cd-unit { min-width: 42px; } .cd-val { font-size: 1.3rem; }
+      .wp-groups { grid-template-columns: 1fr; }
+      .wp-dept-group { border-right: none; border-bottom: 1px solid var(--border); }
+      .wp-dept-group:last-child { border-bottom: none; }
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- State von Claude — wird nach Tasks aktualisiert -->
+<script src="state.js"></script>
+
+<header>
+  <div class="eyebrow">
+    <span class="tag-blue">Project X</span>
+    <div class="eyebrow-dot"></div>
+    <span class="tag-amber">🎯 Launch 13.08.2026</span>
+  </div>
+  <h1>Road to Beta</h1>
+  <p class="header-sub">8 Wochen &middot; 6 Abteilungen &middot; 1 Ziel</p>
+  <div class="countdown">
+    <div class="cd-unit"><span class="cd-val" id="cd-w">--</span><span class="cd-lbl">Wochen</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-val" id="cd-d">--</span><span class="cd-lbl">Tage</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-val" id="cd-h">--</span><span class="cd-lbl">Std</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-val" id="cd-m">--</span><span class="cd-lbl">Min</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-val" id="cd-s">--</span><span class="cd-lbl">Sek</span></div>
+  </div>
+  <div class="overall-wrap">
+    <div class="overall-label">
+      <span>Gesamtfortschritt</span>
+      <span><span class="perc" id="o-perc">0%</span> &nbsp;·&nbsp; <span id="o-count">0 / 0 Tasks</span></span>
+    </div>
+    <div class="pbar-wrap"><div class="pbar-fill" id="o-bar" style="width:0%"></div></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── WOCHENPLAN ─── -->
+  <div class="section-lbl">Wochenplan</div>
+  <section class="wochenplan">
+    <div class="wp-nav">
+      <button class="wp-arrow" id="wp-prev" onclick="wpNav(-1)">&#8592;</button>
+      <div class="wp-dots" id="wp-dots"></div>
+      <button class="wp-arrow" id="wp-next" onclick="wpNav(1)">&#8594;</button>
+    </div>
+    <div class="wp-card" id="wp-card"></div>
+  </section>
+
+  <!-- ─── TIMELINE ─── -->
+  <div class="section-lbl">Timeline — 8 Wochen bis Launch</div>
+  <div class="timeline" id="timeline"></div>
+
+  <!-- ─── ABTEILUNGEN ─── -->
+  <div class="section-lbl" style="margin-bottom:1rem">Alle Abteilungen</div>
+  <div class="dept-grid" id="dept-grid"></div>
+
+</main>
+
+<footer>
+  <span>Stand: 18.06.2026 &nbsp;·&nbsp; Checks in deinem Browser gespeichert</span>
+  <button class="footer-btn sync" onclick="syncFromClaude()">🔄 Sync von Claude</button>
+  <span id="sync-note">✓ Synchronisiert</span>
+  <button class="footer-btn" onclick="resetAll()">Reset</button>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════
+// DATEN
+// ════════════════════════════════════════════════
+const LAUNCH = new Date('2026-08-13T09:00:00');
+const START  = new Date('2026-06-18T00:00:00');
+const LS_KEY = 'px-roadmap-v1';
+
+const WEEKS = [
+  { n:1, range:'18.–24.06',    theme:'Onboarding & Name'    },
+  { n:2, range:'25.06.–01.07', theme:'Briefing Setup'       },
+  { n:3, range:'02.–08.07',    theme:'KI-Coach'             },
+  { n:4, range:'09.–15.07',    theme:'Pro-Monetarisierung'  },
+  { n:5, range:'16.–22.07',    theme:'Feature-Gates'        },
+  { n:6, range:'23.–29.07',    theme:'OAuth & i18n'         },
+  { n:7, range:'30.07.–05.08', theme:'Beta-Prep'            },
+  { n:8, range:'06.–12.08',    theme:'Launch-Ready'         },
+];
+
+const DEPTS = [
+  { id:'coding',    name:'Coding',          icon:'💻' },
+  { id:'marketing', name:'Marketing',       icon:'📱' },
+  { id:'finanzen',  name:'Finanzen',        icon:'💶' },
+  { id:'recht',     name:'Recht',           icon:'⚖️'  },
+  { id:'ux',        name:'UX & Onboarding', icon:'✨' },
+  { id:'general',   name:'General',         icon:'🗂️'  },
+  { id:'metriken',  name:'Metriken & KPIs', icon:'📊' },
+];
+
+const T = [
+  // ─ Coding ─────────────────────────────
+  { id:'c01', dept:'coding',    week:1, dl:'2026-06-21', bl:true,  text:'Onboarding-Flow: Migration 0005 auf Supabase anwenden' },
+  { id:'c02', dept:'coding',    week:1, dl:'2026-06-24', bl:true,  text:'Onboarding-Flow: UI fertigstellen (alle 3 Screens)' },
+  { id:'c03', dept:'coding',    week:1, dl:'2026-06-24', bl:false, text:'Onboarding: iPhone Safari + Chrome testen' },
+  { id:'c04', dept:'coding',    week:2, dl:'2026-07-01', bl:false, text:'Briefing: Claude API Integration (Sonnet 4.6)' },
+  { id:'c05', dept:'coding',    week:2, dl:'2026-07-01', bl:false, text:'Briefing: Daily Cron + briefing_cache Tabelle nutzen' },
+  { id:'c06', dept:'coding',    week:3, dl:'2026-07-08', bl:false, text:'KI-Coach: Chat-Interface UI (/coach Route)' },
+  { id:'c07', dept:'coding',    week:3, dl:'2026-07-08', bl:false, text:'KI-Coach: Streaming-Antworten (Edge Function)' },
+  { id:'c08', dept:'coding',    week:3, dl:'2026-07-08', bl:false, text:'KI-Coach: Rate-Limiting via DB (coach_rate_limit vorhanden)' },
+  { id:'c09', dept:'coding',    week:4, dl:'2026-07-15', bl:false, text:'Pro: LemonSqueezy JS SDK integrieren' },
+  { id:'c10', dept:'coding',    week:4, dl:'2026-07-15', bl:false, text:'Pro: Checkout-Flow (Pricing Page → LS Overlay)' },
+  { id:'c11', dept:'coding',    week:4, dl:'2026-07-15', bl:false, text:'Pro: Webhook Handler (LS Event → nutzer_profil.plan update)' },
+  { id:'c12', dept:'coding',    week:5, dl:'2026-07-22', bl:false, text:'Pro: Feature-Gates (useProFeature Hook / Middleware)' },
+  { id:'c13', dept:'coding',    week:5, dl:'2026-07-22', bl:false, text:'Pro: Pricing-Page + Upgrade-Modal in App' },
+  { id:'c14', dept:'coding',    week:6, dl:'2026-07-29', bl:false, text:'Google OAuth: Provider in Supabase + Google Cloud konfigurieren' },
+  { id:'c15', dept:'coding',    week:6, dl:'2026-07-29', bl:false, text:'i18n: next-intl Setup + EN/DE-Routing' },
+  { id:'c16', dept:'coding',    week:6, dl:'2026-07-29', bl:false, text:'Pro: PDF-Report (Notenübersicht, nur Pro)' },
+  { id:'c17', dept:'coding',    week:7, dl:'2026-08-05', bl:false, text:'i18n: alle UI-Strings ins Englische übersetzen' },
+  { id:'c18', dept:'coding',    week:8, dl:'2026-08-11', bl:false, text:'Performance-Audit: Core Web Vitals + Lighthouse' },
+  { id:'c19', dept:'coding',    week:8, dl:'2026-08-12', bl:true,  text:'Final Bug-Bash + Regression-Test aller Core-Features' },
+
+  // ─ Marketing ──────────────────────────
+  { id:'m01', dept:'marketing', week:1, dl:'2026-06-24', bl:true,  text:'App-Namen final entscheiden + Social Handles sichern' },
+  { id:'m02', dept:'marketing', week:2, dl:'2026-07-01', bl:false, text:'TikTok-Account anlegen + Bio + erstes Format planen' },
+  { id:'m03', dept:'marketing', week:2, dl:'2026-07-01', bl:false, text:'Instagram-Account anlegen (gleiches Handle wie TikTok)' },
+  { id:'m04', dept:'marketing', week:3, dl:'2026-07-08', bl:false, text:'4-Wochen Content-Plan vor Launch (Themen + Rhythmus)' },
+  { id:'m05', dept:'marketing', week:5, dl:'2026-07-22', bl:false, text:'Erste 3 Build-in-Public TikToks drehen und posten' },
+  { id:'m06', dept:'marketing', week:5, dl:'2026-07-22', bl:false, text:'Beta-Tester-Liste: 20 Personen aus Schule + Freundeskreis' },
+  { id:'m07', dept:'marketing', week:6, dl:'2026-07-29', bl:false, text:'Influencer-Longlist: 10+ Student-YouTuber + Schüler-Accounts' },
+  { id:'m08', dept:'marketing', week:7, dl:'2026-08-05', bl:false, text:'DM-Templates schreiben (3 Varianten für Kooperations-Outreach)' },
+  { id:'m09', dept:'marketing', week:7, dl:'2026-08-05', bl:false, text:'Erste 5 Influencer kontaktieren' },
+  { id:'m10', dept:'marketing', week:8, dl:'2026-08-12', bl:false, text:'Launch-TikTok + Reel drehen und terminieren' },
+  { id:'m11', dept:'marketing', week:8, dl:'2026-08-12', bl:true,  text:'Beta-Einladungen rausschicken (persönlich + Email)' },
+
+  // ─ Finanzen ───────────────────────────
+  { id:'f01', dept:'finanzen',  week:1, dl:'2026-06-24', bl:true,  text:'Mit Vater: Kleinunternehmer §19 UStG klären + rechtliche Rolle' },
+  { id:'f02', dept:'finanzen',  week:2, dl:'2026-07-01', bl:false, text:'LemonSqueezy Account anlegen (unter Vaters Daten)' },
+  { id:'f03', dept:'finanzen',  week:2, dl:'2026-07-01', bl:false, text:'Bankkonto bei LemonSqueezy für Payouts verknüpfen' },
+  { id:'f04', dept:'finanzen',  week:3, dl:'2026-07-08', bl:false, text:'Produkte in LemonSqueezy anlegen (3 Pläne: Woche/Monat/Jahr)' },
+  { id:'f05', dept:'finanzen',  week:4, dl:'2026-07-15', bl:false, text:'Kleinunternehmer-Status beim Finanzamt anmelden (ELSTER)' },
+  { id:'f06', dept:'finanzen',  week:5, dl:'2026-07-22', bl:false, text:'Test-Zahlung durchführen (eigene Karte → eigenes Konto)' },
+  { id:'f07', dept:'finanzen',  week:6, dl:'2026-07-29', bl:false, text:'Steuern-Rücklage-Plan: 19% zurücklegen ab erstem Euro' },
+
+  // ─ Recht ──────────────────────────────
+  { id:'r01', dept:'recht',     week:2, dl:'2026-07-01', bl:true,  text:'Impressum schreiben (Vaters Adresse, §5 TMG)' },
+  { id:'r02', dept:'recht',     week:3, dl:'2026-07-08', bl:true,  text:'Datenschutzerklärung (DSGVO, Supabase + Vercel als Dritte)' },
+  { id:'r03', dept:'recht',     week:4, dl:'2026-07-15', bl:true,  text:'AGB schreiben inkl. Widerrufsbelehrung (14 Tage)' },
+  { id:'r04', dept:'recht',     week:4, dl:'2026-07-15', bl:true,  text:'§312j BGB: Button-Text "Kostenpflichtig bestellen — 4,99€/Monat"' },
+  { id:'r05', dept:'recht',     week:5, dl:'2026-07-22', bl:false, text:'Datenschutz + Impressum + AGB in App verlinken (Footer + Einstellungen)' },
+  { id:'r06', dept:'recht',     week:5, dl:'2026-07-22', bl:false, text:'Cookie-/Consent-Pflicht prüfen (Plausible = cookiefrei → OK?)' },
+
+  // ─ UX & Onboarding ────────────────────
+  { id:'u01', dept:'ux',        week:1, dl:'2026-06-24', bl:true,  text:'Onboarding: alle 3 Screens auf iPhone testen (Safari + Chrome)' },
+  { id:'u02', dept:'ux',        week:2, dl:'2026-07-01', bl:false, text:'Profil-Edit-Seite (/einstellungen/profil) mit allen Onboarding-Feldern' },
+  { id:'u03', dept:'ux',        week:3, dl:'2026-07-08', bl:false, text:'Empty States: Dashboard + Noten-Seite für neue User ohne Daten' },
+  { id:'u04', dept:'ux',        week:4, dl:'2026-07-15', bl:false, text:'Welcome-Mail nach Signup (Resend, kurz + on-brand)' },
+  { id:'u05', dept:'ux',        week:5, dl:'2026-07-22', bl:false, text:'404 + 500 Error-Pages designen (on-brand, nicht Next.js-Default)' },
+  { id:'u06', dept:'ux',        week:7, dl:'2026-08-01', bl:false, text:'App-Namen final in UI einsetzen (PWA-Name, Loading Screen, OG-Tags)' },
+  { id:'u07', dept:'ux',        week:7, dl:'2026-08-05', bl:false, text:'Landing Page polishen für Launch (CTA, Screenshots, Pricing-Block)' },
+  { id:'u08', dept:'ux',        week:7, dl:'2026-08-05', bl:false, text:'Produkt-Screenshots erstellen (iPhone Mockup, 3 Key-Screens)' },
+
+  // ─ General ────────────────────────────
+  { id:'g01', dept:'general',   week:2, dl:'2026-07-01', bl:false, text:'Domain kaufen (app-name.de oder .app) + auf Vercel verbinden' },
+  { id:'g02', dept:'general',   week:2, dl:'2026-07-01', bl:false, text:'Leaked-Password-Protection in Supabase Auth aktivieren' },
+  { id:'g03', dept:'general',   week:2, dl:'2026-07-01', bl:false, text:'Vercel Analytics aktivieren (Free Tier, cookiefrei)' },
+  { id:'g04', dept:'general',   week:3, dl:'2026-07-08', bl:false, text:'Sentry Error-Tracking aktivieren (Free Tier)' },
+  { id:'g05', dept:'general',   week:3, dl:'2026-07-08', bl:false, text:'Favicon + PWA-Icons finalisieren (alle Größen, 512×512)' },
+  { id:'g06', dept:'general',   week:6, dl:'2026-07-29', bl:false, text:'OG-Image für Social Sharing erstellen (1200×630px)' },
+  { id:'g07', dept:'general',   week:7, dl:'2026-08-05', bl:false, text:'Beta-Feedback-Kanal einrichten (Tally-Formular oder Discord)' },
+  { id:'g08', dept:'general',   week:8, dl:'2026-08-12', bl:true,  text:'Launch-Checklist: alle Blocker grün, alle Core-Screens manuell testen' },
+  { id:'g09', dept:'general',   week:8, dl:'2026-08-13', launch:true, text:'🚀 LAUNCH — App live schalten, erste Beta-Einladungen verschicken' },
+
+  // ─ Metriken & KPIs ───────────────────
+  { id:'k01', dept:'metriken',  week:5, dl:'2026-07-22', bl:false, text:'Beta-Erfolgskriterien definieren: Wie viele aktive User = Erfolg? Welche Retention-Rate?' },
+  { id:'k02', dept:'metriken',  week:5, dl:'2026-07-22', bl:false, text:'"Aktiver User" definieren: z.B. Login + mind. 1 Noten-Aktion in letzten 7 Tagen' },
+  { id:'k03', dept:'metriken',  week:6, dl:'2026-07-29', bl:false, text:'KPI-Tracker anlegen: einfaches Spreadsheet für Beta-Woche (Signups, DAU, Pro-Conversions)' },
+  { id:'k04', dept:'metriken',  week:6, dl:'2026-07-29', bl:false, text:'Retention-Messung: wie kommen User nach 7 + 14 Tagen zurück? (Vercel Analytics + manuell)' },
+  { id:'k05', dept:'metriken',  week:7, dl:'2026-08-05', bl:false, text:'Pro-Conversion-Funnel tracken: Pricing-Page-Views → Klicks → Käufe (LemonSqueezy Dashboard)' },
+  { id:'k06', dept:'metriken',  week:8, dl:'2026-08-13', bl:false, text:'Baseline Day-1 messen: Signups, Sessions, Fehler-Rate, erste Aktivitäten' },
+  { id:'k07', dept:'metriken',  week:8, dl:'2026-08-13', bl:false, text:'Post-Beta-Review-Termin setzen: 27.08. — Zahlen auswerten, Learnings, nächster Sprint' },
+];
+
+// ════════════════════════════════════════════════
+// STATE — merge Claude state.js + localStorage
+// ════════════════════════════════════════════════
+const road = (typeof window.ROAD_STATE === 'object' && window.ROAD_STATE) ? window.ROAD_STATE : {};
+let lsSaved = {};
+try { lsSaved = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch {}
+// Claude's "true" completions auto-apply; user manual toggles stored in lsSaved win otherwise
+let checked = Object.assign({}, lsSaved);
+Object.entries(road).forEach(([id, val]) => { if (val === true) checked[id] = true; });
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(checked)); }
+save(); // persist merged state immediately
+
+// ════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════
+function pad(n) { return String(Math.floor(n)).padStart(2,'0'); }
+function currentWeek() { return Math.min(Math.max(Math.floor((new Date()-START)/(7*86400000))+1,1),8); }
+function dlStatus(dl, done) {
+  if (done) return 'done';
+  const d = Math.ceil((new Date(dl)-new Date())/86400000);
+  return d < 0 ? 'overdue' : d <= 5 ? 'urgent' : 'ok';
+}
+function fmtDl(dl) { const d=new Date(dl); return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'; }
+function dlBadge(dl, done) {
+  const s=dlStatus(dl,done), pre=s==='urgent'?'⚡ ':s==='overdue'?'⚠ ':'';
+  return `<span class="bdg bdg-${s}">${pre}${fmtDl(dl)}</span>`;
+}
+function todoHtml(todo, indent) {
+  const isDone = !!checked[todo.id];
+  const pad = indent ? '' : '';
+  return `<div class="todo-item${isDone?' done':''}" data-id="${todo.id}" onclick="toggle('${todo.id}')">
+    <div class="todo-cb">${isDone?'✓':''}</div>
+    <div class="todo-body">
+      <div class="todo-text">${todo.text}</div>
+      <div class="todo-badges">
+        ${dlBadge(todo.dl,isDone)}
+        ${todo.bl ? '<span class="bdg-blocker">Blocker</span>':''}
+        ${todo.launch ? '<span class="bdg-launch">🚀 Launch</span>':''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════
+// COUNTDOWN
+// ════════════════════════════════════════════════
+function tick() {
+  const diff=LAUNCH-new Date(); if(diff<=0){['cd-w','cd-d','cd-h','cd-m','cd-s'].forEach(id=>document.getElementById(id).textContent='00');return;}
+  const s=Math.floor(diff/1000);
+  document.getElementById('cd-w').textContent=pad(Math.floor(s/604800));
+  document.getElementById('cd-d').textContent=pad(Math.floor((s%604800)/86400));
+  document.getElementById('cd-h').textContent=pad(Math.floor((s%86400)/3600));
+  document.getElementById('cd-m').textContent=pad(Math.floor((s%3600)/60));
+  document.getElementById('cd-s').textContent=pad(s%60);
+}
+setInterval(tick,1000); tick();
+
+// ════════════════════════════════════════════════
+// PROGRESS
+// ════════════════════════════════════════════════
+function updateProgress() {
+  const total=T.length, done=T.filter(t=>checked[t.id]).length, pct=total?Math.round(done/total*100):0;
+  document.getElementById('o-perc').textContent=pct+'%';
+  document.getElementById('o-count').textContent=done+' / '+total+' Tasks';
+  document.getElementById('o-bar').style.width=pct+'%';
+  DEPTS.forEach(d=>{
+    const dt=T.filter(t=>t.dept===d.id), dd=dt.filter(t=>checked[t.id]).length;
+    const fill=document.getElementById('pbar-'+d.id), cnt=document.getElementById('cnt-'+d.id);
+    if(fill) fill.style.width=(dt.length?Math.round(dd/dt.length*100):0)+'%';
+    if(cnt)  cnt.textContent=dd+'/'+dt.length;
+  });
+}
+
+// ════════════════════════════════════════════════
+// WOCHENPLAN
+// ════════════════════════════════════════════════
+let activeWeek = currentWeek();
+
+function renderWpNav() {
+  const cw=currentWeek();
+  let h='';
+  WEEKS.forEach(w=>{
+    const cls=w.n===activeWeek?'active':w.n<cw?'past':'';
+    h+=`<button class="wp-dot ${cls}" onclick="setWeek(${w.n})">W${w.n}</button>`;
+  });
+  h+=`<button class="wp-dot launch${activeWeek===9?' active':''}" onclick="setWeek(9)">🚀</button>`;
+  document.getElementById('wp-dots').innerHTML=h;
+  document.getElementById('wp-prev').disabled=activeWeek<=1;
+  document.getElementById('wp-next').disabled=activeWeek>=9;
+}
+
+function renderWpCard() {
+  const card=document.getElementById('wp-card');
+
+  if (activeWeek===9) {
+    card.innerHTML=`<div class="wp-launch-card">
+      <span class="wp-launch-emoji">🚀</span>
+      <div class="wp-launch-date">13.08.2026</div>
+      <div class="wp-launch-sub">Launch-Tag — App live schalten, erste Einladungen raus</div>
+    </div>`;
+    return;
+  }
+
+  const wData=WEEKS.find(w=>w.n===activeWeek);
+  const weekTodos=T.filter(t=>t.week===activeWeek);
+  const done=weekTodos.filter(t=>checked[t.id]).length;
+  const pct=weekTodos.length?Math.round(done/weekTodos.length*100):0;
+  const blockers=weekTodos.filter(t=>t.bl&&!checked[t.id]).length;
+
+  // Group by dept
+  const byDept={};
+  weekTodos.forEach(t=>{ if(!byDept[t.dept])byDept[t.dept]=[]; byDept[t.dept].push(t); });
+
+  let groupsHtml='';
+  if(!weekTodos.length) {
+    groupsHtml='<div class="wp-empty">Keine Tasks in dieser Woche.</div>';
+  } else {
+    DEPTS.forEach(dept=>{
+      if(!byDept[dept.id]) return;
+      let items='';
+      byDept[dept.id].forEach(todo=>{ items+=todoHtml(todo,true); });
+      groupsHtml+=`<div class="wp-dept-group wp-${dept.id}">
+        <div class="wp-dept-hdr">
+          <span class="wp-dept-icon">${dept.icon}</span>
+          <span class="wp-dept-name">${dept.name}</span>
+        </div>
+        ${items}
+      </div>`;
+    });
+  }
+
+  const blockerNote=blockers>0?` &nbsp;·&nbsp; <span style="color:var(--red)">${blockers} Blocker offen</span>`:'';
+
+  card.innerHTML=`
+    <div class="wp-week-header">
+      <div class="wp-week-info">
+        <span class="wp-week-num">Woche ${wData.n}</span>
+        <span class="wp-week-sep">·</span>
+        <span class="wp-week-range">${wData.range}</span>
+        <span class="wp-week-sep">·</span>
+        <span class="wp-week-theme">"${wData.theme}"</span>
+      </div>
+      <div class="wp-week-stats">${done}/${weekTodos.length} Tasks &nbsp;·&nbsp; ${pct}%${blockerNote}</div>
+    </div>
+    <div class="wp-pbar-wrap"><div class="wp-pbar-fill" id="wp-pbar" style="width:${pct}%"></div></div>
+    <div class="wp-groups">${groupsHtml}</div>
+  `;
+}
+
+function setWeek(w) { activeWeek=w; renderWpNav(); renderWpCard(); }
+function wpNav(dir) { const n=activeWeek+dir; if(n>=1&&n<=9) setWeek(n); }
+
+// Keyboard navigation
+document.addEventListener('keydown', e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(e.key==='ArrowLeft') wpNav(-1);
+  if(e.key==='ArrowRight') wpNav(1);
+});
+
+// ════════════════════════════════════════════════
+// TIMELINE
+// ════════════════════════════════════════════════
+function renderTimeline() {
+  const cw=currentWeek();
+  let h='';
+  WEEKS.forEach(w=>{
+    const cls=w.n<cw?'past':w.n===cw?'current':'';
+    h+=`<div class="tl-week ${cls}"><div class="tl-num">W${w.n}</div><div class="tl-range">${w.range}</div><div class="tl-theme">${w.theme}</div></div>`;
+  });
+  h+=`<div class="tl-launch"><div class="tl-num">🚀</div><div class="tl-range">13.08.</div><div class="tl-theme">Launch</div></div>`;
+  document.getElementById('timeline').innerHTML=h;
+}
+
+// ════════════════════════════════════════════════
+// DEPT CARDS
+// ════════════════════════════════════════════════
+function renderDepts() {
+  let h='';
+  DEPTS.forEach(dept=>{
+    const todos=T.filter(t=>t.dept===dept.id);
+    const done=todos.filter(t=>checked[t.id]).length;
+    const pct=todos.length?Math.round(done/todos.length*100):0;
+    const byWeek={};
+    todos.forEach(t=>{ if(!byWeek[t.week])byWeek[t.week]=[]; byWeek[t.week].push(t); });
+    let body='';
+    Object.keys(byWeek).sort((a,b)=>a-b).forEach(w=>{
+      const wData=WEEKS.find(x=>x.n===parseInt(w));
+      body+=`<div class="week-grp-hdr"><span>W${w} &middot; ${wData?wData.range:''}</span><div class="week-grp-line"></div></div>`;
+      byWeek[w].forEach(todo=>{ body+=todoHtml(todo,false); });
+    });
+    h+=`<div class="dept-card dept-${dept.id}">
+      <div class="dept-header">
+        <div class="dept-icon">${dept.icon}</div>
+        <div class="dept-name">${dept.name}</div>
+        <div class="dept-cnt" id="cnt-${dept.id}">${done}/${todos.length}</div>
+      </div>
+      <div class="dept-pbar"><div class="dept-pbar-fill" id="pbar-${dept.id}" style="width:${pct}%"></div></div>
+      <div class="todo-list">${body}</div>
+    </div>`;
+  });
+  document.getElementById('dept-grid').innerHTML=h;
+}
+
+// ════════════════════════════════════════════════
+// TOGGLE
+// ════════════════════════════════════════════════
+function toggle(id) {
+  checked[id]=!checked[id]; save();
+  // Update ALL items with this id (appears in week plan + dept card)
+  document.querySelectorAll(`[data-id="${id}"]`).forEach(item=>{
+    const todo=T.find(t=>t.id===id), isDone=checked[id];
+    item.classList.toggle('done',isDone);
+    item.querySelector('.todo-cb').textContent=isDone?'✓':'';
+    const s=dlStatus(todo.dl,isDone), pre=s==='urgent'?'⚡ ':s==='overdue'?'⚠ ':'';
+    const bdg=item.querySelector('.bdg');
+    if(bdg){ bdg.className='bdg bdg-'+s; bdg.textContent=pre+fmtDl(todo.dl); }
+  });
+  // Update week plan stats
+  const wData=WEEKS.find(w=>w.n===activeWeek);
+  if(wData){
+    const wt=T.filter(t=>t.week===activeWeek), d=wt.filter(t=>checked[t.id]).length;
+    const pct=wt.length?Math.round(d/wt.length*100):0;
+    const bl=wt.filter(t=>t.bl&&!checked[t.id]).length;
+    const statsEl=document.querySelector('.wp-week-stats');
+    const pbarEl=document.getElementById('wp-pbar');
+    if(statsEl) statsEl.innerHTML=`${d}/${wt.length} Tasks &nbsp;·&nbsp; ${pct}%${bl>0?` &nbsp;·&nbsp; <span style="color:var(--red)">${bl} Blocker offen</span>`:''}`;
+    if(pbarEl) pbarEl.style.width=pct+'%';
+  }
+  updateProgress();
+}
+
+// ════════════════════════════════════════════════
+// SYNC & RESET
+// ════════════════════════════════════════════════
+function syncFromClaude() {
+  if(typeof window.ROAD_STATE==='object') {
+    Object.entries(window.ROAD_STATE).forEach(([id,val])=>{ if(val===true) checked[id]=true; });
+    save(); renderDepts(); renderWpNav(); renderWpCard(); updateProgress();
+    const note=document.getElementById('sync-note');
+    note.style.display='inline'; setTimeout(()=>note.style.display='none',2500);
+  }
+}
+
+function resetAll() {
+  if(!confirm('Wirklich alle Checkboxen zurücksetzen?')) return;
+  checked={}; save(); renderDepts(); renderWpNav(); renderWpCard(); updateProgress();
+}
+
+// ════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════
+renderTimeline();
+renderDepts();
+renderWpNav();
+renderWpCard();
+updateProgress();
+</script>
+</body>
+</html>
