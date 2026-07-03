@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCachedProfil } from "@/lib/supabase/cache";
-import { NotenrechnerBoard } from "@/components/notenrechner/notenrechner-board";
+import dynamic from "next/dynamic";
+
+const NotenrechnerBoard = dynamic(
+  () => import("@/components/notenrechner/notenrechner-board").then((m) => m.NotenrechnerBoard),
+  { loading: () => <div className="h-64 animate-pulse rounded-xl bg-white/5" /> },
+);
 import {
   assembleFaecher,
   type FachRow,
