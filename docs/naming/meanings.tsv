@@ -1,0 +1,464 @@
+name	kategorie	typ	bedeutung
+abiboost	Abitur	Kompositum	Dein weg zum abi — als Schub
+abideck	Abitur	Kompositum	Dein weg zum abi — als Cockpit
+abigrade	Abitur	Kompositum	Dein weg zum abi — rund um Noten
+abiloop	Abitur	Kompositum	Dein weg zum abi — als taegliche Routine
+abimind	Abitur	Kompositum	Dein weg zum abi — fuer den Kopf
+abinorth	Abitur	Kompositum	Dein weg zum abi — als feste Richtung
+abipath	Abitur	Kompositum	Dein weg zum abi — als Pfad
+abipeak	Abitur	Kompositum	Dein weg zum abi — auf dem Gipfel
+abirise	Abitur	Kompositum	Dein weg zum abi — im Aufstieg
+abisync	Abitur	Kompositum	Dein weg zum abi — im Gleichtakt
+apexkompass	Aufstieg	Kompositum	Die spitze — als Kompass
+ascenddeck	Aufstieg	Kompositum	Aufsteigen — als Cockpit
+ascendgrade	Aufstieg	Kompositum	Aufsteigen — rund um Noten
+ascendkompass	Aufstieg	Kompositum	Aufsteigen — als Kompass
+gipfelo	Aufstieg	Kunstwort	Gipfel mit Markenendung
+gradusbase	Aufstieg	Kompositum	Die stufe (lat.) — als Basis
+gradusboard	Aufstieg	Kompositum	Die stufe (lat.) — als Board/Tafel
+gradusboost	Aufstieg	Kompositum	Die stufe (lat.) — als Schub
+gradusdeck	Aufstieg	Kompositum	Die stufe (lat.) — als Cockpit
+gradusdesk	Aufstieg	Kompositum	Die stufe (lat.) — als Schreibtisch
+gradusflow	Aufstieg	Kompositum	Die stufe (lat.) — im Flow, alles fliesst
+gradusforge	Aufstieg	Kompositum	Die stufe (lat.) — als Schmiede
+gradusgrade	Aufstieg	Kompositum	Die stufe (lat.) — rund um Noten
+gradusio	Aufstieg	Kompositum	Die stufe (lat.) — (Tech-Marken-Endung)
+graduskit	Aufstieg	Kompositum	Die stufe (lat.) — als Werkzeugkasten
+graduskompass	Aufstieg	Kompositum	Die stufe (lat.) — als Kompass
+graduslab	Aufstieg	Kompositum	Die stufe (lat.) — als Labor
+gradusloop	Aufstieg	Kompositum	Die stufe (lat.) — als taegliche Routine
+gradusmind	Aufstieg	Kompositum	Die stufe (lat.) — fuer den Kopf
+gradusnest	Aufstieg	Kompositum	Die stufe (lat.) — als Nest/Zuhause
+gradusnorth	Aufstieg	Kompositum	Die stufe (lat.) — als feste Richtung
+gradusos	Aufstieg	Kompositum	Die stufe (lat.) — als Betriebssystem
+graduspeak	Aufstieg	Kompositum	Die stufe (lat.) — auf dem Gipfel
+graduspilot	Aufstieg	Kompositum	Die stufe (lat.) — als Steuerung/Pilot
+gradusrise	Aufstieg	Kompositum	Die stufe (lat.) — im Aufstieg
+gradusscope	Aufstieg	Kompositum	Die stufe (lat.) — im Blickfeld
+gradusscore	Aufstieg	Kompositum	Die stufe (lat.) — rund um den Punktestand
+gradussphere	Aufstieg	Kompositum	Die stufe (lat.) — als eigene Sphaere
+gradusstar	Aufstieg	Kompositum	Die stufe (lat.) — als Leitstern
+gradussync	Aufstieg	Kompositum	Die stufe (lat.) — im Gleichtakt
+gradusverse	Aufstieg	Kompositum	Die stufe (lat.) — als ganzes Universum
+gradusway	Aufstieg	Kompositum	Die stufe (lat.) — als Weg
+levelkompass	Aufstieg	Kompositum	Die stufe — als Kompass
+peakkompass	Aufstieg	Kompositum	Der gipfel — als Kompass
+risekompass	Aufstieg	Kompositum	Dein aufstieg — als Kompass
+summitgrade	Aufstieg	Kompositum	Der gipfel — rund um Noten
+summitkompass	Aufstieg	Kompositum	Der gipfel — als Kompass
+orbitkompass	Cockpit	Kompositum	Die umlaufbahn, alles im blick — als Kompass
+fokusbase	Fokus	Kompositum	Dein fokus — als Basis
+fokusboard	Fokus	Kompositum	Dein fokus — als Board/Tafel
+fokusboost	Fokus	Kompositum	Dein fokus — als Schub
+fokuscore	Fokus	Kompositum	Dein fokus — im Kern
+fokusdeck	Fokus	Kompositum	Dein fokus — als Cockpit
+fokusgrade	Fokus	Kompositum	Dein fokus — rund um Noten
+fokusloop	Fokus	Kompositum	Dein fokus — als taegliche Routine
+fokuspath	Fokus	Kompositum	Dein fokus — als Pfad
+fokuspeak	Fokus	Kompositum	Dein fokus — auf dem Gipfel
+fokuspilot	Fokus	Kompositum	Dein fokus — als Steuerung/Pilot
+fokusrise	Fokus	Kompositum	Dein fokus — im Aufstieg
+fokusscope	Fokus	Kompositum	Dein fokus — im Blickfeld
+fokusscore	Fokus	Kompositum	Dein fokus — rund um den Punktestand
+fokussphere	Fokus	Kompositum	Dein fokus — als eigene Sphaere
+fokusstar	Fokus	Kompositum	Dein fokus — als Leitstern
+fokussync	Fokus	Kompositum	Dein fokus — im Gleichtakt
+fokusverse	Fokus	Kompositum	Dein fokus — als ganzes Universum
+fokusway	Fokus	Kompositum	Dein fokus — als Weg
+brainkompass	Geist	Kompositum	Dein gehirn — als Kompass
+brainnorth	Geist	Kompositum	Dein gehirn — als feste Richtung
+kogniboard	Geist	Kompositum	Kognition, denken — als Board/Tafel
+kogniboost	Geist	Kompositum	Kognition, denken — als Schub
+kognideck	Geist	Kompositum	Kognition, denken — als Cockpit
+kognidesk	Geist	Kompositum	Kognition, denken — als Schreibtisch
+kogniforge	Geist	Kompositum	Kognition, denken — als Schmiede
+kognigrade	Geist	Kompositum	Kognition, denken — rund um Noten
+kogniio	Geist	Kompositum	Kognition, denken — (Tech-Marken-Endung)
+kognikit	Geist	Kompositum	Kognition, denken — als Werkzeugkasten
+kognikompass	Geist	Kompositum	Kognition, denken — als Kompass
+kognily	Geist	Kompositum	Kognition, denken — (moderne Marken-Endung)
+kognimind	Geist	Kompositum	Kognition, denken — fuer den Kopf
+kogninest	Geist	Kompositum	Kognition, denken — als Nest/Zuhause
+kogninorth	Geist	Kompositum	Kognition, denken — als feste Richtung
+kognios	Geist	Kompositum	Kognition, denken — als Betriebssystem
+kognipath	Geist	Kompositum	Kognition, denken — als Pfad
+kognipeak	Geist	Kompositum	Kognition, denken — auf dem Gipfel
+kognipilot	Geist	Kompositum	Kognition, denken — als Steuerung/Pilot
+kognirise	Geist	Kompositum	Kognition, denken — im Aufstieg
+kogniscope	Geist	Kompositum	Kognition, denken — im Blickfeld
+kogniscore	Geist	Kompositum	Kognition, denken — rund um den Punktestand
+kognisphere	Geist	Kompositum	Kognition, denken — als eigene Sphaere
+kognistar	Geist	Kompositum	Kognition, denken — als Leitstern
+kogniway	Geist	Kompositum	Kognition, denken — als Weg
+kopfapp	Geist	Kompositum	Dein kopf — (als App)
+kopfbase	Geist	Kompositum	Dein kopf — als Basis
+kopfboard	Geist	Kompositum	Dein kopf — als Board/Tafel
+kopfboost	Geist	Kompositum	Dein kopf — als Schub
+kopfcore	Geist	Kompositum	Dein kopf — im Kern
+kopfdeck	Geist	Kompositum	Dein kopf — als Cockpit
+kopfdesk	Geist	Kompositum	Dein kopf — als Schreibtisch
+kopfflow	Geist	Kompositum	Dein kopf — im Flow, alles fliesst
+kopfforge	Geist	Kompositum	Dein kopf — als Schmiede
+kopfgrade	Geist	Kompositum	Dein kopf — rund um Noten
+kopfhub	Geist	Kompositum	Dein kopf — als zentraler Knotenpunkt
+kopfio	Geist	Kompositum	Dein kopf — (Tech-Marken-Endung)
+kopfkit	Geist	Kompositum	Dein kopf — als Werkzeugkasten
+kopfloop	Geist	Kompositum	Dein kopf — als taegliche Routine
+kopfly	Geist	Kompositum	Dein kopf — (moderne Marken-Endung)
+kopfmind	Geist	Kompositum	Dein kopf — fuer den Kopf
+kopfnorth	Geist	Kompositum	Dein kopf — als feste Richtung
+kopfpath	Geist	Kompositum	Dein kopf — als Pfad
+kopfpeak	Geist	Kompositum	Dein kopf — auf dem Gipfel
+kopfpilot	Geist	Kompositum	Dein kopf — als Steuerung/Pilot
+kopfrise	Geist	Kompositum	Dein kopf — im Aufstieg
+kopfscope	Geist	Kompositum	Dein kopf — im Blickfeld
+kopfscore	Geist	Kompositum	Dein kopf — rund um den Punktestand
+kopfsphere	Geist	Kompositum	Dein kopf — als eigene Sphaere
+kopfstar	Geist	Kompositum	Dein kopf — als Leitstern
+kopfsync	Geist	Kompositum	Dein kopf — im Gleichtakt
+kopfverse	Geist	Kompositum	Dein kopf — als ganzes Universum
+kopfway	Geist	Kompositum	Dein kopf — als Weg
+mensabase	Geist	Kompositum	Der geist (lat. mens) — als Basis
+mensaboard	Geist	Kompositum	Der geist (lat. mens) — als Board/Tafel
+mensaboost	Geist	Kompositum	Der geist (lat. mens) — als Schub
+mensadeck	Geist	Kompositum	Der geist (lat. mens) — als Cockpit
+mensaforge	Geist	Kompositum	Der geist (lat. mens) — als Schmiede
+mensagrade	Geist	Kompositum	Der geist (lat. mens) — rund um Noten
+mensaio	Geist	Kompositum	Der geist (lat. mens) — (Tech-Marken-Endung)
+mensakit	Geist	Kompositum	Der geist (lat. mens) — als Werkzeugkasten
+mensakompass	Geist	Kompositum	Der geist (lat. mens) — als Kompass
+mensaloop	Geist	Kompositum	Der geist (lat. mens) — als taegliche Routine
+mensanest	Geist	Kompositum	Der geist (lat. mens) — als Nest/Zuhause
+mensanorth	Geist	Kompositum	Der geist (lat. mens) — als feste Richtung
+mensaos	Geist	Kompositum	Der geist (lat. mens) — als Betriebssystem
+mensapath	Geist	Kompositum	Der geist (lat. mens) — als Pfad
+mensapeak	Geist	Kompositum	Der geist (lat. mens) — auf dem Gipfel
+mensapilot	Geist	Kompositum	Der geist (lat. mens) — als Steuerung/Pilot
+mensarise	Geist	Kompositum	Der geist (lat. mens) — im Aufstieg
+mensascope	Geist	Kompositum	Der geist (lat. mens) — im Blickfeld
+mensascore	Geist	Kompositum	Der geist (lat. mens) — rund um den Punktestand
+mensasphere	Geist	Kompositum	Der geist (lat. mens) — als eigene Sphaere
+mensastar	Geist	Kompositum	Der geist (lat. mens) — als Leitstern
+mensasync	Geist	Kompositum	Der geist (lat. mens) — im Gleichtakt
+mensaway	Geist	Kompositum	Der geist (lat. mens) — als Weg
+clarbase	Klarheit	Kompositum	Klarheit — als Basis
+clarboost	Klarheit	Kompositum	Klarheit — als Schub
+clardeck	Klarheit	Kompositum	Klarheit — als Cockpit
+clardesk	Klarheit	Kompositum	Klarheit — als Schreibtisch
+clargrade	Klarheit	Kompositum	Klarheit — rund um Noten
+clarhub	Klarheit	Kompositum	Klarheit — als zentraler Knotenpunkt
+clarkompass	Klarheit	Kompositum	Klarheit — als Kompass
+clarloop	Klarheit	Kompositum	Klarheit — als taegliche Routine
+clarpeak	Klarheit	Kompositum	Klarheit — auf dem Gipfel
+clarpilot	Klarheit	Kompositum	Klarheit — als Steuerung/Pilot
+clarscope	Klarheit	Kompositum	Klarheit — im Blickfeld
+clarsphere	Klarheit	Kompositum	Klarheit — als eigene Sphaere
+clarstar	Klarheit	Kompositum	Klarheit — als Leitstern
+clarverse	Klarheit	Kompositum	Klarheit — als ganzes Universum
+lumenkompass	Klarheit	Kompositum	Licht — als Kompass
+acekompass	Leistung	Kompositum	Die eins, das ass — als Kompass
+edgekompass	Leistung	Kompositum	Der vorsprung — als Kompass
+forgegrade	Leistung	Kompositum	Schmieden — rund um Noten
+forgekompass	Leistung	Kompositum	Schmieden — als Kompass
+honordeck	Leistung	Kompositum	Die ehre — als Cockpit
+honordesk	Leistung	Kompositum	Die ehre — als Schreibtisch
+honorkompass	Leistung	Kompositum	Die ehre — als Kompass
+honornest	Leistung	Kompositum	Die ehre — als Nest/Zuhause
+honornorth	Leistung	Kompositum	Die ehre — als feste Richtung
+honorsync	Leistung	Kompositum	Die ehre — im Gleichtakt
+laurelboost	Leistung	Kompositum	Der lorbeer — als Schub
+laureldeck	Leistung	Kompositum	Der lorbeer — als Cockpit
+laurelflow	Leistung	Kompositum	Der lorbeer — im Flow, alles fliesst
+laurelforge	Leistung	Kompositum	Der lorbeer — als Schmiede
+laurelgrade	Leistung	Kompositum	Der lorbeer — rund um Noten
+laurelkompass	Leistung	Kompositum	Der lorbeer — als Kompass
+laurelmind	Leistung	Kompositum	Der lorbeer — fuer den Kopf
+laurelscope	Leistung	Kompositum	Der lorbeer — im Blickfeld
+laurelscore	Leistung	Kompositum	Der lorbeer — rund um den Punktestand
+laurelsphere	Leistung	Kompositum	Der lorbeer — als eigene Sphaere
+laurelsync	Leistung	Kompositum	Der lorbeer — im Gleichtakt
+laurelverse	Leistung	Kompositum	Der lorbeer — als ganzes Universum
+meritkompass	Leistung	Kompositum	Das verdienst — als Kompass
+primekompass	Leistung	Kompositum	Erstklassig — als Kompass
+lerncore	Lernen	Kompositum	Dein lernen — im Kern
+lerndeck	Lernen	Kompositum	Dein lernen — als Cockpit
+lernforge	Lernen	Kompositum	Dein lernen — als Schmiede
+lerngrade	Lernen	Kompositum	Dein lernen — rund um Noten
+lernmind	Lernen	Kompositum	Dein lernen — fuer den Kopf
+lernnorth	Lernen	Kompositum	Dein lernen — als feste Richtung
+lernpeak	Lernen	Kompositum	Dein lernen — auf dem Gipfel
+lernscore	Lernen	Kompositum	Dein lernen — rund um den Punktestand
+lernsphere	Lernen	Kompositum	Dein lernen — als eigene Sphaere
+lernsync	Lernen	Kompositum	Dein lernen — im Gleichtakt
+lernverse	Lernen	Kompositum	Dein lernen — als ganzes Universum
+scholaboard	Lernen	Kompositum	Die schule (lat.) — als Board/Tafel
+scholaboost	Lernen	Kompositum	Die schule (lat.) — als Schub
+scholacore	Lernen	Kompositum	Die schule (lat.) — im Kern
+scholadeck	Lernen	Kompositum	Die schule (lat.) — als Cockpit
+scholagrade	Lernen	Kompositum	Die schule (lat.) — rund um Noten
+scholakompass	Lernen	Kompositum	Die schule (lat.) — als Kompass
+scholaloop	Lernen	Kompositum	Die schule (lat.) — als taegliche Routine
+scholanest	Lernen	Kompositum	Die schule (lat.) — als Nest/Zuhause
+scholanorth	Lernen	Kompositum	Die schule (lat.) — als feste Richtung
+scholapath	Lernen	Kompositum	Die schule (lat.) — als Pfad
+scholapeak	Lernen	Kompositum	Die schule (lat.) — auf dem Gipfel
+scholapilot	Lernen	Kompositum	Die schule (lat.) — als Steuerung/Pilot
+scholarkompass	Lernen	Kompositum	Der gelehrte — als Kompass
+scholastar	Lernen	Kompositum	Die schule (lat.) — als Leitstern
+scholasync	Lernen	Kompositum	Die schule (lat.) — im Gleichtakt
+scholaverse	Lernen	Kompositum	Die schule (lat.) — als ganzes Universum
+studykompass	Lernen	Kompositum	Dein lernen (engl. study) — als Kompass
+momentumdeck	Momentum	Kompositum	Der schwung — als Cockpit
+momentumgrade	Momentum	Kompositum	Der schwung — rund um Noten
+momentumkompass	Momentum	Kompositum	Der schwung — als Kompass
+pulsekompass	Momentum	Kompositum	Der puls — als Kompass
+taktboost	Momentum	Kompositum	Dein rhythmus — als Schub
+taktcore	Momentum	Kompositum	Dein rhythmus — im Kern
+taktdeck	Momentum	Kompositum	Dein rhythmus — als Cockpit
+taktdesk	Momentum	Kompositum	Dein rhythmus — als Schreibtisch
+taktforge	Momentum	Kompositum	Dein rhythmus — als Schmiede
+taktgrade	Momentum	Kompositum	Dein rhythmus — rund um Noten
+taktkompass	Momentum	Kompositum	Dein rhythmus — als Kompass
+taktmind	Momentum	Kompositum	Dein rhythmus — fuer den Kopf
+taktnest	Momentum	Kompositum	Dein rhythmus — als Nest/Zuhause
+taktnorth	Momentum	Kompositum	Dein rhythmus — als feste Richtung
+taktpath	Momentum	Kompositum	Dein rhythmus — als Pfad
+taktpeak	Momentum	Kompositum	Dein rhythmus — auf dem Gipfel
+taktpilot	Momentum	Kompositum	Dein rhythmus — als Steuerung/Pilot
+taktrise	Momentum	Kompositum	Dein rhythmus — im Aufstieg
+taktscope	Momentum	Kompositum	Dein rhythmus — im Blickfeld
+taktscore	Momentum	Kompositum	Dein rhythmus — rund um den Punktestand
+taktsphere	Momentum	Kompositum	Dein rhythmus — als eigene Sphaere
+taktstar	Momentum	Kompositum	Dein rhythmus — als Leitstern
+taktsync	Momentum	Kompositum	Dein rhythmus — im Gleichtakt
+taktverse	Momentum	Kompositum	Dein rhythmus — als ganzes Universum
+thrivegrade	Momentum	Kompositum	Gedeihen — rund um Noten
+thrivekompass	Momentum	Kompositum	Gedeihen — als Kompass
+gradekompass	Noten	Kompositum	Deine note (engl. grade) — als Kompass
+gradenorth	Noten	Kompositum	Deine note (engl. grade) — als feste Richtung
+notenbase	Noten	Kompositum	Deine noten — als Basis
+notenboard	Noten	Kompositum	Deine noten — als Board/Tafel
+notenboost	Noten	Kompositum	Deine noten — als Schub
+notencore	Noten	Kompositum	Deine noten — im Kern
+notendeck	Noten	Kompositum	Deine noten — als Cockpit
+notendesk	Noten	Kompositum	Deine noten — als Schreibtisch
+notenflow	Noten	Kompositum	Deine noten — im Flow, alles fliesst
+notenforge	Noten	Kompositum	Deine noten — als Schmiede
+notengrade	Noten	Kompositum	Deine noten — rund um Noten
+notenhub	Noten	Kompositum	Deine noten — als zentraler Knotenpunkt
+notenio	Noten	Kompositum	Deine noten — (Tech-Marken-Endung)
+notenkit	Noten	Kompositum	Deine noten — als Werkzeugkasten
+notenkompass	Noten	Kompositum	Deine noten — als Kompass
+notenlab	Noten	Kompositum	Deine noten — als Labor
+notenloop	Noten	Kompositum	Deine noten — als taegliche Routine
+notenly	Noten	Kompositum	Deine noten — (moderne Marken-Endung)
+notenmind	Noten	Kompositum	Deine noten — fuer den Kopf
+notennorth	Noten	Kompositum	Deine noten — als feste Richtung
+notenos	Noten	Kompositum	Deine noten — als Betriebssystem
+notenpath	Noten	Kompositum	Deine noten — als Pfad
+notenpeak	Noten	Kompositum	Deine noten — auf dem Gipfel
+notenrise	Noten	Kompositum	Deine noten — im Aufstieg
+notenscope	Noten	Kompositum	Deine noten — im Blickfeld
+notenscore	Noten	Kompositum	Deine noten — rund um den Punktestand
+notensphere	Noten	Kompositum	Deine noten — als eigene Sphaere
+notenstar	Noten	Kompositum	Deine noten — als Leitstern
+notensync	Noten	Kompositum	Deine noten — im Gleichtakt
+notenverse	Noten	Kompositum	Deine noten — als ganzes Universum
+notenway	Noten	Kompositum	Deine noten — als Weg
+punktbase	Noten	Kompositum	Das 0-15-punktesystem — als Basis
+punktboard	Noten	Kompositum	Das 0-15-punktesystem — als Board/Tafel
+punktboost	Noten	Kompositum	Das 0-15-punktesystem — als Schub
+punktcore	Noten	Kompositum	Das 0-15-punktesystem — im Kern
+punktdeck	Noten	Kompositum	Das 0-15-punktesystem — als Cockpit
+punktdesk	Noten	Kompositum	Das 0-15-punktesystem — als Schreibtisch
+punktflow	Noten	Kompositum	Das 0-15-punktesystem — im Flow, alles fliesst
+punktforge	Noten	Kompositum	Das 0-15-punktesystem — als Schmiede
+punktgrade	Noten	Kompositum	Das 0-15-punktesystem — rund um Noten
+punkthub	Noten	Kompositum	Das 0-15-punktesystem — als zentraler Knotenpunkt
+punktkit	Noten	Kompositum	Das 0-15-punktesystem — als Werkzeugkasten
+punktkompass	Noten	Kompositum	Das 0-15-punktesystem — als Kompass
+punktlab	Noten	Kompositum	Das 0-15-punktesystem — als Labor
+punktloop	Noten	Kompositum	Das 0-15-punktesystem — als taegliche Routine
+punktmind	Noten	Kompositum	Das 0-15-punktesystem — fuer den Kopf
+punktnest	Noten	Kompositum	Das 0-15-punktesystem — als Nest/Zuhause
+punktnorth	Noten	Kompositum	Das 0-15-punktesystem — als feste Richtung
+punktpath	Noten	Kompositum	Das 0-15-punktesystem — als Pfad
+punktpeak	Noten	Kompositum	Das 0-15-punktesystem — auf dem Gipfel
+punktpilot	Noten	Kompositum	Das 0-15-punktesystem — als Steuerung/Pilot
+punktrise	Noten	Kompositum	Das 0-15-punktesystem — im Aufstieg
+punktscope	Noten	Kompositum	Das 0-15-punktesystem — im Blickfeld
+punktscore	Noten	Kompositum	Das 0-15-punktesystem — rund um den Punktestand
+punktsphere	Noten	Kompositum	Das 0-15-punktesystem — als eigene Sphaere
+punktstar	Noten	Kompositum	Das 0-15-punktesystem — als Leitstern
+punktsync	Noten	Kompositum	Das 0-15-punktesystem — im Gleichtakt
+punktverse	Noten	Kompositum	Das 0-15-punktesystem — als ganzes Universum
+punktway	Noten	Kompositum	Das 0-15-punktesystem — als Weg
+kursboard	Orientierung	Kompositum	Dein kurs — als Board/Tafel
+kursboost	Orientierung	Kompositum	Dein kurs — als Schub
+kurscore	Orientierung	Kompositum	Dein kurs — im Kern
+kursdeck	Orientierung	Kompositum	Dein kurs — als Cockpit
+kursdesk	Orientierung	Kompositum	Dein kurs — als Schreibtisch
+kursforge	Orientierung	Kompositum	Dein kurs — als Schmiede
+kursgrade	Orientierung	Kompositum	Dein kurs — rund um Noten
+kursloop	Orientierung	Kompositum	Dein kurs — als taegliche Routine
+kursmind	Orientierung	Kompositum	Dein kurs — fuer den Kopf
+kursnest	Orientierung	Kompositum	Dein kurs — als Nest/Zuhause
+kursnorth	Orientierung	Kompositum	Dein kurs — als feste Richtung
+kurspath	Orientierung	Kompositum	Dein kurs — als Pfad
+kurspeak	Orientierung	Kompositum	Dein kurs — auf dem Gipfel
+kursrise	Orientierung	Kompositum	Dein kurs — im Aufstieg
+kursscope	Orientierung	Kompositum	Dein kurs — im Blickfeld
+kursscore	Orientierung	Kompositum	Dein kurs — rund um den Punktestand
+kurssphere	Orientierung	Kompositum	Dein kurs — als eigene Sphaere
+kursstar	Orientierung	Kompositum	Dein kurs — als Leitstern
+kurssync	Orientierung	Kompositum	Dein kurs — im Gleichtakt
+kursverse	Orientierung	Kompositum	Dein kurs — als ganzes Universum
+kursway	Orientierung	Kompositum	Dein kurs — als Weg
+polarkompass	Orientierung	Kompositum	Der polarstern — als Kompass
+polarscore	Orientierung	Kompositum	Der polarstern — rund um den Punktestand
+campuskompass	Schule	Kompositum	Dein campus — als Kompass
+prepkompass	Schule	Kompositum	Die vorbereitung — als Kompass
+schulboost	Schule	Kompositum	Dein schulleben — als Schub
+schuldeck	Schule	Kompositum	Dein schulleben — als Cockpit
+schuldesk	Schule	Kompositum	Dein schulleben — als Schreibtisch
+schulforge	Schule	Kompositum	Dein schulleben — als Schmiede
+schulgrade	Schule	Kompositum	Dein schulleben — rund um Noten
+schulkit	Schule	Kompositum	Dein schulleben — als Werkzeugkasten
+schullab	Schule	Kompositum	Dein schulleben — als Labor
+schulloop	Schule	Kompositum	Dein schulleben — als taegliche Routine
+schulmind	Schule	Kompositum	Dein schulleben — fuer den Kopf
+schulnest	Schule	Kompositum	Dein schulleben — als Nest/Zuhause
+schulnorth	Schule	Kompositum	Dein schulleben — als feste Richtung
+schulos	Schule	Kompositum	Dein schulleben — als Betriebssystem
+schulpath	Schule	Kompositum	Dein schulleben — als Pfad
+schulpeak	Schule	Kompositum	Dein schulleben — auf dem Gipfel
+schulrise	Schule	Kompositum	Dein schulleben — im Aufstieg
+schulscope	Schule	Kompositum	Dein schulleben — im Blickfeld
+schulscore	Schule	Kompositum	Dein schulleben — rund um den Punktestand
+schulsphere	Schule	Kompositum	Dein schulleben — als eigene Sphaere
+schulstar	Schule	Kompositum	Dein schulleben — als Leitstern
+schulverse	Schule	Kompositum	Dein schulleben — als ganzes Universum
+schulway	Schule	Kompositum	Dein schulleben — als Weg
+abicockpit	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+abiheld	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+abipfad	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+abiradar	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+abiready	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+abizeit	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+lerngipfel	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notencockpit	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenheld	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenklar	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenkonto	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenmeister	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notennord	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenpilotin	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenpuls	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notenradar	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+notentracker	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+punktkonto	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+schulcockpit	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+schulkosmos	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+schulnord	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+schulpuls	Sonstige	Kunstwort	Kunstwort / abstrakte Marke
+heliograde	Sterne	Kompositum	Die sonne — rund um Noten
+helioio	Sterne	Kompositum	Die sonne — (Tech-Marken-Endung)
+heliokit	Sterne	Kompositum	Die sonne — als Werkzeugkasten
+heliokompass	Sterne	Kompositum	Die sonne — als Kompass
+helionorth	Sterne	Kompositum	Die sonne — als feste Richtung
+kosmosboost	Sterne	Kompositum	Der kosmos — als Schub
+kosmoscore	Sterne	Kompositum	Der kosmos — im Kern
+kosmosdeck	Sterne	Kompositum	Der kosmos — als Cockpit
+kosmosdesk	Sterne	Kompositum	Der kosmos — als Schreibtisch
+kosmosforge	Sterne	Kompositum	Der kosmos — als Schmiede
+kosmosgrade	Sterne	Kompositum	Der kosmos — rund um Noten
+kosmosio	Sterne	Kompositum	Der kosmos — (Tech-Marken-Endung)
+kosmoskit	Sterne	Kompositum	Der kosmos — als Werkzeugkasten
+kosmoskompass	Sterne	Kompositum	Der kosmos — als Kompass
+kosmosloop	Sterne	Kompositum	Der kosmos — als taegliche Routine
+kosmosnest	Sterne	Kompositum	Der kosmos — als Nest/Zuhause
+kosmosnorth	Sterne	Kompositum	Der kosmos — als feste Richtung
+kosmospeak	Sterne	Kompositum	Der kosmos — auf dem Gipfel
+kosmospilot	Sterne	Kompositum	Der kosmos — als Steuerung/Pilot
+kosmosrise	Sterne	Kompositum	Der kosmos — im Aufstieg
+kosmosscope	Sterne	Kompositum	Der kosmos — im Blickfeld
+kosmosscore	Sterne	Kompositum	Der kosmos — rund um den Punktestand
+kosmossphere	Sterne	Kompositum	Der kosmos — als eigene Sphaere
+kosmossync	Sterne	Kompositum	Der kosmos — im Gleichtakt
+stellaboard	Sterne	Kompositum	Der stern — als Board/Tafel
+stellagrade	Sterne	Kompositum	Der stern — rund um Noten
+stellaio	Sterne	Kompositum	Der stern — (Tech-Marken-Endung)
+stellakompass	Sterne	Kompositum	Der stern — als Kompass
+stellaloop	Sterne	Kompositum	Der stern — als taegliche Routine
+stellapeak	Sterne	Kompositum	Der stern — auf dem Gipfel
+stellascore	Sterne	Kompositum	Der stern — rund um den Punktestand
+vegagrade	Sterne	Kompositum	Ein heller stern — rund um Noten
+vegakompass	Sterne	Kompositum	Ein heller stern — als Kompass
+areteboard	Werte	Kompositum	Die bestleistung (gr. arete) — als Board/Tafel
+areteboost	Werte	Kompositum	Die bestleistung (gr. arete) — als Schub
+aretedeck	Werte	Kompositum	Die bestleistung (gr. arete) — als Cockpit
+aretedesk	Werte	Kompositum	Die bestleistung (gr. arete) — als Schreibtisch
+aretegrade	Werte	Kompositum	Die bestleistung (gr. arete) — rund um Noten
+areteio	Werte	Kompositum	Die bestleistung (gr. arete) — (Tech-Marken-Endung)
+aretekit	Werte	Kompositum	Die bestleistung (gr. arete) — als Werkzeugkasten
+aretekompass	Werte	Kompositum	Die bestleistung (gr. arete) — als Kompass
+areteloop	Werte	Kompositum	Die bestleistung (gr. arete) — als taegliche Routine
+aretenest	Werte	Kompositum	Die bestleistung (gr. arete) — als Nest/Zuhause
+aretepilot	Werte	Kompositum	Die bestleistung (gr. arete) — als Steuerung/Pilot
+areterise	Werte	Kompositum	Die bestleistung (gr. arete) — im Aufstieg
+aretescope	Werte	Kompositum	Die bestleistung (gr. arete) — im Blickfeld
+aretescore	Werte	Kompositum	Die bestleistung (gr. arete) — rund um den Punktestand
+aretestar	Werte	Kompositum	Die bestleistung (gr. arete) — als Leitstern
+elanboard	Werte	Kompositum	Der schwung — als Board/Tafel
+elanboost	Werte	Kompositum	Der schwung — als Schub
+elandeck	Werte	Kompositum	Der schwung — als Cockpit
+elangrade	Werte	Kompositum	Der schwung — rund um Noten
+elankit	Werte	Kompositum	Der schwung — als Werkzeugkasten
+elankompass	Werte	Kompositum	Der schwung — als Kompass
+elanloop	Werte	Kompositum	Der schwung — als taegliche Routine
+elannorth	Werte	Kompositum	Der schwung — als feste Richtung
+elanpeak	Werte	Kompositum	Der schwung — auf dem Gipfel
+elanpilot	Werte	Kompositum	Der schwung — als Steuerung/Pilot
+elanscope	Werte	Kompositum	Der schwung — im Blickfeld
+elanscore	Werte	Kompositum	Der schwung — rund um den Punktestand
+elansync	Werte	Kompositum	Der schwung — im Gleichtakt
+kaizengrade	Werte	Kompositum	Staendige verbesserung (jp.) — rund um Noten
+kaizenkompass	Werte	Kompositum	Staendige verbesserung (jp.) — als Kompass
+kaizennorth	Werte	Kompositum	Staendige verbesserung (jp.) — als feste Richtung
+kaizenscope	Werte	Kompositum	Staendige verbesserung (jp.) — im Blickfeld
+sparkkompass	Werte	Kompositum	Der funke — als Kompass
+tagkompass	Werte	Kompositum	Dein schultag — als Kompass
+vigordeck	Werte	Kompositum	Die tatkraft — als Cockpit
+vigordesk	Werte	Kompositum	Die tatkraft — als Schreibtisch
+vigorgrade	Werte	Kompositum	Die tatkraft — rund um Noten
+vigorkompass	Werte	Kompositum	Die tatkraft — als Kompass
+vigornorth	Werte	Kompositum	Die tatkraft — als feste Richtung
+zielbase	Ziel	Kompositum	Dein ziel — als Basis
+zielboard	Ziel	Kompositum	Dein ziel — als Board/Tafel
+zielboost	Ziel	Kompositum	Dein ziel — als Schub
+zielcore	Ziel	Kompositum	Dein ziel — im Kern
+zieldeck	Ziel	Kompositum	Dein ziel — als Cockpit
+zieldesk	Ziel	Kompositum	Dein ziel — als Schreibtisch
+zielflow	Ziel	Kompositum	Dein ziel — im Flow, alles fliesst
+zielgrade	Ziel	Kompositum	Dein ziel — rund um Noten
+zielio	Ziel	Kompositum	Dein ziel — (Tech-Marken-Endung)
+zielkit	Ziel	Kompositum	Dein ziel — als Werkzeugkasten
+zielloop	Ziel	Kompositum	Dein ziel — als taegliche Routine
+zielmind	Ziel	Kompositum	Dein ziel — fuer den Kopf
+zielnest	Ziel	Kompositum	Dein ziel — als Nest/Zuhause
+zielnorth	Ziel	Kompositum	Dein ziel — als feste Richtung
+zielpath	Ziel	Kompositum	Dein ziel — als Pfad
+zielpeak	Ziel	Kompositum	Dein ziel — auf dem Gipfel
+zielpilot	Ziel	Kompositum	Dein ziel — als Steuerung/Pilot
+zielrise	Ziel	Kompositum	Dein ziel — im Aufstieg
+zielscope	Ziel	Kompositum	Dein ziel — im Blickfeld
+zielscore	Ziel	Kompositum	Dein ziel — rund um den Punktestand
+zielsphere	Ziel	Kompositum	Dein ziel — als eigene Sphaere
+zielstar	Ziel	Kompositum	Dein ziel — als Leitstern
+zielsync	Ziel	Kompositum	Dein ziel — im Gleichtakt
+zielverse	Ziel	Kompositum	Dein ziel — als ganzes Universum
+zielway	Ziel	Kompositum	Dein ziel — als Weg
+atlasgrade	Zukunft	Kompositum	Der traeger, orientierung — rund um Noten
+nexusgrade	Zukunft	Kompositum	Der knotenpunkt — rund um Noten
+nexuskompass	Zukunft	Kompositum	Der knotenpunkt — als Kompass
+vaultkompass	Zukunft	Kompositum	Der tresor fuer deine daten — als Kompass
