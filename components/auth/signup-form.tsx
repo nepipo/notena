@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useEffect, useRef } from "react";
+import { useActionState, useState, useEffect } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
 import { signup, resendConfirmationEmail, type AuthState } from "@/app/auth/actions";
@@ -15,37 +15,19 @@ function EmailSentScreen({ email }: { email: string }) {
     resendConfirmationEmail,
     null,
   );
-  const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Countdown als Deadline-Timestamp statt Tick-State — der Reset passiert
+  // im Form-Action-Handler, nicht im Render oder Effect (React-Compiler-Regeln).
+  const [deadline, setDeadline] = useState(() => Date.now() + RESEND_COOLDOWN * 1000);
+  const [now, setNow] = useState(() => Date.now());
+
+  const countdown = Math.max(0, Math.ceil((deadline - now) / 1000));
+  const abgelaufen = countdown === 0;
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(intervalRef.current!);
-          return 0;
-        }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(intervalRef.current!);
-  }, []);
-
-  // Reset countdown after successful resend
-  useEffect(() => {
-    if (resendState?.success) {
-      setCountdown(RESEND_COOLDOWN);
-      intervalRef.current = setInterval(() => {
-        setCountdown((c) => {
-          if (c <= 1) {
-            clearInterval(intervalRef.current!);
-            return 0;
-          }
-          return c - 1;
-        });
-      }, 1000);
-    }
-  }, [resendState?.success]);
+    if (abgelaufen) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [abgelaufen, deadline]);
 
   const canResend = countdown === 0 && !isResending;
 
@@ -60,7 +42,13 @@ function EmailSentScreen({ email }: { email: string }) {
         <p className="mt-1 text-xs text-text-mute">Schau auch im Spam-Ordner nach.</p>
       </div>
 
-      <form action={resendAction}>
+      <form
+        action={(formData: FormData) => {
+          // Cooldown startet direkt beim Absenden — verhindert Spam auch bei Fehlern
+          setDeadline(Date.now() + RESEND_COOLDOWN * 1000);
+          resendAction(formData);
+        }}
+      >
         <input type="hidden" name="email" value={email} />
         <Button
           type="submit"

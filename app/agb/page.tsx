@@ -32,8 +32,8 @@ export default function AgbPage() {
             § 1 Anbieter und Geltungsbereich
           </h2>
           <p className="mb-3">
-            (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend „AGB") regeln
-            die Nutzung der Web-Applikation Project X (nachfolgend „Dienst"),
+            (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend „AGB“) regeln
+            die Nutzung der Web-Applikation Project X (nachfolgend „Dienst“),
             angeboten von:
           </p>
           <p className="mb-3 font-mono">
@@ -43,7 +43,7 @@ export default function AgbPage() {
             <br />
             E-Mail: ne.polonius@gmail.com
             <br />
-            (nachfolgend „Anbieter")
+            (nachfolgend „Anbieter“)
           </p>
           <p className="mb-3">
             (2) Diese AGB gelten gegenüber Verbrauchern im Sinne von § 13 BGB
@@ -109,7 +109,7 @@ export default function AgbPage() {
           </p>
           <p className="mb-3">
             (2) Der Vertrag über das Pro-Abonnement kommt durch das Anklicken des
-            Buttons „Zahlungspflichtig abonnieren" und die anschließende
+            Buttons „Zahlungspflichtig abonnieren“ und die anschließende
             Zahlungsbestätigung durch Lemon Squeezy zustande.
           </p>
           <p className="mb-3">
