@@ -126,6 +126,32 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
   const tagGrund = entfalleneStunden.map((s) => entfallHeute.get(s.id)?.begruendung).find((g) => g) ?? null;
   const gesamtNoten = faecher.reduce((s, f) => s + f.noten.length, 0);
 
+  if (faecher.length === 0) {
+    return (
+      <section
+        className="lift animate-fade-up card-glow mt-4 rounded-3xl border border-border p-8"
+        style={{ background: "var(--card-grad)", animationDelay: "0.05s" }}
+      >
+        <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
+          Los geht&rsquo;s
+        </div>
+        <h2 className="mt-3 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
+          Willkommen! Trag deine Fächer ein und dein Schnitt erscheint hier.
+        </h2>
+        <p className="mt-2 font-mono text-sm text-text-dim">
+          Fächer anlegen, Noten eintragen — den Rest rechnet der Notenrechner.
+        </p>
+        <Link
+          href="/einstellungen#faecher"
+          className="group mt-5 inline-flex items-center gap-1.5 font-display text-sm font-bold text-brand"
+        >
+          Erstes Fach hinzufügen
+          <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
+      </section>
+    );
+  }
+
   return (
     <>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">

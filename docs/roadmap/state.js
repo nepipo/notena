@@ -39,7 +39,7 @@ window.ROAD_STATE = {
   // UX & Onboarding
   u01: false,
   u02: false,
-  u03: false,
+  u03: true,
   u04: true,
   u05: true,
   u06: false, u07: false, u08: false,

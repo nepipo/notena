@@ -84,6 +84,9 @@ export function NotenrechnerBoard({
   // Zähle nur Top-Level-Fächer (keine Unterfächer) für die Anzeige
   const topLevelAktivCount = aktiveFaecher.filter((f) => !f.parentFachId).length;
 
+  // Fächer da, aber noch keine einzige Note → Hint in jeder FachCard
+  const alleOhneNoten = faecher.length > 0 && faecher.every((f) => f.noten.length === 0);
+
   function handleAddFach() {
     const name = neuesFach.trim();
     if (!name) return;
@@ -284,6 +287,7 @@ export function NotenrechnerBoard({
             index={i}
             naechsteKlausur={klausurByFach.get(fach.id) ?? null}
             vorherSchnitt={vorherSchnitte[fach.name] ?? null}
+            ersteNoteHint={alleOhneNoten}
             unterfaecher={unterfachMap.get(fach.id)}
             elternfachName={fach.parentFachId ? (faecher.find((p) => p.id === fach.parentFachId)?.name ?? null) : null}
             onAddNote={handleAddNote}

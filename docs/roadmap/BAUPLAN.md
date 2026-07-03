@@ -116,7 +116,7 @@ Sortiert nach Deadline:
 - [x] `r02` Datenschutzerklärung ✅ (vollständig unter /datenschutz)
 
 **✨ UX & Onboarding**
-- [ ] `u03` Empty States: Dashboard + Noten-Seite für neue User ohne Daten ← 08.07
+- [x] `u03` Empty States: Dashboard + Noten-Seite für neue User ohne Daten ← 08.07
 
 **🗂️ General**
 - [ ] `g04` Sentry Error-Tracking aktivieren (Free Tier) ← 08.07

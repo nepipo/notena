@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCachedProfil } from "@/lib/supabase/cache";
 import dynamic from "next/dynamic";
@@ -115,16 +116,39 @@ export default async function NotenPage() {
         <p className="mt-2 font-mono text-sm text-text-dim">Halbjahr {halbjahr}</p>
       </header>
 
-      <NotenrechnerBoard
-        key={halbjahr}
-        initialFaecher={faecher}
-        halbjahr={halbjahr}
-        initialKlausuren={klausuren}
-        verfuegbareHalbjahre={verfuegbareHalbjahre}
-        vorherSchnitte={vorherSchnitte}
-        jahresUebersicht={jahresUebersicht}
-        schuljahr={schuljahrLabel(halbjahr)}
-      />
+      {faecher.length === 0 ? (
+        <section
+          className="animate-fade-up flex flex-col items-center rounded-3xl border border-border p-8 text-center sm:p-12"
+          style={{ background: "var(--card-grad)", animationDelay: "0.05s" }}
+        >
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
+            Leg los
+          </div>
+          <h2 className="mt-3 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
+            Noch keine Fächer.
+          </h2>
+          <p className="mt-2 max-w-md text-sm text-text-dim">
+            Leg los und dein Notenrechner füllt sich.
+          </p>
+          <Link
+            href="/einstellungen#faecher"
+            className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-brand px-6 font-display text-sm font-bold text-black transition-colors hover:bg-brand/90"
+          >
+            Fach hinzufügen
+          </Link>
+        </section>
+      ) : (
+        <NotenrechnerBoard
+          key={halbjahr}
+          initialFaecher={faecher}
+          halbjahr={halbjahr}
+          initialKlausuren={klausuren}
+          verfuegbareHalbjahre={verfuegbareHalbjahre}
+          vorherSchnitte={vorherSchnitte}
+          jahresUebersicht={jahresUebersicht}
+          schuljahr={schuljahrLabel(halbjahr)}
+        />
+      )}
     </main>
   );
 }

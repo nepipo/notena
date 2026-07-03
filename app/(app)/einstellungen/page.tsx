@@ -216,7 +216,8 @@ export default async function EinstellungenPage() {
 
       {/* ── FÄCHER ────────────────────────────────────────── */}
       <section
-        className="animate-fade-up mt-4 rounded-3xl border border-border p-6"
+        id="faecher"
+        className="animate-fade-up mt-4 scroll-mt-6 rounded-3xl border border-border p-6"
         style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-text-dim">

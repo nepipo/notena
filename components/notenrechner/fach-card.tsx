@@ -269,6 +269,7 @@ export function FachCard({
   vorherSchnitt,
   unterfaecher,
   elternfachName,
+  ersteNoteHint,
   onAddNote,
   onRemoveNote,
   onUpdateNote,
@@ -280,6 +281,7 @@ export function FachCard({
   vorherSchnitt?: number | null;
   unterfaecher?: Fach[];
   elternfachName?: string | null;
+  ersteNoteHint?: boolean;
   onAddNote: (fachId: string, punkte: number, kategorie: Kategorie, bezeichnung?: string, gewicht?: number) => void;
   onRemoveNote: (fachId: string, noteId: string) => void;
   onUpdateNote: (fachId: string, noteId: string, punkte: number, kategorie: Kategorie, bezeichnung?: string, gewicht?: number) => void;
@@ -393,7 +395,11 @@ export function FachCard({
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         {fach.noten.length === 0 && (
-          <span className="font-mono text-xs text-text-mute">Noch keine Noten</span>
+          ersteNoteHint ? (
+            <span className="font-mono text-xs font-semibold text-brand">↓ Erste Note eintragen</span>
+          ) : (
+            <span className="font-mono text-xs text-text-mute">Noch keine Noten</span>
+          )
         )}
         {fach.noten.map((n) => {
           if (editingNoteId === n.id) {
