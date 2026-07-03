@@ -8,11 +8,9 @@ import { ALLE_SYSTEME } from "@/lib/grades/systems";
 
 interface Props {
   initialValue: string;
-  /** Anzahl bestehender Noten — steuert den Hinweis nach dem Wechsel. */
-  noteAnzahl: number;
 }
 
-export function NotensystemWahl({ initialValue, noteAnzahl }: Props) {
+export function NotensystemWahl({ initialValue }: Props) {
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [saved, setSaved] = useState(false);
