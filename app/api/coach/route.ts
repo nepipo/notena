@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { COACH_TOOLS, type ToolName } from "@/lib/coach/tools";
 import { baueCoachKontext } from "@/lib/coach/context";
 import { checkRateLimit } from "@/lib/coach/rate-limiter";
+import { istPro } from "@/lib/pro/plan";
 import type { KlausurRow, NoteRow } from "@/lib/grades/db";
 import type { FachRow } from "@/lib/grades/db";
 import type { HausaufgabeRow, StundeRow } from "@/lib/stundenplan/types";
@@ -143,6 +144,18 @@ export async function POST(req: Request) {
   const { data: auth } = await supabase.auth.getClaims();
   if (!auth?.claims?.sub) {
     return Response.json({ error: "Nicht eingeloggt" }, { status: 401 });
+  }
+
+  // Pro-Gate: Der KI-Coach ist ein Pro-Feature.
+  const { data: planProfil } = await supabase
+    .from("nutzer_profil")
+    .select("plan_tier, plan_bis")
+    .single();
+  if (!istPro(planProfil)) {
+    return Response.json(
+      { error: "Der KI-Coach ist ein Pro-Feature.", code: "pro_required" },
+      { status: 402 },
+    );
   }
 
   const rateLimit = await checkRateLimit(supabase);

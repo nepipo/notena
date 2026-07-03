@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
 import { signup, resendConfirmationEmail, type AuthState } from "@/app/auth/actions";
 import { Input } from "@/components/ui/input";
@@ -151,6 +152,28 @@ export function SignupForm() {
           {state.error}
         </p>
       )}
+
+      <div className="flex items-start gap-2.5">
+        <input
+          id="consent"
+          name="consent"
+          type="checkbox"
+          required
+          className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-border accent-brand"
+        />
+        <Label htmlFor="consent" className="cursor-pointer text-xs leading-relaxed text-text-dim">
+          Ich habe die{" "}
+          <Link href="/agb" target="_blank" className="text-brand hover:underline">
+            AGB
+          </Link>{" "}
+          und{" "}
+          <Link href="/datenschutz" target="_blank" className="text-brand hover:underline">
+            Datenschutzerklärung
+          </Link>{" "}
+          gelesen und stimme ihnen zu. Ich bestätige, dass ich mindestens 16 Jahre alt
+          bin oder die Einwilligung meiner Erziehungsberechtigten vorliegt.
+        </Label>
+      </div>
 
       <Button
         type="submit"

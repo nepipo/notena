@@ -54,6 +54,9 @@ export async function updateSession(request: NextRequest) {
     path === "/apple-icon" ||
     // Cron-Routen: eigene CRON_SECRET-Authentifizierung
     path.startsWith("/api/cron") ||
+    // Webhooks (z.B. LemonSqueezy): eigene HMAC-Signatur-Authentifizierung,
+    // der externe Dienst ist nie eingeloggt
+    path.startsWith("/api/webhooks") ||
     path === "/offline";
 
   if (!user && !isPublic) {

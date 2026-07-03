@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getCachedProfil } from "@/lib/supabase/cache";
 import { BriefingKarte } from "@/components/dashboard/briefing-karte";
 import { CoachChat } from "@/components/dashboard/coach-chat";
+import { UpgradePrompt } from "@/components/pro/upgrade-prompt";
+import { istPro } from "@/lib/pro/plan";
+
 import { GrussText } from "@/components/dashboard/gruss-text";
 import { FerienCountdown } from "@/components/dashboard/ferien-countdown";
 import { SchnittKarte } from "@/components/dashboard/schnitt-karte";
@@ -35,6 +38,7 @@ function heutigerWochentag(): number {
 export default async function DashboardPage() {
   const profil = await getCachedProfil();
   const halbjahr = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+  const pro = istPro(profil);
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
@@ -48,18 +52,23 @@ export default async function DashboardPage() {
         </h1>
       </header>
 
-      {/* Briefing streamt unabhängig */}
-      <Suspense fallback={<BriefingSkeleton />}>
-        <BriefingKarte />
-      </Suspense>
+      {/* Briefing — Pro-Feature */}
+      {pro ? (
+        <Suspense fallback={<BriefingSkeleton />}>
+          <BriefingKarte />
+        </Suspense>
+      ) : (
+        <UpgradePrompt feature="Tägliches KI-Briefing" />
+      )}
 
       {/* Alle Karten streamen sobald DB-Queries fertig (~100–200ms nach Shell) */}
       <Suspense fallback={<DashboardCardsSkeleton />}>
         <DashboardData halbjahr={halbjahr} />
       </Suspense>
 
+      {/* KI-Coach — Pro-Feature */}
       <div className="mt-4">
-        <CoachChat />
+        {pro ? <CoachChat /> : <UpgradePrompt feature="KI-Coach" />}
       </div>
     </main>
   );

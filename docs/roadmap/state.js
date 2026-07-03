@@ -1,13 +1,13 @@
 // Project X — Roadmap State
 // Wird von Claude aktualisiert wenn Tasks erledigt werden.
 // Nach Update: Dashboard neu laden (Cmd+R) → Tasks haken sich automatisch ab.
-// Stand: 2026-06-30
+// Stand: 2026-07-03
 
 window.ROAD_STATE = {
   // Coding
   c01: true, c02: true, c03: false,
-  c04: false, c05: false,
-  c06: false, c07: false, c08: false,
+  c04: true, c05: false,
+  c06: true, c07: true, c08: true,
   c09: true, c10: true, c11: true,
   c12: true, c13: true,
   c14: false, c15: false, c16: false,
@@ -45,8 +45,8 @@ window.ROAD_STATE = {
   u06: false, u07: false, u08: false,
 
   // General
-  g01: false, g02: false, g03: false,
-  g04: false, g05: false,
+  g01: false, g02: false, g03: true,
+  g04: true, g05: false,
   g06: false,
   g07: false,
   g08: false, g09: false,

@@ -12,7 +12,7 @@ const fachRows: FachRow[] = [
     id: "f1", user_id: "u", name: "Mathe", farbe: "#1da1ff", niveau: "erhoeht",
     halbjahr: "2025/26-2", fach_gewicht: 2, gewicht_klausur: 0.6,
     gewicht_muendlich: 0.4, gewicht_sonstige: 0, gewichtung_config: null,
-    ausgeschlossen: false, created_at: "",
+    ausgeschlossen: false, created_at: "", parent_fach_id: null, subfach_gewicht: null,
   },
 ];
 const noteRows: NoteRow[] = [

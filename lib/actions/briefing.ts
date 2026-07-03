@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { assembleFaecher, type FachRow, type NoteRow, type KlausurRow } from "@/lib/grades/db";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet } from "@/lib/grades/calc";
+import { istPro } from "@/lib/pro/plan";
 import type { HausaufgabeRow } from "@/lib/stundenplan/types";
 import type { StundeRow } from "@/lib/stundenplan/types";
 import { FERIEN, type Bundesland } from "@/lib/ferien/ferien-data";
@@ -139,6 +140,14 @@ export async function holeBriefing(): Promise<string | null> {
 
   const userId = auth.claims.sub;
   const heute = heuteDatum();
+
+  // Pro-Gate: Das tägliche Briefing ist ein Pro-Feature.
+  const { data: planProfil } = await supabase
+    .from("nutzer_profil")
+    .select("plan_tier, plan_bis")
+    .eq("id", userId)
+    .single();
+  if (!istPro(planProfil)) return null;
 
   // Cached Briefing für heute?
   const { data: cached } = await supabase

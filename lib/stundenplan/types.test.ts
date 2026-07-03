@@ -19,6 +19,7 @@ const stunde = (o: Partial<StundeRow> = {}): StundeRow => ({
   raum: null,
   lehrer: null,
   woche_typ: null,
+  halbjahr_id: null,
   ...o,
 });
 

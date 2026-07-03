@@ -43,12 +43,19 @@ export async function signup(
 ): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const consent = formData.get("consent") === "on";
 
   if (!email || !password) {
     return { error: "Bitte E-Mail und Passwort eingeben." };
   }
   if (password.length < 8) {
     return { error: "Das Passwort muss mindestens 8 Zeichen haben." };
+  }
+  if (!consent) {
+    return {
+      error:
+        "Bitte bestätige die AGB, die Datenschutzerklärung und deine Altersangabe.",
+    };
   }
 
   const supabase = await createClient();

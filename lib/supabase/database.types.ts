@@ -161,13 +161,19 @@ export type Database = {
           klasse: number | null
           klausur_erinnerung_tage: number[]
           land: string | null
+          ls_customer_id: string | null
+          ls_subscription_id: string | null
           nachname: string | null
           name: string | null
           notensystem: string
           onboarding_abgeschlossen: boolean
+          plan_bis: string | null
+          plan_intervall: string | null
+          plan_status: string | null
           plan_tier: string
           schule: string | null
           schulform: string | null
+          trial_genutzt: boolean
           updated_at: string
           wochen_modus: string | null
         }
@@ -186,13 +192,19 @@ export type Database = {
           klasse?: number | null
           klausur_erinnerung_tage?: number[]
           land?: string | null
+          ls_customer_id?: string | null
+          ls_subscription_id?: string | null
           nachname?: string | null
           name?: string | null
           notensystem?: string
           onboarding_abgeschlossen?: boolean
+          plan_bis?: string | null
+          plan_intervall?: string | null
+          plan_status?: string | null
           plan_tier?: string
           schule?: string | null
           schulform?: string | null
+          trial_genutzt?: boolean
           updated_at?: string
           wochen_modus?: string | null
         }
@@ -211,13 +223,19 @@ export type Database = {
           klasse?: number | null
           klausur_erinnerung_tage?: number[]
           land?: string | null
+          ls_customer_id?: string | null
+          ls_subscription_id?: string | null
           nachname?: string | null
           name?: string | null
           notensystem?: string
           onboarding_abgeschlossen?: boolean
+          plan_bis?: string | null
+          plan_intervall?: string | null
+          plan_status?: string | null
           plan_tier?: string
           schule?: string | null
           schulform?: string | null
+          trial_genutzt?: boolean
           updated_at?: string
           wochen_modus?: string | null
         }
