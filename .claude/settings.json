@@ -1,5 +1,19 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // empty' | grep -q 'git push' || exit 0; sleep 15; id=$(gh run list --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null); [ -n \"$id\" ] || exit 0; gh run watch \"$id\" --exit-status >/dev/null 2>&1 && exit 0; echo \"CI ist ROT nach dem letzten git push (Run $id). Details ansehen: gh run view $id --log-failed\"; exit 2",
+            "asyncRewake": true,
+            "timeout": 600,
+            "statusMessage": "Beobachte CI-Run auf GitHub…"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
