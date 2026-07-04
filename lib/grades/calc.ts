@@ -6,8 +6,10 @@
 import {
   type Fach,
   type Kategorie,
+  type BuiltinKategorie,
   type GewichtungConfig,
   type Note,
+  BUILTIN_KATEGORIEN,
   DEFAULT_GEWICHTUNG_CONFIG,
 } from "./types";
 import { DE_0_15, type Notensystem } from "./systems";
@@ -57,42 +59,53 @@ function resolveConfig(config?: Partial<GewichtungConfig>): GewichtungConfig {
 }
 
 /**
- * Fach-Schnitt: Alle Kategorien werden via kategorieZurGruppe in "klausur"
- * oder "muendlich" eingruppiert, dann mit den Gruppengewichten aus config
- * kombiniert. Fehlende Gruppen werden renormalisiert.
- * Klausur-Dynamik: wächst klausurDynamisch, wächst das Klausur-Gewicht mit
+ * Bucket einer Note für die Gewichtung: Builtin-Kategorien mit eigenem
+ * Gewicht (> 0) in der Config bilden einen eigenen Bucket. Kategorien mit
+ * 0 % sowie Custom-Kategorien zählen wie mündliche Noten (Mündlich-Bucket).
+ * Klausur und Mündlich sind immer eigene Buckets.
+ */
+function bucketFuerKategorie(kategorie: Kategorie, c: GewichtungConfig): BuiltinKategorie {
+  if (kategorie === "klausur" || kategorie === "muendlich") return kategorie;
+  const istBuiltin = (BUILTIN_KATEGORIEN as readonly string[]).includes(kategorie);
+  if (istBuiltin && c[kategorie as BuiltinKategorie] > 0) return kategorie as BuiltinKategorie;
+  return "muendlich";
+}
+
+/**
+ * Fach-Schnitt: Jede Kategorie mit eigenem Gewicht in der Config bildet einen
+ * eigenen Bucket (Klausur 50 % / Test 20 % / Mündlich 30 % wird also exakt so
+ * gerechnet). Kategorien mit 0 % und Custom-Kategorien zählen wie mündliche
+ * Noten. Buckets ohne Noten werden ignoriert, der Rest renormalisiert.
+ * Klausur-Dynamik: wenn klausurDynamisch, wächst das Klausur-Gewicht mit
  * jeder Klausur (klausurPro × Anzahl, gedeckelt bei klausurMax).
  */
 export function fachSchnitt(noten: Note[], config?: Partial<GewichtungConfig>, system: Notensystem = DE_0_15): number | null {
   if (noten.length === 0) return null;
   const c = resolveConfig(config);
 
-  const gruppen: Record<"klausur" | "muendlich", { sum: number; gew: number }> = {
-    klausur: { sum: 0, gew: 0 },
-    muendlich: { sum: 0, gew: 0 },
-  };
-
+  const buckets = new Map<BuiltinKategorie, { sum: number; gew: number; anzahl: number }>();
   for (const n of noten) {
-    const gruppe = kategorieZurGruppe(n.kategorie);
+    const key = bucketFuerKategorie(n.kategorie, c);
+    const b = buckets.get(key) ?? { sum: 0, gew: 0, anzahl: 0 };
     const g = n.gewicht ?? 1;
-    gruppen[gruppe].sum += clamp(n.punkte, system) * g;
-    gruppen[gruppe].gew += g;
+    b.sum += clamp(n.punkte, system) * g;
+    b.gew += g;
+    b.anzahl += 1;
+    buckets.set(key, b);
   }
 
   let summe = 0;
   let gewSum = 0;
 
-  for (const gruppe of ["klausur", "muendlich"] as const) {
-    const { sum, gew } = gruppen[gruppe];
-    if (gew === 0) continue;
-    const schnitt = sum / gew;
+  for (const [key, b] of buckets) {
+    if (b.gew <= 0) continue;
+    const schnitt = b.sum / b.gew;
 
     let effGew: number;
-    if (gruppe === "klausur" && c.klausurDynamisch) {
-      const anzahl = noten.filter((n) => n.kategorie === "klausur").length;
-      effGew = Math.min(anzahl, c.klausurMax) * c.klausurPro;
+    if (key === "klausur" && c.klausurDynamisch) {
+      effGew = Math.min(b.anzahl, c.klausurMax) * c.klausurPro;
     } else {
-      effGew = c[gruppe];
+      effGew = c[key];
     }
 
     if (effGew <= 0) continue;

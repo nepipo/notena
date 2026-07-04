@@ -28,6 +28,8 @@ export interface Note {
  * Vollständige Gewichtungskonfiguration eines Fachs.
  * Alle 6 Kategorien haben eigene Anteile (0–1).
  * Kategorien ohne Noten werden ignoriert und die verbleibenden renormalisiert.
+ * Kategorien mit Anteil 0 sowie Custom-Kategorien zählen wie mündliche Noten
+ * (fließen in den Mündlich-Bucket) — siehe fachSchnitt in calc.ts.
  */
 export interface GewichtungConfig {
   klausur: number;

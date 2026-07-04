@@ -57,4 +57,20 @@ describe("berechneJahresUebersicht", () => {
     expect(u.zeilen).toEqual([]);
     expect(u.gesamtJahr).toBeNull();
   });
+
+  it("rechnet Unterfächer in die Zeile des Elternfachs, ohne eigene Zeile", () => {
+    const mitUnterfach: Fach[] = [
+      { id: "en", name: "Englisch", noten: [{ punkte: 10, kategorie: "klausur" }] },
+      {
+        id: "cam", name: "Cambridge",
+        noten: [{ punkte: 15, kategorie: "klausur" }],
+        parentFachId: "en",
+        subfachGewicht: 0.5,
+      },
+    ];
+    const u = berechneJahresUebersicht(mitUnterfach, []);
+    expect(u.zeilen.map((z) => z.name)).toEqual(["Englisch"]);
+    // 10 × 0.5 + 15 × 0.5 = 12.5 — wie in der Halbjahres-Ansicht
+    expect(u.zeilen[0].hj1).toBe(12.5);
+  });
 });

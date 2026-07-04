@@ -49,7 +49,7 @@ describe("kategorieZurGruppe", () => {
 });
 
 describe("fachSchnitt mit neuen Kategorien", () => {
-  it("Test-Noten fliessen in die muendlich-Gruppe", () => {
+  it("Test-Noten fliessen in die muendlich-Gruppe (Test-Gewicht 0)", () => {
     const noten: Note[] = [
       { punkte: 12, kategorie: "klausur" },
       { punkte: 8, kategorie: "test" },
@@ -64,6 +64,55 @@ describe("fachSchnitt mit neuen Kategorien", () => {
     ];
     const result = fachSchnitt(noten);
     expect(result).toBeCloseTo(38 / 3, 5);
+  });
+});
+
+describe("fachSchnitt mit eigenen Kategorie-Gewichten", () => {
+  it("respektiert ein eigenes Test-Gewicht (Klausur 50 / Test 20 / Mündlich 30)", () => {
+    const noten: Note[] = [
+      { punkte: 12, kategorie: "klausur" },
+      { punkte: 6, kategorie: "test" },
+      { punkte: 9, kategorie: "muendlich" },
+    ];
+    // 12*0.5 + 6*0.2 + 9*0.3 = 6 + 1.2 + 2.7 = 9.9
+    expect(fachSchnitt(noten, { klausur: 0.5, test: 0.2, muendlich: 0.3 })).toBeCloseTo(9.9, 5);
+  });
+  it("renormalisiert, wenn eine gewichtete Kategorie keine Noten hat", () => {
+    const noten: Note[] = [
+      { punkte: 12, kategorie: "klausur" },
+      { punkte: 6, kategorie: "test" },
+    ];
+    // Mündlich (30 %) fehlt -> Klausur 50/70, Test 20/70
+    expect(fachSchnitt(noten, { klausur: 0.5, test: 0.2, muendlich: 0.3 })).toBeCloseTo(
+      (12 * 0.5 + 6 * 0.2) / 0.7,
+      5,
+    );
+  });
+  it("Hausaufgaben mit eigenem Gewicht bilden einen eigenen Bucket", () => {
+    const noten: Note[] = [
+      { punkte: 15, kategorie: "hausaufgabe" },
+      { punkte: 5, kategorie: "muendlich" },
+    ];
+    // HA 10 %, Mündlich 40 % -> renormalisiert 0.2 / 0.8
+    expect(fachSchnitt(noten, { klausur: 0.5, muendlich: 0.4, hausaufgabe: 0.1 })).toBeCloseTo(
+      15 * 0.2 + 5 * 0.8,
+      5,
+    );
+  });
+  it("Kategorie mit 0 % zählt wie mündlich (fällt nicht raus)", () => {
+    const noten: Note[] = [
+      { punkte: 12, kategorie: "muendlich" },
+      { punkte: 6, kategorie: "hausaufgabe" },
+    ];
+    // HA 0 % -> beide im Mündlich-Bucket, gleichgewichtet -> 9
+    expect(fachSchnitt(noten, { klausur: 0.5, muendlich: 0.5, hausaufgabe: 0 })).toBeCloseTo(9, 5);
+  });
+  it("Custom-Kategorien zählen wie mündliche Noten", () => {
+    const noten: Note[] = [
+      { punkte: 12, kategorie: "klausur" },
+      { punkte: 8, kategorie: "custom_abc123def456" },
+    ];
+    expect(fachSchnitt(noten, { klausur: 0.5, muendlich: 0.5 })).toBeCloseTo(10, 5);
   });
 });
 
