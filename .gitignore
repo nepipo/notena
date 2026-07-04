@@ -48,3 +48,6 @@ next-env.d.ts
 .claude/worktrees/
 .claude/scripts/
 .claude/settings.local.json
+
+# aufräum-archiv (vor Löschung manuell prüfen)
+_archiv_pruefen_vor_loeschung/
