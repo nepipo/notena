@@ -1,12 +1,13 @@
 // Project X — Roadmap State
 // Wird von Claude aktualisiert wenn Tasks erledigt werden.
 // Nach Update: Dashboard neu laden (Cmd+R) → Tasks haken sich automatisch ab.
-// Stand: 2026-07-03
+// Stand: 2026-07-04
 
 window.ROAD_STATE = {
   // Coding
   c01: true, c02: true, c03: false,
-  c04: true, c05: false,
+  c04: true, c05: true, // c05: Daily Cron bewusst durch On-Demand-Generierung + Tages-Cache (briefing_cache) ersetzt
+
   c06: true, c07: true, c08: true,
   c09: true, c10: true, c11: true,
   c12: true, c13: true,
