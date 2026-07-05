@@ -45,7 +45,7 @@ export const AddKlausurSchema = z.object({
 });
 
 export const UpdateFachSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
+  name: z.string().trim().min(1).max(100).optional(),
   niveau: z.enum(["grund", "erhoeht"]).optional(),
   farbe: z.string().max(20).nullable().optional(),
   gewicht_klausur: z.number().min(0).max(1).optional(),

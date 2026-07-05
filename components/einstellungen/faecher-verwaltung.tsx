@@ -71,6 +71,10 @@ export function FaecherVerwaltung({
   function submitRename(fachId: string) {
     const trimmed = editName.trim();
     if (!trimmed) { toast.error("Name darf nicht leer sein."); return; }
+    if (faecher.some((f) => f.id !== fachId && f.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast.error(`"${trimmed}" gibt es in diesem Halbjahr schon.`);
+      return;
+    }
     start(async () => {
       const res = await updateFach(fachId, { name: trimmed });
       if (!res.ok) { toast.error(res.error); return; }
@@ -100,6 +104,10 @@ export function FaecherVerwaltung({
   function submitAdd() {
     const trimmed = neuerName.trim();
     if (!trimmed) return;
+    if (faecher.some((f) => f.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast.error(`"${trimmed}" gibt es in diesem Halbjahr schon.`);
+      return;
+    }
     start(async () => {
       const res = await addFach(trimmed, halbjahr, neuesNiveau);
       if (!res.ok) { toast.error(res.error); return; }

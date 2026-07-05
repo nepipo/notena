@@ -173,21 +173,41 @@ export async function importStunden(
     const neuFachIdMap = new Map<string, string>();
 
     if (neueFachNamen.length > 0) {
-      const rows = neueFachNamen.map((name, i) => ({
-        user_id: userId,
-        name,
-        farbe: FACH_FARBEN[i % FACH_FARBEN.length],
-        niveau: "grund",
-        halbjahr,
-        fach_gewicht: 1,
-        gewicht_klausur: 50,
-        gewicht_muendlich: 50,
-        gewicht_sonstige: 0,
-        ausgeschlossen: false,
-      }));
-      const { data, error } = await supabase.from("schule_fach").insert(rows).select("id, name");
-      if (error) return { ok: false, error: error.message };
-      data?.forEach((f) => neuFachIdMap.set(f.name, f.id));
+      // Vorhandene Fächer case-insensitiv wiederverwenden statt Duplikate anzulegen
+      // (z.B. wenn die KI "mathe" liest, aber "Mathe" schon existiert).
+      const { data: vorhandene } = await supabase
+        .from("schule_fach")
+        .select("id, name")
+        .eq("user_id", userId)
+        .or(`halbjahr.eq.${halbjahr},halbjahr.is.null`);
+      const vorhandenByName = new Map(
+        (vorhandene ?? []).map((f) => [f.name.trim().toLowerCase(), f.id]),
+      );
+
+      const wirklichNeu: string[] = [];
+      for (const name of neueFachNamen) {
+        const bekannt = vorhandenByName.get(name.trim().toLowerCase());
+        if (bekannt) neuFachIdMap.set(name, bekannt);
+        else wirklichNeu.push(name);
+      }
+
+      if (wirklichNeu.length > 0) {
+        const rows = wirklichNeu.map((name, i) => ({
+          user_id: userId,
+          name,
+          farbe: FACH_FARBEN[i % FACH_FARBEN.length],
+          niveau: "grund",
+          halbjahr,
+          fach_gewicht: 1,
+          gewicht_klausur: 50,
+          gewicht_muendlich: 50,
+          gewicht_sonstige: 0,
+          ausgeschlossen: false,
+        }));
+        const { data, error } = await supabase.from("schule_fach").insert(rows).select("id, name");
+        if (error) return { ok: false, error: error.message };
+        data?.forEach((f) => neuFachIdMap.set(f.name, f.id));
+      }
     }
 
     // Stunden bulk-eintragen

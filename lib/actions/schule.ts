@@ -54,6 +54,35 @@ function wertGueltig(wert: number, system: ReturnType<typeof getNotensystem>): b
   return Math.abs(gerundet - wert) < 1e-6;
 }
 
+/** Escaped %, _ und \ für exakte ilike-Vergleiche (PostgREST-Pattern). */
+function ilikeExact(wert: string): string {
+  return wert.replace(/[\\%_]/g, (m) => `\\${m}`);
+}
+
+/**
+ * Prüft case-insensitiv, ob ein Fachname im Halbjahr schon existiert.
+ * Legacy-Fächer ohne Halbjahr zählen mit (werden auf der Notenseite
+ * zusammen mit dem aktuellen Halbjahr angezeigt).
+ */
+async function fachNameExistiert(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  name: string,
+  halbjahr: string,
+  exceptFachId?: string,
+): Promise<boolean> {
+  let query = supabase
+    .from("schule_fach")
+    .select("id")
+    .eq("user_id", userId)
+    .or(`halbjahr.eq.${halbjahr},halbjahr.is.null`)
+    .ilike("name", ilikeExact(name.trim()))
+    .limit(1);
+  if (exceptFachId) query = query.neq("id", exceptFachId);
+  const { data } = await query;
+  return (data?.length ?? 0) > 0;
+}
+
 export type ActionResult = { ok: true } | { ok: false; error: string };
 export type AddFachResult = { ok: true; id: string } | { ok: false; error: string };
 export type AddNoteResult = { ok: true; id: string } | { ok: false; error: string };
@@ -70,12 +99,21 @@ export async function addFach(
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
+    if (await fachNameExistiert(supabase, userId, parsed.data.name, parsed.data.halbjahr)) {
+      return { ok: false, error: `"${parsed.data.name}" gibt es in diesem Halbjahr schon.` };
+    }
     const { data, error } = await supabase
       .from("schule_fach")
       .insert({ user_id: userId, name: parsed.data.name, halbjahr: parsed.data.halbjahr, niveau: parsed.data.niveau })
       .select("id")
       .single();
-    if (error) return { ok: false, error: dbError(error) };
+    if (error) {
+      // 23505 = Unique-Index (Race zwischen Check und Insert)
+      if (error.code === "23505") {
+        return { ok: false, error: `"${parsed.data.name}" gibt es in diesem Halbjahr schon.` };
+      }
+      return { ok: false, error: dbError(error) };
+    }
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/stundenplan");
@@ -222,6 +260,21 @@ export async function updateFach(
     const userId = await requireUserId();
     const supabase = await createClient();
 
+    // Umbenennen: neuer Name darf im selben Halbjahr nicht schon vergeben sein
+    if (parsed.data.name) {
+      const { data: fach } = await supabase
+        .from("schule_fach")
+        .select("halbjahr")
+        .eq("id", fachId)
+        .eq("user_id", userId)
+        .single();
+      if (!fach) return { ok: false, error: "Fach nicht gefunden." };
+      const halbjahr = fach.halbjahr ?? aktuellesHalbjahr();
+      if (await fachNameExistiert(supabase, userId, parsed.data.name, halbjahr, fachId)) {
+        return { ok: false, error: `"${parsed.data.name}" gibt es in diesem Halbjahr schon.` };
+      }
+    }
+
     // Sicherheits-Check: parent_fach_id darf nur auf eigene Fächer zeigen
     if (parsed.data.parent_fach_id) {
       const { data: parentCheck } = await supabase
@@ -238,7 +291,12 @@ export async function updateFach(
       .update(parsed.data)
       .eq("id", fachId)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: dbError(error) };
+    if (error) {
+      if (error.code === "23505" && parsed.data.name) {
+        return { ok: false, error: `"${parsed.data.name}" gibt es in diesem Halbjahr schon.` };
+      }
+      return { ok: false, error: dbError(error) };
+    }
     revalidatePath("/dashboard");
     revalidatePath("/noten");
     revalidatePath("/stundenplan");
@@ -340,14 +398,32 @@ export async function applyOnboarding(
 
     if (data.faecher.length > 0) {
       const halbjahr = aktuellesHalbjahr();
-      const rows = data.faecher.map((f) => ({
-        user_id: userId,
-        name: f.name,
-        halbjahr,
-        niveau: f.niveau,
-      }));
-      const { error: fachError } = await supabase.from("schule_fach").insert(rows);
-      if (fachError) return { ok: false, error: dbError(fachError) };
+
+      // Duplikate im Input entfernen + Fächer überspringen, die es schon gibt
+      // (z.B. wenn der Onboarding-Fallback erneut durchläuft) — case-insensitiv.
+      const { data: vorhandene } = await supabase
+        .from("schule_fach")
+        .select("name")
+        .eq("user_id", userId);
+      const belegt = new Set((vorhandene ?? []).map((f) => f.name.trim().toLowerCase()));
+
+      const rows = data.faecher
+        .filter((f) => {
+          const key = f.name.trim().toLowerCase();
+          if (belegt.has(key)) return false;
+          belegt.add(key);
+          return true;
+        })
+        .map((f) => ({
+          user_id: userId,
+          name: f.name,
+          halbjahr,
+          niveau: f.niveau,
+        }));
+      if (rows.length > 0) {
+        const { error: fachError } = await supabase.from("schule_fach").insert(rows);
+        if (fachError) return { ok: false, error: dbError(fachError) };
+      }
     }
 
     revalidatePath("/dashboard");
@@ -402,17 +478,35 @@ export async function neuesHalbjahr(
     const supabase = await createClient();
 
     if (faecher.length > 0) {
-      const rows = faecher.map((f) => ({
-        user_id: userId,
-        name: f.name,
-        niveau: f.niveau,
-        farbe: f.farbe,
-        fach_gewicht: f.fach_gewicht,
-        gewichtung_config: f.gewichtung_config ?? null,
-        halbjahr: neuesHj,
-      }));
-      const { error } = await supabase.from("schule_fach").insert(rows);
-      if (error) return { ok: false, error: dbError(error) };
+      // Schon vorhandene Fächer im Ziel-Halbjahr überspringen (z.B. Doppelklick
+      // oder erneutes Anlegen desselben Halbjahres) — case-insensitiv.
+      const { data: vorhandene } = await supabase
+        .from("schule_fach")
+        .select("name")
+        .eq("user_id", userId)
+        .eq("halbjahr", neuesHj);
+      const belegt = new Set((vorhandene ?? []).map((f) => f.name.trim().toLowerCase()));
+
+      const rows = faecher
+        .filter((f) => {
+          const key = f.name.trim().toLowerCase();
+          if (belegt.has(key)) return false;
+          belegt.add(key);
+          return true;
+        })
+        .map((f) => ({
+          user_id: userId,
+          name: f.name,
+          niveau: f.niveau,
+          farbe: f.farbe,
+          fach_gewicht: f.fach_gewicht,
+          gewichtung_config: f.gewichtung_config ?? null,
+          halbjahr: neuesHj,
+        }));
+      if (rows.length > 0) {
+        const { error } = await supabase.from("schule_fach").insert(rows);
+        if (error) return { ok: false, error: dbError(error) };
+      }
     }
 
     const { error: profilError } = await supabase

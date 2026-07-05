@@ -87,6 +87,10 @@ export function NotenrechnerBoard({
   function handleAddFach() {
     const name = neuesFach.trim();
     if (!name) return;
+    if (faecher.some((f) => f.name.trim().toLowerCase() === name.toLowerCase())) {
+      toast.error(`"${name}" gibt es in diesem Halbjahr schon.`);
+      return;
+    }
     const snapshot = faecher;
     const optimistic: Fach = { id: tempId(), name, noten: [] };
     setFaecher((prev) => [...prev, optimistic]);
