@@ -51,6 +51,8 @@ export async function updateSession(request: NextRequest) {
     path === "/agb" ||
     // Onboarding laeuft anonym vor der Registrierung
     path.startsWith("/onboarding") ||
+    // Warteliste-Bestätigung: Link aus der Double-Opt-in-Mail, User ist nie eingeloggt
+    path.startsWith("/warteliste") ||
     // PWA-Ressourcen: müssen ohne Login erreichbar sein
     path === "/manifest.webmanifest" ||
     path === "/icon" ||
