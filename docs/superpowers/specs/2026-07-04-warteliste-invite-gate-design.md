@@ -19,7 +19,9 @@
 
 ---
 
-## Datenmodell (Migration `0026_warteliste_invite`)
+## Datenmodell (Migration `0027_warteliste_invite`)
+
+> Hinweis: `0026` ist bereits durch eine parallele Session belegt (`0026_kategorie_check_custom.sql`).
 
 ### Tabelle `warteliste`
 
