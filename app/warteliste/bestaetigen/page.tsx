@@ -29,7 +29,7 @@ export default async function WartelisteBestaetigenPage({
             Bis dahin kannst du den Notenrechner in der Demo ausprobieren.
           </p>
           <Button
-            render={<Link href="/demo" />}
+            render={<Link href="/demo/notenrechner" />}
             className="mt-6 font-display font-extrabold"
           >
             Demo ansehen →
