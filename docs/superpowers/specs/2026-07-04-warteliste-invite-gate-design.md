@@ -49,7 +49,7 @@
 
 - RLS auf beiden Tabellen **aktiviert, aber ohne Policies** — kein direkter Zugriff für `anon` oder `authenticated`.
 - Alle Zugriffe laufen serverseitig über einen Service-Role-Client: neues Modul `lib/supabase/admin.ts`, `SUPABASE_SERVICE_ROLE_KEY` nur in Server-Env (`.env.local` + Vercel), nie im Client-Bundle.
-- Bewusst **keine** SECURITY-DEFINER-RPCs: die wären via PostgREST für `anon` aufrufbar (gleiche Logik wie Hardening-Migration `0002`).
+- Für die atomare Code-Einlösung braucht es doch zwei SECURITY-DEFINER-SQL-Funktionen (`redeem_invite_code`, `unredeem_invite_code`) — supabase-js kann kein atomares `genutzt = genutzt + 1`. Absicherung: `REVOKE EXECUTE` für `public`/`anon`/`authenticated`, `GRANT` nur an `service_role` (gleiche Logik wie Hardening-Migration `0002`). Tabellenzugriffe bleiben komplett beim Service-Role-Client.
 
 ### Codes anlegen (manuell, Supabase-Dashboard)
 
