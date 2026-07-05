@@ -348,6 +348,24 @@ export default function DatenschutzPage() {
           </div>
         </section>
 
+        {/* Warteliste */}
+        <section>
+          <h2 className="mb-3 font-display text-lg font-bold text-foreground">
+            Warteliste
+          </h2>
+          <p>
+            Wenn du dich auf die Warteliste einträgst, speichern wir deine
+            E-Mail-Adresse, den Bestätigungsstatus und den Zeitpunkt der
+            Eintragung — sonst nichts. Wir nutzen diese Daten ausschließlich,
+            um dich über den Start der geschlossenen Beta zu informieren und
+            dir deinen Invite-Code zu schicken. Rechtsgrundlage ist deine
+            Einwilligung per Bestätigungslink (Art. 6 Abs. 1 lit. a DSGVO).
+            Der Versand läuft über unseren Auftragsverarbeiter Resend. Du
+            kannst dich jederzeit per E-Mail an uns wieder austragen lassen —
+            dann löschen wir deinen Eintrag vollständig.
+          </p>
+        </section>
+
         {/* 12 */}
         <section>
           <h2 className="mb-3 font-display text-lg font-bold text-foreground">
