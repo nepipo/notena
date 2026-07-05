@@ -98,6 +98,20 @@ export function SignupForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="invite_code">Invite-Code</Label>
+        <Input
+          id="invite_code"
+          name="invite_code"
+          type="text"
+          autoComplete="off"
+          placeholder="z. B. HOCHRAD26"
+          className="font-mono uppercase tracking-widest"
+          autoFocus
+          required
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">E-Mail</Label>
         <Input
           id="email"
@@ -105,7 +119,6 @@ export function SignupForm() {
           type="email"
           autoComplete="email"
           placeholder="du@beispiel.de"
-          autoFocus
           required
         />
       </div>

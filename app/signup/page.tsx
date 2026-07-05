@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { SignupForm } from "@/components/auth/signup-form";
 import { GoogleButton } from "@/components/auth/google-button";
+import { WartelisteForm } from "@/components/warteliste-form";
 
 export default function SignupPage() {
   return (
@@ -25,6 +26,13 @@ export default function SignupPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
         <SignupForm />
+        <div className="mt-2 border-t border-border pt-4">
+          <p className="mb-3 text-xs leading-relaxed text-text-mute">
+            Noch keinen Code? Trag dich auf die Warteliste ein — wir schicken
+            dir einen, sobald ein Platz frei ist.
+          </p>
+          <WartelisteForm />
+        </div>
       </div>
     </AuthShell>
   );

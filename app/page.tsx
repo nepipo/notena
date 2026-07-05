@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { LandingCounter } from "@/components/landing-counter";
+import { WartelisteForm } from "@/components/warteliste-form";
 import { Calculator, CalendarDays, Sparkles, Zap, Target, Brain } from "lucide-react";
 
 const FAECHER = [
@@ -253,8 +254,8 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* ── BETA CTA ──────────────────────────────────────── */}
-      <div className="anim mt-16 w-full" style={{ animationDelay: "620ms" }}>
+      {/* ── WARTELISTE ────────────────────────────────────── */}
+      <div id="warteliste" className="anim mt-16 w-full" style={{ animationDelay: "620ms" }}>
         <div
           className="relative overflow-hidden rounded-3xl border-2 p-8 text-center"
           style={{
@@ -270,24 +271,17 @@ export default async function Home() {
             }}
           />
           <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-brand">
-            Geschlossene Beta · Kostenlos
+            Geschlossene Beta · Warteliste
           </div>
           <h2 className="font-display text-3xl font-extrabold leading-tight">
-            Sei dabei, bevor<br />alle anderen starten.
+            Kein Invite?<br />Komm auf die Liste.
           </h2>
           <p className="mx-auto mt-3 max-w-xs text-sm text-text-dim">
-            Project X ist noch in der Beta. Kein Abo, keine Kreditkarte. Einfach ausprobieren.
+            Project X startet in geschlossener Beta. Trag dich ein — wir
+            schicken dir deinen Invite-Code, sobald ein Platz frei ist.
           </p>
-          <div className="mt-7 flex flex-col items-center gap-3">
-            <Button
-              render={<Link href="/onboarding" />}
-              className="w-full max-w-xs font-display text-base font-extrabold"
-            >
-              Jetzt kostenlos starten →
-            </Button>
-            <span className="font-mono text-[11px] text-text-mute">
-              Kein Abo, keine Kreditkarte — einfach loslegen
-            </span>
+          <div className="mx-auto mt-7 max-w-sm text-left">
+            <WartelisteForm />
           </div>
         </div>
       </div>
