@@ -3,7 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { GewichtungConfig, Kategorie } from "@/lib/grades/types";
-import { dbError, UpdateFachSchema, ApplyOnboardingSchema } from "@/lib/validation";
+import {
+  dbError,
+  AddFachSchema,
+  AddKlausurSchema,
+  HalbjahrSchema,
+  NoteInputSchema,
+  UpdateFachSchema,
+  ApplyOnboardingSchema,
+} from "@/lib/validation";
 import { getNotensystem } from "@/lib/grades/systems";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import type { OnboardingData } from "@/lib/onboarding/storage";
@@ -55,14 +63,16 @@ export async function addFach(
   halbjahr: string,
   niveau: "grund" | "erhoeht" = "grund",
 ): Promise<AddFachResult> {
-  const trimmed = name.trim();
-  if (!trimmed) return { ok: false, error: "Bitte einen Fachnamen eingeben." };
+  const parsed = AddFachSchema.safeParse({ name, halbjahr, niveau });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("schule_fach")
-      .insert({ user_id: userId, name: trimmed, halbjahr, niveau })
+      .insert({ user_id: userId, name: parsed.data.name, halbjahr: parsed.data.halbjahr, niveau: parsed.data.niveau })
       .select("id")
       .single();
     if (error) return { ok: false, error: dbError(error) };
@@ -106,6 +116,10 @@ export async function addNote(
   bezeichnung?: string,
   gewicht?: number,
 ): Promise<AddNoteResult> {
+  const parsed = NoteInputSchema.safeParse({ fachId, kategorie, bezeichnung, gewicht });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -115,11 +129,11 @@ export async function addNote(
     }
     const { data, error } = await supabase.from("schule_note").insert({
       user_id: userId,
-      fach_id: fachId,
+      fach_id: parsed.data.fachId,
       punkte,
-      kategorie,
-      bezeichnung: bezeichnung?.trim() || null,
-      gewicht: gewicht ?? 1,
+      kategorie: parsed.data.kategorie,
+      bezeichnung: parsed.data.bezeichnung?.trim() || null,
+      gewicht: parsed.data.gewicht ?? 1,
     }).select("id").single();
     if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
@@ -137,6 +151,10 @@ export async function updateNote(
   bezeichnung?: string,
   gewicht?: number,
 ): Promise<ActionResult> {
+  const parsed = NoteInputSchema.omit({ fachId: true }).safeParse({ kategorie, bezeichnung, gewicht });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -148,9 +166,9 @@ export async function updateNote(
       .from("schule_note")
       .update({
         punkte,
-        kategorie,
-        bezeichnung: bezeichnung?.trim() || null,
-        gewicht: gewicht ?? 1,
+        kategorie: parsed.data.kategorie,
+        bezeichnung: parsed.data.bezeichnung?.trim() || null,
+        gewicht: parsed.data.gewicht ?? 1,
       })
       .eq("id", noteId)
       .eq("user_id", userId);
@@ -236,17 +254,18 @@ export async function addKlausur(
   datum: string,
   fachId?: string,
 ): Promise<ActionResult & { id?: string }> {
-  const trimmed = titel.trim();
-  if (!trimmed) return { ok: false, error: "Bitte einen Titel eingeben." };
-  if (!datum) return { ok: false, error: "Bitte ein Datum angeben." };
+  const parsed = AddKlausurSchema.safeParse({ titel, datum, fachId });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
     const { data: neu, error } = await supabase.from("schule_klausur").insert({
       user_id: userId,
-      titel: trimmed,
-      datum,
-      fach_id: fachId ?? null,
+      titel: parsed.data.titel,
+      datum: parsed.data.datum,
+      fach_id: parsed.data.fachId ?? null,
     }).select("id").single();
     if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/dashboard");
@@ -342,6 +361,9 @@ export async function applyOnboarding(
 }
 
 export async function setHalbjahr(hj: string): Promise<ActionResult> {
+  if (!HalbjahrSchema.safeParse(hj).success) {
+    return { ok: false, error: "Ungültiges Halbjahr-Format." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -372,7 +394,9 @@ export async function neuesHalbjahr(
   neuesHj: string,
   faecher: NeuesFachInput[],
 ): Promise<ActionResult> {
-  if (!neuesHj.trim()) return { ok: false, error: "Halbjahr fehlt." };
+  if (!HalbjahrSchema.safeParse(neuesHj).success) {
+    return { ok: false, error: "Ungültiges Halbjahr-Format." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();

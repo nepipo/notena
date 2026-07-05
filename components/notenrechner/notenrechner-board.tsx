@@ -145,6 +145,10 @@ export function NotenrechnerBoard({
   }
 
   function handleRemoveNote(fachId: string, noteId: string) {
+    if (isTempId(noteId)) {
+      toast.error("Note wird noch gespeichert — bitte einen Moment warten.");
+      return;
+    }
     const snapshot = faecher;
     setFaecher((prev) =>
       prev.map((f) =>
@@ -168,6 +172,10 @@ export function NotenrechnerBoard({
     bezeichnung?: string,
     gewicht?: number,
   ) {
+    if (isTempId(noteId)) {
+      toast.error("Note wird noch gespeichert — bitte einen Moment warten.");
+      return;
+    }
     const snapshot = faecher;
     setFaecher((prev) =>
       prev.map((f) =>

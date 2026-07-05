@@ -45,7 +45,12 @@ export default async function ProPage() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         {INTERVALLE.map((iv) => {
-          const url = checkoutUrl(iv, userId);
+          let url: string | null = null;
+          try {
+            url = checkoutUrl(iv, userId);
+          } catch {
+            // Env-Konfiguration fehlt (z.B. lokal) — Kachel ohne Kauf-Button zeigen
+          }
           const hervorgehoben = iv === "jahr";
           return (
             <div
@@ -67,7 +72,13 @@ export default async function ProPage() {
                 jederzeit kündbar.
               </p>
               <div className="mt-4">
-                <CheckoutButton url={url} label="Zahlungspflichtig abonnieren" />
+                {url ? (
+                  <CheckoutButton url={url} label="Zahlungspflichtig abonnieren" />
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Checkout gerade nicht verfügbar — bitte später erneut versuchen.
+                  </p>
+                )}
               </div>
             </div>
           );

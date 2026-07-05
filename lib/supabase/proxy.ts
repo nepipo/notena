@@ -45,6 +45,10 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/forgot-password") ||
     path.startsWith("/auth") ||
     path.startsWith("/demo") ||
+    // Rechtsseiten: DSGVO-Pflicht, von Landing + Signup verlinkt — immer öffentlich
+    path === "/impressum" ||
+    path === "/datenschutz" ||
+    path === "/agb" ||
     // Onboarding laeuft anonym vor der Registrierung
     path.startsWith("/onboarding") ||
     // PWA-Ressourcen: müssen ohne Login erreichbar sein

@@ -76,7 +76,7 @@ export function GewichtungDefaults({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="font-mono text-[11px] text-text-mute">
-          Kategorien ohne Noten werden automatisch ignoriert.
+          Kategorien ohne Noten werden ignoriert, Kategorien mit 0% zählen wie Mündlich.
         </span>
         {!config.klausurDynamisch && (
           <span className={`font-mono text-[11px] font-bold ${summeOk ? "text-success" : "text-amber-400"}`}>

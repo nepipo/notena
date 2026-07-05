@@ -24,7 +24,10 @@ export async function POST(req: Request) {
     { user_id: auth.claims.sub, endpoint, p256dh: keys.p256dh, auth_key: keys.auth },
     { onConflict: "user_id,endpoint" },
   );
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[push/subscribe] upsert error:", error);
+    return NextResponse.json({ error: "Speichern fehlgeschlagen." }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -1,8 +1,15 @@
 import { z } from "zod";
+import { BUILTIN_KATEGORIEN } from "./grades/types";
 
 // ── Gemeinsame Typen ────────────────────────────────────────────────────
 
-export const KategorieSchema = z.enum(["klausur", "muendlich", "sonstig"]);
+/** Builtin-Kategorie ODER Custom-Kategorie-ID (Format aus lib/actions/kategorien.ts). */
+export const KategorieSchema = z
+  .string()
+  .refine(
+    (k) => (BUILTIN_KATEGORIEN as readonly string[]).includes(k) || /^custom_[0-9a-f]{12}$/.test(k),
+    "Unbekannte Bewertungsart.",
+  );
 
 export const FachIdSchema = z.string().uuid("Ungültige Fach-ID");
 
@@ -12,22 +19,27 @@ export const KlausurIdSchema = z.string().uuid("Ungültige Klausur-ID");
 
 // ── Schule ──────────────────────────────────────────────────────────────
 
+/** Halbjahr-Format wie aus lib/grades/halbjahr.ts: "2025/26-1". */
+export const HalbjahrSchema = z
+  .string()
+  .regex(/^\d{4}\/\d{2}-[12]$/, "Ungültiges Halbjahr-Format.");
+
 export const AddFachSchema = z.object({
-  name: z.string().min(1, "Bitte einen Fachnamen eingeben.").max(100),
-  halbjahr: z.string().regex(/^\d{2}\/[12]$/, "Ungültiges Halbjahr-Format."),
+  name: z.string().trim().min(1, "Bitte einen Fachnamen eingeben.").max(100, "Fachname ist zu lang (max. 100 Zeichen)."),
+  halbjahr: HalbjahrSchema,
   niveau: z.enum(["grund", "erhoeht"]).default("grund"),
 });
 
-export const AddNoteSchema = z.object({
+export const NoteInputSchema = z.object({
   fachId: FachIdSchema,
-  punkte: z.number().min(0).max(15), // .int() entfällt (CH-Kommas); Per-System-Check in der Action
+  // Bereichs-Check der Punkte passiert pro Notensystem in der Action (wertGueltig)
   kategorie: KategorieSchema,
-  bezeichnung: z.string().max(200).optional(),
-  gewicht: z.number().positive().max(10).optional(),
+  bezeichnung: z.string().max(200, "Bezeichnung ist zu lang (max. 200 Zeichen).").optional(),
+  gewicht: z.number().positive("Gewicht muss größer als 0 sein.").max(10, "Gewicht maximal 10.").optional(),
 });
 
 export const AddKlausurSchema = z.object({
-  titel: z.string().min(1, "Bitte einen Titel eingeben.").max(200),
+  titel: z.string().trim().min(1, "Bitte einen Titel eingeben.").max(200, "Titel ist zu lang (max. 200 Zeichen)."),
   datum: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ungültiges Datum."),
   fachId: FachIdSchema.optional(),
 });
@@ -43,14 +55,6 @@ export const UpdateFachSchema = z.object({
   gewichtung_config: z.record(z.string(), z.unknown()).nullable().optional(),
   parent_fach_id: z.string().uuid().nullable().optional(),
   subfach_gewicht: z.number().min(0).max(1).nullable().optional(),
-});
-
-export const HalbjahrSchema = z.string().regex(/^\d{2}\/[12]$/, "Ungültiges Halbjahr-Format.");
-
-export const UpdateProfilSchema = z.object({
-  name: z.string().max(100),
-  klasse: z.number().int().min(5).max(13).nullable(),
-  schule: z.string().max(200),
 });
 
 // ── Onboarding ──────────────────────────────────────────────────────────

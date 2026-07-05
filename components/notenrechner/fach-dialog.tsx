@@ -159,7 +159,8 @@ export function FachDialog({
               )}
             </div>
             <p className="mb-3 font-mono text-[11px] text-text-mute">
-              Summe sollte 100% ergeben. Kategorien ohne Noten werden automatisch ignoriert.
+              Summe sollte 100% ergeben. Kategorien ohne Noten werden automatisch ignoriert,
+              Kategorien mit 0% zählen wie Mündlich.
             </p>
 
             <div className="space-y-2">
