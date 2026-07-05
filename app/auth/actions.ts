@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { normalisiereCode } from "@/lib/warteliste/logic";
 
 export type AuthState = { error?: string; success?: string } | null;
 
@@ -44,6 +46,7 @@ export async function signup(
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const consent = formData.get("consent") === "on";
+  const inviteCode = normalisiereCode(String(formData.get("invite_code") ?? ""));
 
   if (!email || !password) {
     return { error: "Bitte E-Mail und Passwort eingeben." };
@@ -57,6 +60,20 @@ export async function signup(
         "Bitte bestätige die AGB, die Datenschutzerklärung und deine Altersangabe.",
     };
   }
+  if (!inviteCode) {
+    return { error: "Bitte gib deinen Invite-Code ein." };
+  }
+
+  // Code atomar einlösen, BEVOR der Account entsteht. Bei vollem/inaktivem/
+  // unbekanntem Code trifft das UPDATE keine Zeile -> kein `true`.
+  const admin = createAdminClient();
+  const { data: eingeloest, error: redeemError } = await admin.rpc(
+    "redeem_invite_code",
+    { p_code: inviteCode },
+  );
+  if (redeemError || eingeloest !== true) {
+    return { error: "Dieser Invite-Code ist ungültig oder schon voll." };
+  }
 
   const supabase = await createClient();
   const origin = getOrigin(await headers());
@@ -68,6 +85,9 @@ export async function signup(
   });
 
   if (error) {
+    // Einlösung zurückrollen — kein verbrannter Code bei z.B. schon
+    // existierender E-Mail.
+    await admin.rpc("unredeem_invite_code", { p_code: inviteCode });
     return { error: error.message };
   }
 
