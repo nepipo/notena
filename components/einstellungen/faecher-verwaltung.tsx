@@ -27,9 +27,11 @@ const FARB_PALETTE = [
 export function FaecherVerwaltung({
   faecher,
   halbjahr,
+  lkDoppelt = true,
 }: {
   faecher: FachRow[];
   halbjahr: string;
+  lkDoppelt?: boolean;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -85,8 +87,9 @@ export function FaecherVerwaltung({
 
   function toggleNiveau(f: FachRow) {
     const newNiveau: Niveau = f.niveau === "grund" ? "erhoeht" : "grund";
+    const newGewicht = newNiveau === "erhoeht" && lkDoppelt ? 2 : 1;
     start(async () => {
-      const res = await updateFach(f.id, { niveau: newNiveau });
+      const res = await updateFach(f.id, { niveau: newNiveau, fach_gewicht: newGewicht });
       if (!res.ok) { toast.error(res.error); return; }
       router.refresh();
     });

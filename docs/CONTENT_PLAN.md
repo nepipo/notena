@@ -275,7 +275,7 @@ Pre-Launch (Woche 11–12)
 | Pexels / Unsplash | Lizenzfreie dunkle Fotos | ✅ Kostenlos |
 | TikTok Creative Center | Trending Sounds finden | ✅ Kostenlos |
 | Canva MCP | Charts, Grafiken (Clip 05, 07) | ✅ Verbunden |
-| Higgsfield MCP | KI-Visuals wenn nötig | ✅ Verbunden |
+| Magnific MCP (`https://mcp.magnific.com`) | KI-Visuals / Upscaling für Werbe-Assets — ersetzt Higgsfield (07.07.2026) | 🟡 Hinzugefügt, Auth offen. Achtung: Bezahl-Tool (~39 $/Monat, unverifiziert) — erst Kosten klären |
 | Buffer / Later | Scheduling | ⚪ Noch nicht eingerichtet |
 
 ---

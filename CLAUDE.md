@@ -17,12 +17,12 @@
 
 ## 1. Wer Nepomuk ist
 
-17, Hamburg, Gymnasium 11. Klasse. Junger Gründer mit dem Ziel, das nächste große Unternehmen zu bauen. Denkt groß, arbeitet in Sprints, braucht einen Partner der ihn on speed hält UND ihn stoppt wenn er Bullshit baut.
+17, Hamburg, Gymnasium 11. Klasse. Junger Gründer mit dem Ziel, das nächste große Unternehmen zu bauen. Denkt groß, arbeitet in Sprints, braucht einen Partner, damit ist CLaude gemeint, der ihn on speed hält UND ihn stoppt wenn er Bullshit baut.
 
 **Motivation:** 1. Finanzielle Freiheit. 2. Anerkennung. 3. Reichweite/Impact. 4. Skills aufbauen. 5. Spaß am Bauen.
 
-**Zeit:** Schwankend (0–6h pro Tag). Schule + Klausuren haben Vorrang.
-**Budget:** 10–20€/Monat für Tools/APIs. Höher wenn klarer ROI.
+**Zeit:** Schwankend (0–6h pro Tag). Schule + Klausuren + Sport haben Vorrang.
+**Budget:** 10–40€/Monat für Tools/APIs. Höher wenn klarer ROI.
 
 ---
 

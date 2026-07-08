@@ -5,6 +5,7 @@ import { signOut, deleteAccount } from "@/app/auth/actions";
 import { PushToggle } from "@/components/push-toggle";
 import { KlausurErinnerungConfig } from "@/components/einstellungen/klausur-erinnerung-config";
 import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung";
+import { LkGewichtungToggle } from "@/components/einstellungen/lk-gewichtung-toggle";
 import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
 import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
 import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
@@ -35,7 +36,7 @@ export default async function EinstellungenPage() {
 
   const { data: profil, error: profilErr } = await supabase
     .from("nutzer_profil")
-    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem, custom_kategorien, plan_tier, plan_status, plan_intervall, plan_bis")
+    .select("name, klasse, schule, aktuelles_halbjahr, default_gewichtung, briefing_aktiv, klausur_erinnerung_tage, bundesland, notensystem, custom_kategorien, plan_tier, plan_status, plan_intervall, plan_bis, lk_doppelt_gewichten")
     .single();
   if (profilErr) console.error("[einstellungen] profil fetch error:", profilErr);
 
@@ -48,6 +49,7 @@ export default async function EinstellungenPage() {
   if (fachErr) console.error("[einstellungen] schule_fach fetch error:", fachErr);
 
   const defaultGewichtung = (profil?.default_gewichtung as GewichtungConfig | null) ?? null;
+  const lkDoppelt = (profil as Record<string, unknown> | null)?.lk_doppelt_gewichten !== false;
   const briefingAktiv = profil?.briefing_aktiv !== false;
   const klausurErinnerungTage = (profil?.klausur_erinnerung_tage as number[] | null) ?? [1, 3];
   const bundesland = (profil as Record<string, unknown> | null)?.bundesland as string | null ?? null;
@@ -151,6 +153,9 @@ export default async function EinstellungenPage() {
           </p>
           <NotensystemWahl initialValue={notensystem} />
         </div>
+        <div className="mt-5 border-t border-border pt-5">
+          <LkGewichtungToggle initial={lkDoppelt} />
+        </div>
       </section>
 
       {/* ── KI & BRIEFING ─────────────────────────────────── */}
@@ -224,7 +229,7 @@ export default async function EinstellungenPage() {
         <p className="mt-1 mb-4 text-sm text-text-dim">
           Hinzufügen, umbenennen, GK/LK wechseln oder löschen.
         </p>
-        <FaecherVerwaltung faecher={faecher} halbjahr={halbjahr} />
+        <FaecherVerwaltung faecher={faecher} halbjahr={halbjahr} lkDoppelt={lkDoppelt} />
       </section>
 
       {/* ── PASSWORT ──────────────────────────────────────── */}

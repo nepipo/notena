@@ -102,9 +102,18 @@ export async function addFach(
     if (await fachNameExistiert(supabase, userId, parsed.data.name, parsed.data.halbjahr)) {
       return { ok: false, error: `"${parsed.data.name}" gibt es in diesem Halbjahr schon.` };
     }
+    let fachGewicht = 1;
+    if (parsed.data.niveau === "erhoeht") {
+      const { data: profil } = await supabase
+        .from("nutzer_profil")
+        .select("lk_doppelt_gewichten")
+        .eq("id", userId)
+        .single();
+      if (profil?.lk_doppelt_gewichten !== false) fachGewicht = 2;
+    }
     const { data, error } = await supabase
       .from("schule_fach")
-      .insert({ user_id: userId, name: parsed.data.name, halbjahr: parsed.data.halbjahr, niveau: parsed.data.niveau })
+      .insert({ user_id: userId, name: parsed.data.name, halbjahr: parsed.data.halbjahr, niveau: parsed.data.niveau, fach_gewicht: fachGewicht })
       .select("id")
       .single();
     if (error) {
@@ -726,6 +735,31 @@ export async function noteAnzahl(): Promise<number> {
 }
 
 const NOTENSYSTEM_IDS = ["de_0_15", "de_1_6", "ch_1_6", "at_1_5", "ib_1_7"] as const;
+
+export async function setLkDoppeltGewichten(aktiv: boolean): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+    const { error: profilError } = await supabase
+      .from("nutzer_profil")
+      .update({ lk_doppelt_gewichten: aktiv })
+      .eq("id", userId);
+    if (profilError) return { ok: false, error: dbError(profilError) };
+    // Alle LK-Fächer direkt updaten
+    const { error: fachError } = await supabase
+      .from("schule_fach")
+      .update({ fach_gewicht: aktiv ? 2 : 1 })
+      .eq("user_id", userId)
+      .eq("niveau", "erhoeht");
+    if (fachError) return { ok: false, error: dbError(fachError) };
+    revalidatePath("/noten");
+    revalidatePath("/dashboard");
+    revalidatePath("/einstellungen");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: dbError(e) };
+  }
+}
 
 export async function setNotensystem(id: string): Promise<ActionResult> {
   if (!(NOTENSYSTEM_IDS as readonly string[]).includes(id)) {
