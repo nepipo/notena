@@ -680,6 +680,104 @@ export async function loescheHalbjahr(hj: string): Promise<ActionResult> {
   }
 }
 
+/**
+ * Verschiebt ein ganzes Halbjahr auf ein anderes: alle Fächer der Quelle
+ * bekommen das Ziel-Halbjahr, ihre Noten wandern automatisch mit (sie kleben
+ * an fach_id). Ist das Ziel nicht leer, wird sein Inhalt vorher gelöscht und
+ * ersetzt. Löst damit den "ich hab alles ins falsche Halbjahr getippt"-Fall.
+ */
+export async function verschiebeHalbjahr(
+  quelle: string,
+  ziel: string,
+): Promise<ActionResult> {
+  if (!HalbjahrSchema.safeParse(quelle).success || !HalbjahrSchema.safeParse(ziel).success) {
+    return { ok: false, error: "Ungültiges Halbjahr-Format." };
+  }
+  if (quelle === ziel) {
+    return { ok: false, error: "Quell- und Ziel-Halbjahr sind identisch." };
+  }
+  try {
+    const userId = await requireUserId();
+    const supabase = await createClient();
+
+    // Quelle muss Fächer haben — sonst gibt es nichts zu verschieben.
+    const { data: quellFaecher, error: qErr } = await supabase
+      .from("schule_fach")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("halbjahr", quelle);
+    if (qErr) return { ok: false, error: dbError(qErr) };
+    if (!quellFaecher || quellFaecher.length === 0) {
+      return { ok: false, error: "Das Quell-Halbjahr enthält keine Fächer." };
+    }
+
+    // Ziel-Inhalt zählen (für Audit) und löschen. Reihenfolge wichtig: erst Ziel
+    // leeren, DANN Quelle umhängen — sonst kollidiert bei gleichen Fachnamen der
+    // Unique-Index (user_id, halbjahr, name). Noten kaskadieren beim Löschen mit.
+    const { data: zielFaecher } = await supabase
+      .from("schule_fach")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("halbjahr", ziel);
+    const zielFachIds = (zielFaecher ?? []).map((f) => f.id);
+
+    let zielNoten = 0;
+    if (zielFachIds.length > 0) {
+      const { count } = await supabase
+        .from("schule_note")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .in("fach_id", zielFachIds);
+      zielNoten = count ?? 0;
+
+      const { error: delErr } = await supabase
+        .from("schule_fach")
+        .delete()
+        .eq("user_id", userId)
+        .eq("halbjahr", ziel);
+      if (delErr) return { ok: false, error: dbError(delErr) };
+    }
+
+    // Quelle -> Ziel umhängen.
+    const { error: updErr } = await supabase
+      .from("schule_fach")
+      .update({ halbjahr: ziel })
+      .eq("user_id", userId)
+      .eq("halbjahr", quelle);
+    if (updErr) return { ok: false, error: dbError(updErr) };
+
+    await audit(supabase, userId, "halbjahr_verschieben", quelle, {
+      von: quelle,
+      nach: ziel,
+      faecher: quellFaecher.length,
+      ziel_ueberschrieben: { faecher: zielFachIds.length, noten: zielNoten },
+    });
+
+    // War die Quelle das aktive Halbjahr, folgt die Ansicht mit ans Ziel.
+    const { data: profil } = await supabase
+      .from("nutzer_profil")
+      .select("aktuelles_halbjahr")
+      .eq("id", userId)
+      .single();
+    if (profil?.aktuelles_halbjahr === quelle) {
+      const { error: pErr } = await supabase
+        .from("nutzer_profil")
+        .update({ aktuelles_halbjahr: ziel })
+        .eq("id", userId);
+      if (pErr) return { ok: false, error: dbError(pErr) };
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/noten");
+    revalidatePath("/stundenplan");
+    revalidatePath("/einstellungen");
+    revalidatePath("/what-if");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: dbError(e) };
+  }
+}
+
 export async function setKlausurErinnerungTage(
   tage: number[],
 ): Promise<ActionResult> {

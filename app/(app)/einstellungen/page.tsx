@@ -8,6 +8,7 @@ import { FaecherVerwaltung } from "@/components/einstellungen/faecher-verwaltung
 import { LkGewichtungToggle } from "@/components/einstellungen/lk-gewichtung-toggle";
 import { GewichtungDefaults } from "@/components/einstellungen/gewichtung-defaults";
 import { HalbjahrWechsler } from "@/components/einstellungen/halbjahr-wechsler";
+import { HalbjahrVerschieben } from "@/components/einstellungen/halbjahr-verschieben";
 import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
 import { ThemeToggle } from "@/components/einstellungen/theme-toggle";
 import { AccentPicker } from "@/components/einstellungen/accent-picker";
@@ -56,6 +57,27 @@ export default async function EinstellungenPage() {
   const notensystem = profil?.notensystem ?? "de_0_15";
   const customKategorien = (Array.isArray(profil?.custom_kategorien) ? profil.custom_kategorien : []) as CustomKategorie[];
   const faecher = (fachRows ?? []) as FachRow[];
+
+  // Fächer-/Noten-Zahl je Halbjahr — fürs "Halbjahr verschieben"-Modul (Bestätigung).
+  const { data: noteFachRows } = await supabase.from("schule_note").select("fach_id");
+  const fachHjMap = new Map(faecher.map((f) => [f.id, f.halbjahr]));
+  const hjCounts = new Map<string, { faecher: number; noten: number }>();
+  for (const f of faecher) {
+    if (!f.halbjahr) continue;
+    const c = hjCounts.get(f.halbjahr) ?? { faecher: 0, noten: 0 };
+    c.faecher += 1;
+    hjCounts.set(f.halbjahr, c);
+  }
+  for (const n of noteFachRows ?? []) {
+    const hj = fachHjMap.get(n.fach_id);
+    if (!hj) continue;
+    const c = hjCounts.get(hj) ?? { faecher: 0, noten: 0 };
+    c.noten += 1;
+    hjCounts.set(hj, c);
+  }
+  const halbjahrInfos = Array.from(hjCounts.entries())
+    .map(([hj, c]) => ({ hj, ...c }))
+    .sort((a, b) => a.hj.localeCompare(b.hj));
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[600px] px-5 py-10 sm:px-8">
@@ -134,6 +156,15 @@ export default async function EinstellungenPage() {
             Wechsle das Halbjahr um vergangene Noten einzusehen oder das neue anzufangen.
           </p>
           <HalbjahrWechsler current={halbjahr} />
+        </div>
+        <div className="mt-5 border-t border-border pt-5">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-sm font-semibold">Halbjahr verschieben</p>
+          </div>
+          <p className="mb-3 text-xs text-text-mute">
+            Alles ins falsche Halbjahr getippt? Zieh Fächer samt Noten in ein anderes.
+          </p>
+          <HalbjahrVerschieben halbjahre={halbjahrInfos} aktuell={halbjahr} />
         </div>
         <div className="mt-5 border-t border-border pt-5">
           <div className="mb-1 flex items-center justify-between">
