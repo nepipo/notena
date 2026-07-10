@@ -7,6 +7,7 @@ import {
   fachSchnitte,
   baueKontext,
   baueSystemPrompt,
+  ferienLaeuftGerade,
   kuerzeAnSatzgrenze,
   type BriefingKontextDaten,
 } from "./prompt";
@@ -102,6 +103,23 @@ describe("fachSchnitte", () => {
   });
 });
 
+// ── ferienLaeuftGerade ─────────────────────────────────────────────────────
+
+describe("ferienLaeuftGerade", () => {
+  it("gibt true zurück während der Hamburger Sommerferien 2026", () => {
+    // Hamburg Sommerferien 2026: 25.06.2026–05.08.2026
+    expect(ferienLaeuftGerade("HH", "2026-07-10")).toBe(true);
+  });
+
+  it("gibt false zurück außerhalb der Ferien", () => {
+    expect(ferienLaeuftGerade("HH", "2026-09-01")).toBe(false);
+  });
+
+  it("gibt false zurück wenn kein Bundesland angegeben", () => {
+    expect(ferienLaeuftGerade(null, "2026-07-10")).toBe(false);
+  });
+});
+
 // ── Kontext ────────────────────────────────────────────────────────────────
 
 function leererKontext(): BriefingKontextDaten {
@@ -118,6 +136,7 @@ function leererKontext(): BriefingKontextDaten {
     entfallHeute: new Map(),
     fachMap: new Map(),
     ferien: null,
+    ferienLaufend: false,
   };
 }
 
@@ -172,6 +191,18 @@ describe("baueKontext", () => {
     expect(kontext).toContain("Analysis-Blatt — überfällig (war vor 2 Tagen)");
     expect(kontext.indexOf("Analysis-Blatt")).toBeLessThan(kontext.indexOf("Lektüre lesen"));
     expect(kontext).toContain("Lektüre lesen — fällig in 4 Tagen");
+  });
+
+  it("zeigt 'Ferien — kein Unterricht' wenn ferienLaufend und kein Stundenplan", () => {
+    const d = leererKontext();
+    d.ferienLaufend = true;
+    expect(baueKontext(d)).toContain("Ferien — kein Unterricht");
+    expect(baueKontext(d)).not.toContain("Keine Stunden eingetragen");
+  });
+
+  it("zeigt 'Keine Stunden eingetragen' außerhalb der Ferien", () => {
+    const kontext = baueKontext(leererKontext()); // ferienLaufend: false
+    expect(kontext).toContain("Keine Stunden eingetragen");
   });
 
   it("fasst einen komplett entfallenen Tag zusammen", () => {

@@ -14,6 +14,7 @@ import {
   baueKontext,
   baueSystemPrompt,
   ferienHinweis,
+  ferienLaeuftGerade,
   heuteInBerlin,
   kuerzeAnSatzgrenze,
   type EntfallInfo,
@@ -94,6 +95,7 @@ export async function holeBriefing(): Promise<string | null> {
     entfallHeute,
     fachMap,
     ferien: ferienHinweis((profil?.bundesland as string | null) ?? null, heute.iso),
+    ferienLaufend: ferienLaeuftGerade((profil?.bundesland as string | null) ?? null, heute.iso),
   });
 
   const systemPrompt = baueSystemPrompt({

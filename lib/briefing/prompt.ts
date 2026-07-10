@@ -68,6 +68,19 @@ export function alterAusGeburtsdatum(geburtsdatum: string | null, heuteIso: stri
 
 // ── Ferien ─────────────────────────────────────────────────────────────────
 
+/** Gibt true zurück, wenn heute eine Ferienperiode für das Bundesland aktiv ist. */
+export function ferienLaeuftGerade(bundesland: string | null, heuteIso: string): boolean {
+  const bl = bundesland as Bundesland | null;
+  const perioden = bl ? FERIEN[bl] : null;
+  if (!perioden) return false;
+  const heuteMs = Date.parse(heuteIso + "T00:00:00Z");
+  return perioden.some((f) => {
+    const von = Date.parse(f.von + "T00:00:00Z");
+    const bis = Date.parse(f.bis + "T00:00:00Z") + 86400000;
+    return heuteMs >= von && heuteMs < bis;
+  });
+}
+
 export function ferienHinweis(bundesland: string | null, heuteIso: string): string | null {
   const bl = bundesland as Bundesland | null;
   const perioden = bl ? FERIEN[bl] : null;
@@ -146,6 +159,8 @@ export interface BriefingKontextDaten {
   entfallHeute: Map<string, EntfallInfo>;
   fachMap: Map<string, string>;
   ferien: string | null;
+  /** Ob heute aktiv Ferien sind — beeinflusst den Stundenplan-Text im Kontext. */
+  ferienLaufend: boolean;
 }
 
 export function baueKontext(d: BriefingKontextDaten): string {
@@ -159,7 +174,7 @@ export function baueKontext(d: BriefingKontextDaten): string {
 
   let stundenStr: string;
   if (!d.stundenHeute.length) {
-    stundenStr = "Keine Stunden eingetragen";
+    stundenStr = d.ferienLaufend ? "Ferien — kein Unterricht" : "Keine Stunden eingetragen";
   } else if (alleEntfallen) {
     stundenStr = krankHeute
       ? `Ganzer Tag krankgemeldet${ersterGrund ? ` (${ersterGrund})` : ""}`
