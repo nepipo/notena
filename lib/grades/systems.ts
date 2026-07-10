@@ -29,6 +29,13 @@ export interface Notensystem {
   richtung: Richtung;
   /** Eingabe-Hinweis in der System-Skala (Platzhalter), z.B. "0–15" / "1–6". */
   eingabeHinweis: string;
+  /**
+   * true = Eingabefeld muss `type="text"` sein, weil die Eingabe +/−-Tendenzen
+   * erlaubt (z.B. "2+"). Ein `type="number"` würde diese Zeichen physisch blocken.
+   */
+  eingabeAlsText: boolean;
+  /** Mobile-Tastatur-Hinweis fürs Eingabefeld. */
+  eingabeInputMode: "text" | "decimal" | "numeric";
   /** Kanonische 0–15 Punkte -> Anzeige einer Einzelnote in diesem System. */
   formatNote(punkte: number): string;
   /** Kanonische 0–15 Punkte -> Schnitt-Anzeige in diesem System. */
@@ -131,6 +138,8 @@ export const DE_0_15: Notensystem & {
   step: 1,
   richtung: "hoeher_besser",
   eingabeHinweis: "0–15 oder 2+",
+  eingabeAlsText: true, // erlaubt Punkte ("14") UND Tendenz-Noten ("2+")
+  eingabeInputMode: "text",
   formatNote: (p) => `${Math.round(clampP(p))}`,
   formatSchnitt: (p) => deFix(clampP(p), 1),
   parse: de0_15Parse,
@@ -150,6 +159,8 @@ export const DE_1_6: Notensystem = {
   step: 1,
   richtung: "hoeher_besser",
   eingabeHinweis: "1–6 (z.B. 2+)",
+  eingabeAlsText: true, // Tendenz-Noten "2+" / "1−" brauchen ein Textfeld
+  eingabeInputMode: "text",
   formatNote: (p) => punkteZuNote(p),
   formatSchnitt: (p) => punkteZuNote(Math.round(clampP(p))),
   parse: (e) => noteZuPunkte(e),
@@ -175,6 +186,8 @@ export const CH_1_6: Notensystem = {
   step: 1,
   richtung: "hoeher_besser",
   eingabeHinweis: "1–6 (z.B. 4,5)",
+  eingabeAlsText: false,
+  eingabeInputMode: "decimal", // Viertelnoten wie 4,5
   formatNote: chFormat,
   formatSchnitt: chFormat,
   parse: (e) => {
@@ -200,6 +213,8 @@ export const AT_1_5: Notensystem = {
   step: 1,
   richtung: "hoeher_besser",
   eingabeHinweis: "1–5",
+  eingabeAlsText: false,
+  eingabeInputMode: "numeric",
   formatNote: (p) => `${Math.round(AT.ausPunkte(p))}`,
   formatSchnitt: (p) => deFix(AT.ausPunkte(p), 1),
   parse: (e) => {
@@ -223,6 +238,8 @@ export const IB_1_7: Notensystem = {
   step: 1,
   richtung: "hoeher_besser",
   eingabeHinweis: "1–7",
+  eingabeAlsText: false,
+  eingabeInputMode: "numeric",
   formatNote: (p) => `${Math.round(IB.ausPunkte(p))}`,
   formatSchnitt: (p) => deFix(IB.ausPunkte(p), 1),
   parse: (e) => {
@@ -250,3 +267,21 @@ export function getNotensystem(id: string): Notensystem {
 
 /** Alle Systeme als Liste (für Dropdowns), DE zuerst. */
 export const ALLE_SYSTEME: Notensystem[] = [DE_0_15, DE_1_6, CH_1_6, AT_1_5, IB_1_7];
+
+/**
+ * HTML-Props für ein Noten-Eingabefeld im gegebenen System.
+ * Note-basierte Systeme (Tendenz +/−) liefern `type="text"`, sonst `type="number"`.
+ * Bewusst OHNE min/max/step: die kanonischen 0–15-Grenzen passen nicht zur Anzeige-Skala
+ * (z.B. CH 1–6). Die Validierung läuft immer über `system.parse()`.
+ */
+export function noteEingabeProps(system: Notensystem): {
+  type: "text" | "number";
+  inputMode: "text" | "decimal" | "numeric";
+  placeholder: string;
+} {
+  return {
+    type: system.eingabeAlsText ? "text" : "number",
+    inputMode: system.eingabeInputMode,
+    placeholder: system.eingabeHinweis,
+  };
+}

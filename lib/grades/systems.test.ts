@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { DE_0_15, DE_1_6, CH_1_6, AT_1_5, IB_1_7, getNotensystem } from "./systems";
+import {
+  DE_0_15,
+  DE_1_6,
+  CH_1_6,
+  AT_1_5,
+  IB_1_7,
+  getNotensystem,
+  noteEingabeProps,
+} from "./systems";
 
 // Im kanonischen Modell ist der gespeicherte Wert IMMER 0–15 Punkte.
 // parse() liefert Punkte, formatNote()/formatSchnitt() rechnen Punkte -> System.
@@ -55,6 +63,41 @@ describe("DE_0_15 — Anzeige = Punkte", () => {
   });
   it("exakt", () => {
     expect(DE_0_15.exakt).toBe(true);
+  });
+});
+
+describe("noteEingabeProps — Eingabefeld-Konfiguration pro System", () => {
+  it("DE-Systeme (Tendenz +/−) brauchen ein Textfeld", () => {
+    expect(noteEingabeProps(DE_0_15).type).toBe("text");
+    expect(noteEingabeProps(DE_1_6).type).toBe("text");
+    expect(noteEingabeProps(DE_0_15).inputMode).toBe("text");
+    expect(noteEingabeProps(DE_1_6).inputMode).toBe("text");
+  });
+  it("Zahl-Systeme bleiben number mit passender Mobile-Tastatur", () => {
+    expect(noteEingabeProps(CH_1_6).type).toBe("number");
+    expect(noteEingabeProps(CH_1_6).inputMode).toBe("decimal");
+    expect(noteEingabeProps(AT_1_5).inputMode).toBe("numeric");
+    expect(noteEingabeProps(IB_1_7).inputMode).toBe("numeric");
+  });
+  it("Placeholder ist der System-Eingabehinweis", () => {
+    expect(noteEingabeProps(DE_1_6).placeholder).toBe(DE_1_6.eingabeHinweis);
+  });
+});
+
+describe("DE_1_6 — Eingabe von +/− Tendenz-Noten", () => {
+  it("parst +/− inkl. Unicode-Minus (−) und ASCII-Minus (-)", () => {
+    expect(DE_1_6.parse("2+")).toBe(12);
+    expect(DE_1_6.parse("2-")).toBe(10);
+    expect(DE_1_6.parse("2−")).toBe(10);
+    expect(DE_1_6.parse("1−")).toBe(13);
+  });
+  it("formatNote(z) läuft für alle Presets verlustfrei durch parse zurück", () => {
+    // Preset-Buttons setzen formatNote(z); das Feld muss z wieder herstellen.
+    for (const sys of [DE_0_15, DE_1_6]) {
+      for (let z = 0; z <= 15; z++) {
+        expect(sys.parse(sys.formatNote(z))).toBe(z);
+      }
+    }
   });
 });
 

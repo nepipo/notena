@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { fachSchnittGerundet, benoetigtePunkte } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { useNotensystem } from "@/components/notensystem-provider";
+import { noteEingabeProps } from "@/lib/grades/systems";
 import { KategorieSelector, katKuerzel } from "./kategorie-selector";
 import { useCustomKategorien } from "@/components/kategorien-provider";
 import type { Fach, Kategorie, Note } from "@/lib/grades/types";
@@ -35,10 +36,10 @@ export function WasWaereWennPanel({ fach }: { fach: Fach }) {
     setProbePunkte("");
   }
 
-  const zielZahl = Number(ziel);
-  const zielGueltig = ziel !== "" && !Number.isNaN(zielZahl) && zielZahl >= system.min && zielZahl <= system.max;
+  const zielPunkte = system.parse(ziel); // Ziel-Schnitt in kanonische Punkte umrechnen
+  const zielGueltig = zielPunkte !== null;
   const ergebnis = zielGueltig
-    ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl, system)
+    ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielPunkte, system)
     : null;
 
   return (
@@ -78,10 +79,9 @@ export function WasWaereWennPanel({ fach }: { fach: Fach }) {
 
         <div className="mt-2 flex items-center gap-2">
           <Input
-            type="number" min={system.min} max={system.max} step={system.step}
+            {...noteEingabeProps(system)}
             value={probePunkte} onChange={(e) => setProbePunkte(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addProbe()}
-            placeholder={`${system.min}–${system.max}`}
             className="h-8 w-16 bg-surface-2 font-mono text-xs"
           />
           <KategorieSelector value={probeKat} onChange={setProbeKat} />
@@ -95,9 +95,9 @@ export function WasWaereWennPanel({ fach }: { fach: Fach }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-xs text-text-dim">Ziel-Schnitt</span>
           <Input
-            type="number" min={system.min} max={system.max} step={system.step}
+            {...noteEingabeProps(system)}
             value={ziel} onChange={(e) => setZiel(e.target.value)}
-            placeholder={`z. B. ${system.max}`}
+            placeholder={`z. B. ${system.formatNote(system.max)}`}
             className="h-8 w-16 bg-surface-2 font-mono text-xs"
           />
           <span className="font-mono text-xs text-text-dim">in</span>

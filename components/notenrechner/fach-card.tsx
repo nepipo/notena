@@ -12,6 +12,7 @@ import {
 } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
 import { useNotensystem } from "@/components/notensystem-provider";
+import { noteEingabeProps } from "@/lib/grades/systems";
 import { useCustomKategorien } from "@/components/kategorien-provider";
 import { KategorieSelector, katKuerzel, katLabel } from "./kategorie-selector";
 import { WasWaereWennPanel } from "./was-waere-wenn-panel";
@@ -245,14 +246,10 @@ function UnterfachSection({
       <div className="mt-2 flex items-center gap-2 border-t border-border pt-2">
         <KategorieSelector value={kategorie} onChange={setKategorie} />
         <Input
-          type="number"
-          min={system.min}
-          max={system.max}
-          step={system.step}
+          {...noteEingabeProps(system)}
           value={punkte}
           onChange={(e) => setPunkte(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder={`${system.min}–${system.max}`}
           className="h-7 w-16 bg-surface-1 font-mono text-xs"
         />
         <Button onClick={submit} size="sm" className="h-7 px-2 font-display text-xs font-bold">+</Button>
@@ -469,7 +466,7 @@ function NoteEditForm({
       <div className="mb-2"><KategorieSelector value={kategorie} onChange={setKategorie} /></div>
       <div className="flex items-center gap-2">
         <Input
-          type="number" min={system.min} max={system.max} step={system.step}
+          {...noteEingabeProps(system)}
           value={punkte} onChange={(e) => setPunkte(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onCancel(); }}
           className="h-8 w-16 bg-surface-3 font-mono text-sm" autoFocus
@@ -516,10 +513,9 @@ function AddNote({ onAdd }: { onAdd: (punkte: number, kategorie: Kategorie, beze
       </div>
       <div className="flex items-center gap-2">
         <Input
-          type="number" min={system.min} max={system.max} step={system.step}
+          {...noteEingabeProps(system)}
           value={punkte} onChange={(e) => setPunkte(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder={`${system.min}–${system.max}`}
           className="h-9 w-20 bg-surface-2 font-mono"
         />
         <Button onClick={submit} size="sm" className="ml-auto font-display font-bold">+ Note</Button>

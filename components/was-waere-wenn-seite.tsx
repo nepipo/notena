@@ -10,6 +10,7 @@ import {
   benoetigterFachschnittFuerGesamtziel,
 } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
+import { noteEingabeProps } from "@/lib/grades/systems";
 import { useNotensystem } from "@/components/notensystem-provider";
 import { KategorieSelector, katKuerzel } from "@/components/notenrechner/kategorie-selector";
 import { useCustomKategorien } from "@/components/kategorien-provider";
@@ -129,12 +130,8 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
   const hatSimNoten = Object.values(simNoten).some((v) => v.length > 0);
 
   // ── Berechnungen Ziel ──────────────────────────────────────────────────────
-  const gesamtZielZahl = Number(gesamtZiel);
-  const gesamtZielGueltig =
-    gesamtZiel !== "" &&
-    !Number.isNaN(gesamtZielZahl) &&
-    gesamtZielZahl >= system.min &&
-    gesamtZielZahl <= system.max;
+  const gesamtZielPunkte = system.parse(gesamtZiel); // Ziel-Schnitt -> kanonische Punkte
+  const gesamtZielGueltig = gesamtZielPunkte !== null;
 
   const zielErgebnisse = gesamtZielGueltig
     ? faecher
@@ -144,7 +141,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
           const benoetigterSchnitt = benoetigterFachschnittFuerGesamtziel(
             f,
             faecher,
-            gesamtZielZahl,
+            gesamtZielPunkte,
             system
           );
           const klausurPunkte =
@@ -169,12 +166,11 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
     ? faecher.map((f) => (f.id === fachId ? { ...f, noten: [...f.noten, ...proben] } : f))
     : faecher;
   const gesamtNachherEinzel = gesamtSchnittGerundet(faecherMitProben, system);
-  const zielZahl = Number(ziel);
-  const zielGueltig =
-    ziel !== "" && !Number.isNaN(zielZahl) && zielZahl >= system.min && zielZahl <= system.max;
+  const zielPunkte = system.parse(ziel);
+  const zielGueltig = zielPunkte !== null;
   const ergebnis =
     zielGueltig && fach
-      ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielZahl, system)
+      ? benoetigtePunkte(fach.noten, fach.gewichtungConfig, zielKat, 1, zielPunkte, system)
       : null;
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -368,22 +364,19 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                           className="min-w-[1.9rem] rounded-lg border border-border/60 bg-surface-2 px-1.5 py-1 font-mono text-xs font-bold transition-colors hover:border-brand/40 hover:bg-brand/10"
                           style={{ color: schnittFarbe(p, system) }}
                         >
-                          {p}
+                          {system.formatNote(p)}
                         </button>
                       ))}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Input
-                        type="number"
-                        min={system.min}
-                        max={system.max}
-                        step={system.step}
+                        {...noteEingabeProps(system)}
                         value={simInput[f.id] ?? ""}
                         onChange={(e) =>
                           setSimInput((prev) => ({ ...prev, [f.id]: e.target.value }))
                         }
                         onKeyDown={(e) => e.key === "Enter" && addSimNote(f.id)}
-                        placeholder={`andere (${system.min}–${system.max})`}
+                        placeholder={`andere (${system.eingabeHinweis})`}
                         className="h-8 flex-1 bg-surface-2 font-mono text-xs"
                       />
                       <Button
@@ -432,26 +425,22 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
             {quickWerte.filter((v) => v > system.min).map((z) => (
               <button
                 key={z}
-                onClick={() => setGesamtZiel(String(z))}
+                onClick={() => setGesamtZiel(system.formatNote(z))}
                 className={`min-w-[2.4rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${
-                  gesamtZiel === String(z)
+                  gesamtZielPunkte === z
                     ? "border-brand bg-brand/15 text-brand"
                     : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"
                 }`}
-                style={{ color: gesamtZiel === String(z) ? undefined : schnittFarbe(z, system) }}
+                style={{ color: gesamtZielPunkte === z ? undefined : schnittFarbe(z, system) }}
               >
                 {system.formatSchnitt(z)}
               </button>
             ))}
           </div>
           <Input
-            type="number"
-            min={system.min}
-            max={system.max}
-            step={system.step}
+            {...noteEingabeProps(system)}
             value={gesamtZiel}
             onChange={(e) => setGesamtZiel(e.target.value)}
-            placeholder={`${system.min}–${system.max}`}
             className="h-10 w-32 bg-surface-2 font-mono"
           />
         </div>
@@ -512,7 +501,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                           Mit diesem Fach allein nicht schaffbar
                         </span>
                         <div className="mt-0.5 font-mono text-[10px] text-text-mute">
-                          Selbst mit {system.max} Punkten überall reicht es nicht — du musst in mehreren
+                          Selbst mit der Bestnote ({system.formatNote(system.max)}) überall reicht es nicht — du musst in mehreren
                           Fächern besser werden.
                         </div>
                       </div>
@@ -744,20 +733,17 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                       className="min-w-[2.5rem] rounded-xl border border-border bg-surface-2 px-2 py-1.5 font-mono text-sm font-bold transition-colors hover:border-brand/40 hover:bg-brand/10"
                       style={{ color: schnittFarbe(p, system) }}
                     >
-                      {p}
+                      {system.formatNote(p)}
                     </button>
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
-                    type="number"
-                    min={system.min}
-                    max={system.max}
-                    step={system.step}
+                    {...noteEingabeProps(system)}
                     value={probePunkte}
                     onChange={(e) => setProbePunkte(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && addProbe()}
-                    placeholder={`Andere (${system.min}–${system.max})`}
+                    placeholder={`Andere (${system.eingabeHinweis})`}
                     className="h-10 flex-1 bg-surface-2 font-mono"
                   />
                   <Button onClick={() => addProbe()} className="h-10 font-display font-bold">
@@ -785,27 +771,24 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                 {quickWerte.filter((v) => v > system.min).map((z) => (
                   <button
                     key={z}
-                    onClick={() => setZiel(String(z))}
+                    onClick={() => setZiel(system.formatNote(z))}
                     className={`min-w-[2.5rem] rounded-xl border px-2 py-1.5 font-mono text-sm font-bold transition-colors ${
-                      ziel === String(z)
+                      zielPunkte === z
                         ? "border-brand bg-brand/15 text-brand"
                         : "border-border bg-surface-2 hover:border-brand/40 hover:bg-brand/10"
                     }`}
-                    style={{ color: ziel === String(z) ? undefined : schnittFarbe(z, system) }}
+                    style={{ color: zielPunkte === z ? undefined : schnittFarbe(z, system) }}
                   >
-                    {z}
+                    {system.formatSchnitt(z)}
                   </button>
                 ))}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Input
-                  type="number"
-                  min={system.min}
-                  max={system.max}
-                  step={system.step}
+                  {...noteEingabeProps(system)}
                   value={ziel}
                   onChange={(e) => setZiel(e.target.value)}
-                  placeholder={`Zielschnitt (${system.min}–${system.max})`}
+                  placeholder={`Zielschnitt (${system.eingabeHinweis})`}
                   className="h-10 w-36 bg-surface-2 font-mono"
                 />
                 <span className="font-mono text-sm text-text-dim">via</span>
@@ -831,7 +814,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
                           Mit einer Note nicht erreichbar
                         </div>
                         <div className="font-mono text-xs text-text-dim">
-                          Selbst mit {system.max} Punkten würdest du {ziel} nicht erreichen. Du
+                          Selbst mit der Bestnote ({system.formatNote(system.max)}) würdest du {ziel} nicht erreichen. Du
                           brauchst mehrere gute Noten.
                         </div>
                       </div>
