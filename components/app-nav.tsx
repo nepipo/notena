@@ -9,6 +9,7 @@ import {
   ClipboardList,
   type LucideIcon,
 } from "lucide-react";
+import { HalbjahrPicker } from "@/components/halbjahr-picker";
 
 interface Tab {
   href: string;
@@ -27,8 +28,17 @@ function istAktiv(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function AppNav({ initiale }: { initiale: string }) {
+export function AppNav({
+  initiale,
+  halbjahre,
+  aktuellesHj,
+}: {
+  initiale: string;
+  halbjahre: string[];
+  aktuellesHj: string;
+}) {
   const pathname = usePathname();
+  const zeigeHjPicker = halbjahre.length >= 2;
 
   return (
     <>
@@ -92,25 +102,43 @@ export function AppNav({ initiale }: { initiale: string }) {
             })}
           </nav>
 
-          {/* Einstellungen-Avatar */}
-          <Link
-            href="/einstellungen"
-            title="Einstellungen & Profil"
-            className={`relative flex size-9 items-center justify-center rounded-full font-display text-sm font-extrabold text-white transition-transform hover:scale-110 ${
-              istAktiv(pathname, "/einstellungen")
-                ? "ring-2 ring-brand ring-offset-2 ring-offset-background"
-                : ""
-            }`}
-            style={{
-              background:
-                "linear-gradient(135deg, var(--brand) 0%, var(--indigo) 100%)",
-              boxShadow:
-                "0 4px 14px color-mix(in srgb, var(--brand) 40%, transparent)",
-            }}
-          >
-            {initiale}
-          </Link>
+          {/* Halbjahr-Picker (Desktop, inline) + Einstellungen-Avatar */}
+          <div className="flex items-center gap-3">
+            <HalbjahrPicker
+              halbjahre={halbjahre}
+              aktuell={aktuellesHj}
+              className="hidden lg:inline-flex"
+            />
+            <Link
+              href="/einstellungen"
+              title="Einstellungen & Profil"
+              className={`relative flex size-9 shrink-0 items-center justify-center rounded-full font-display text-sm font-extrabold text-white transition-transform hover:scale-110 ${
+                istAktiv(pathname, "/einstellungen")
+                  ? "ring-2 ring-brand ring-offset-2 ring-offset-background"
+                  : ""
+              }`}
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--brand) 0%, var(--indigo) 100%)",
+                boxShadow:
+                  "0 4px 14px color-mix(in srgb, var(--brand) 40%, transparent)",
+              }}
+            >
+              {initiale}
+            </Link>
+          </div>
         </div>
+
+        {/* Halbjahr-Picker (Handy/iPad, eigene Zeile — im Header ist neben dem Logo kein Platz) */}
+        {zeigeHjPicker && (
+          <div className="px-5 pb-2.5 lg:hidden">
+            <HalbjahrPicker
+              halbjahre={halbjahre}
+              aktuell={aktuellesHj}
+              className="max-w-full"
+            />
+          </div>
+        )}
       </header>
 
       {/* Bottom-Tab-Bar (Handy/iPad) */}

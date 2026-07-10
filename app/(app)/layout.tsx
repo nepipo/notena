@@ -1,5 +1,10 @@
 import { redirect } from "next/navigation";
-import { getCachedClaims, getCachedProfil } from "@/lib/supabase/cache";
+import {
+  getCachedClaims,
+  getCachedProfil,
+  getCachedHalbjahre,
+} from "@/lib/supabase/cache";
+import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { AppNav } from "@/components/app-nav";
 import { FeedbackButton } from "@/components/feedback-button";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
@@ -26,11 +31,19 @@ export default async function AppLayout({
   const notensystem = profil?.notensystem ?? "de_0_15";
   const customKategorien = (Array.isArray(profil?.custom_kategorien) ? profil.custom_kategorien : []) as CustomKategorie[];
 
+  // Deduped via React.cache() — /noten nutzt denselben Call, kostet keine zweite Query.
+  const halbjahre = await getCachedHalbjahre();
+  const aktivesHj = profil?.aktuelles_halbjahr ?? aktuellesHalbjahr();
+
   return (
     <NotensystemProvider systemId={notensystem}>
       <KategorienProvider custom={customKategorien}>
         <div className="min-h-screen">
-          <AppNav initiale={initiale} />
+          <AppNav
+            initiale={initiale}
+            halbjahre={halbjahre}
+            aktuellesHj={aktivesHj}
+          />
           <div className="pb-24 lg:pb-0">{children}</div>
           <FeedbackButton />
           <PwaInstallBanner />

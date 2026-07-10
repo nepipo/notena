@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getCachedProfil } from "@/lib/supabase/cache";
+import { getCachedProfil, getCachedHalbjahre } from "@/lib/supabase/cache";
 import dynamic from "next/dynamic";
 
 const NotenrechnerBoard = dynamic(
@@ -36,26 +36,22 @@ export default async function NotenPage() {
   // Batch 1: Alle Fach-Queries parallel (brauchen nur halbjahr, nicht fachIds)
   const [
     { data: fachRows, error: fachErr },
-    { data: hjRows, error: hjErr },
+    verfuegbareHalbjahre,
     { data: klausurRows, error: klausurErr },
     { data: vorFachRows, error: vorFachErr },
     { data: jahrFachRows, error: jahrFachErr },
   ] = await Promise.all([
     supabase.from("schule_fach").select("*").or(`halbjahr.eq.${halbjahr},halbjahr.is.null`).order("created_at", { ascending: true }),
-    supabase.from("schule_fach").select("halbjahr"),
+    // Deduped via React.cache() — das Layout (Header-Picker) hat es schon geladen.
+    getCachedHalbjahre(),
     supabase.from("schule_klausur").select("*").gte("datum", todayUtc).order("datum", { ascending: true }).limit(20),
     supabase.from("schule_fach").select("*").eq("halbjahr", vorigesHj),
     supabase.from("schule_fach").select("*").in("halbjahr", [shj1, shj2]),
   ]);
   if (fachErr) console.error("[noten] schule_fach fetch error:", fachErr);
-  if (hjErr) console.error("[noten] halbjahr distinct fetch error:", hjErr);
   if (klausurErr) console.error("[noten] schule_klausur fetch error:", klausurErr);
   if (vorFachErr) console.error("[noten] vorFachRows fetch error:", vorFachErr);
   if (jahrFachErr) console.error("[noten] jahrFachRows fetch error:", jahrFachErr);
-
-  const verfuegbareHalbjahre = Array.from(
-    new Set([halbjahr, ...(hjRows ?? []).map((r) => r.halbjahr).filter((h): h is string => !!h)]),
-  ).sort();
 
   // Batch 2: Alle Noten-Queries parallel (brauchen fachIds aus Batch 1)
   const fachIds = (fachRows ?? []).map((f) => f.id);

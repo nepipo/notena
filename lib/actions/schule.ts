@@ -461,6 +461,7 @@ export async function setHalbjahr(hj: string): Promise<ActionResult> {
     revalidatePath("/noten");
     revalidatePath("/stundenplan");
     revalidatePath("/einstellungen");
+    revalidatePath("/what-if");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: dbError(e) };

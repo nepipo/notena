@@ -25,6 +25,14 @@ export function halbjahrLabel(hj: string): string {
   return `${p.nummer}. Halbjahr · ${p.startjahr}/${p.kurz}`;
 }
 
+/** "2025/26-2" -> "25/26·2". Kompaktform für enge Stellen (Header-Picker). */
+export function halbjahrKurz(hj: string): string {
+  const p = parseHalbjahr(hj);
+  if (!p) return hj;
+  const kurzStart = String(p.startjahr % 100).padStart(2, "0");
+  return `${kurzStart}/${p.kurz}·${p.nummer}`;
+}
+
 /** Baut den Halbjahr-String aus Startjahr und Nummer (z.B. 2025, 2 -> "2025/26-2"). */
 export function baueHalbjahr(startjahr: number, nummer: 1 | 2): string {
   const kurz = String((startjahr + 1) % 100).padStart(2, "0");
