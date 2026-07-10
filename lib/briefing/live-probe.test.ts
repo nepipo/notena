@@ -28,6 +28,7 @@ function basisDaten(): BriefingKontextDaten {
     entfallHeute: new Map(),
     fachMap: new Map(),
     ferien: null,
+    ferienLaufend: false,
   };
 }
 
