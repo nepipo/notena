@@ -1,5 +1,5 @@
 -- =====================================================================
--- Project X — Multi-Notensystem.
+-- Notena — Multi-Notensystem.
 -- punkte: smallint -> numeric(4,2) (CH-Kommanoten).
 -- notensystem-CHECK um DE-1-6/CH/AT/IB erweitern.
 -- Bestehende Daten (0-15, de_0_15) bleiben gültig — kein Backfill.

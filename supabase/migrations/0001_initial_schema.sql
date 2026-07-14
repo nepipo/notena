@@ -1,5 +1,5 @@
 -- =====================================================================
--- Project X — Initiales Schema (VORSCHLAG, noch NICHT angewendet)
+-- Notena — Initiales Schema (VORSCHLAG, noch NICHT angewendet)
 -- Phase 1 (Profil) + Phase 2 (Schule Core).
 -- Review durch Nepomuk -> dann via Supabase MCP apply_migration anwenden.
 --

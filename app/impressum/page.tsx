@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Impressum — Project X",
+  title: "Impressum — Notena",
 };
 
 export default function ImpressumPage() {

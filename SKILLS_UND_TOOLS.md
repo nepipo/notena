@@ -1,4 +1,4 @@
-# Skills & MCPs & Tools für Project X
+# Skills & MCPs & Tools für Notena
 
 **Stand:** 28.05.2026. Aktualisiert nach Verfügbarkeits-Check.
 

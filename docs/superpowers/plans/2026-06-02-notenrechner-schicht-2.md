@@ -49,7 +49,7 @@
 Create `supabase/migrations/0004_kategorien_onboarding.sql`:
 ```sql
 -- =====================================================================
--- Project X — Schicht 2: Erweiterte Kategorien + Onboarding-Flag
+-- Notena — Schicht 2: Erweiterte Kategorien + Onboarding-Flag
 -- =====================================================================
 
 -- Bestehende CHECK-Constraint für kategorie entfernen und neu setzen.

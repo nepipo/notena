@@ -1,17 +1,17 @@
-# Project X — System-Verankerung
+# Notena — System-Verankerung
 
 *Diese Datei wird in jeden Claude-Code-Chat dieses Projekts geladen. Sie definiert die Marschrichtung.*
 
-**Stand:** 18.06.2026
-**Arbeitstitel:** Project X (finaler Name kommt vor Launch)
+**Stand:** 14.07.2026
+**Name:** Notena (final entschieden 14.07.2026) · **Domain:** notena.app (gekauft)
 
 ### Fortschritt
-- **Phase 0 (Setup):** ✅ Next.js 16 + TS + Tailwind v4, GitHub (`nepipo/project-x`), Vercel Auto-Deploy, Supabase Frankfurt (`rxmcexzlwocgfocyligd`), Theme (Azurblau/Indigo, Fonts, shadcn/ui), Showcase-Startseite.
+- **Phase 0 (Setup):** ✅ Next.js 16 + TS + Tailwind v4, GitHub (`nepipo/notena`), Vercel Auto-Deploy, Supabase Frankfurt (`rxmcexzlwocgfocyligd`), Theme (Azurblau/Indigo, Fonts, shadcn/ui), Showcase-Startseite.
 - **Phase 1 (Auth):** ✅ Supabase Auth — Email/Passwort-Login + Signup, geschütztes Dashboard, Proxy (Next.js 16 `proxy.ts`) mit `getClaims()`. Google-OAuth im Code vorbereitet (Provider-Config offen). Apple bewusst später (€99/Jahr).
 - **DB-Schema:** ✅ Angewendet auf Supabase (`0001_initial_schema`). 4 Tabellen mit RLS: `nutzer_profil`, `schule_fach`, `schule_note`, `schule_klausur`. Auto-Profil-Trigger `on_auth_user_created`. TS-Types in `lib/supabase/database.types.ts`. Hardening (`0002_harden_handle_new_user`): RPC-Zugriff auf den Trigger-Helper entzogen.
 - **Onboarding:** ✅ Anonymer Flow **vor** Registrierung (8 Mini-Steps, `localStorage`-Bridge → `applyOnboarding()`), Migration `0005_onboarding_profil_felder`. Siehe §11. Live-Test der E-Mail-Bestätigungs-Bridge steht noch aus.
 - **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo) · Onboarding-Felder in `/einstellungen/profil` editierbar machen.
-- **Live:** https://project-x-seven-tawny.vercel.app
+- **Live:** https://notena.app (Domain gekauft 14.07.2026, DNS-Setup läuft · Vercel-Fallback: `project-x-seven-tawny.vercel.app`)
 
 ---
 
@@ -26,7 +26,7 @@
 
 ---
 
-## 2. Was Project X ist
+## 2. Was Notena ist
 
 **Eine SaaS-App für ambitionierte Oberstufen-Schüler (Klasse 11–13 in Deutschland) — Notenrechner + Schul-Cockpit + tägliches Briefing.**
 
@@ -129,7 +129,7 @@
 
 ## 7. Verbindung zum alten Repo
 
-Project X ist **getrennt** vom `lebens-automatismus` Repo (Nepomuks privates Tool). Sie können sich Code-Patterns teilen aber **keine DB-Tabellen, keine Auth, keine Vercel-Org**.
+Notena ist **getrennt** vom `lebens-automatismus` Repo (Nepomuks privates Tool). Sie können sich Code-Patterns teilen aber **keine DB-Tabellen, keine Auth, keine Vercel-Org**.
 
 Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, Briefing, Gmail-Filter). Das neue Repo wird das Produkt.
 
@@ -138,7 +138,7 @@ Das alte Repo bleibt für Nepomuks tägliches Leben (Habits, Tagebuch, Aktien, B
 ## 8. Konkrete Setup-Entscheidungen (final)
 
 - **Code-Ort:** `~/project-x/` (gleiche Ebene wie `~/lebens-automatismus/`)
-- **GitHub:** Repo `nepipo/project-x` (privat) auf dem existierenden GitHub-Account
+- **GitHub:** Repo `nepipo/notena` (privat) auf dem existierenden GitHub-Account
 - **Vercel:** Neues Projekt `project-x` in der existierenden Vercel-Org (`lebens-automatismus-projects`)
 - **Supabase:** Neues Projekt `project-x` im existierenden Supabase-Account (komplett getrennte DB, eigene Auth)
 - **Briefing-Docs:** Liegen auf `~/Desktop/project-x/` — werden im Repo als `docs/` referenziert aber nicht direkt verschoben (Plan-Ordner ≠ Bau-Ordner)
@@ -436,10 +436,10 @@ Das ist keine Aspirationsaussage. Es ist ein technischer Constraint. Auch wenn d
 
 ## 9. Wie wir starten
 
-1. Neuen GitHub-Repo erstellen: `gh repo create nepipo/project-x --private`
+1. Neuen GitHub-Repo erstellen: `gh repo create nepipo/notena --private`
 2. Lokales Verzeichnis: `mkdir ~/project-x && cd ~/project-x`
 3. `create-next-app` mit TypeScript + Tailwind + App Router
-4. Connect zu GitHub: `git remote add origin git@github.com:nepipo/project-x.git`
+4. Connect zu GitHub: `git remote add origin git@github.com:nepipo/notena.git`
 5. Vercel-Projekt anlegen + GitHub verbinden
 6. Supabase-Projekt anlegen + Schema-Init
 7. Erst dann: Tailwind-Theme aus Mockup v4 übernehmen + Auth-Setup

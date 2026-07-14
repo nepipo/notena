@@ -1,5 +1,5 @@
 -- =====================================================================
--- Project X — Onboarding-Profilfelder
+-- Notena — Onboarding-Profilfelder
 -- Ergaenzt nutzer_profil um die im Onboarding erfassten Felder.
 -- Alle nullable -> additive Aenderung, kein Tabellen-Lock-Risiko.
 -- =====================================================================

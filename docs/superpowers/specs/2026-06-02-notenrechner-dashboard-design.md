@@ -2,7 +2,7 @@
 
 **Datum:** 2026-06-02
 **Status:** Design (vor Implementierung)
-**Phase:** Project X — Phase 2 (Schule Core MVP), MVP-Hero
+**Phase:** Notena — Phase 2 (Schule Core MVP), MVP-Hero
 
 ---
 

@@ -700,7 +700,7 @@ Den Block `{/* ── BETA CTA ─── */}` (äußeres `div` mit `animationDel
             Kein Invite?<br />Komm auf die Liste.
           </h2>
           <p className="mx-auto mt-3 max-w-xs text-sm text-text-dim">
-            Project X startet in geschlossener Beta. Trag dich ein — wir
+            Notena startet in geschlossener Beta. Trag dich ein — wir
             schicken dir deinen Invite-Code, sobald ein Platz frei ist.
           </p>
           <div className="mx-auto mt-7 max-w-sm text-left">

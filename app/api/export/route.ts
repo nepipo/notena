@@ -61,7 +61,7 @@ export async function GET() {
       })),
     };
 
-    const dateiname = `project-x-export-${new Date().toISOString().slice(0, 10)}.json`;
+    const dateiname = `notena-export-${new Date().toISOString().slice(0, 10)}.json`;
 
     return new Response(JSON.stringify(exportData, null, 2), {
       headers: {

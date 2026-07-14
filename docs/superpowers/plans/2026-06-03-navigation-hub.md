@@ -120,7 +120,7 @@ export function AppNav({ initiale }: { initiale: string }) {
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-surface-1/80 px-5 py-3 backdrop-blur sm:px-8">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="font-display text-lg font-extrabold tracking-[-0.02em]">
-            Project X
+            Notena
           </span>
         </Link>
 

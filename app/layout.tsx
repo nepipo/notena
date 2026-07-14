@@ -28,29 +28,29 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Project X — Dein Schul-Cockpit",
+  title: "Notena — Dein Schul-Cockpit",
   description:
     "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
-  metadataBase: new URL("https://project-x-seven-tawny.vercel.app"),
+  metadataBase: new URL("https://notena.app"),
   openGraph: {
-    title: "Project X — Dein Schul-Cockpit",
+    title: "Notena — Dein Schul-Cockpit",
     description:
       "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
     type: "website",
     locale: "de_DE",
-    url: "https://project-x-seven-tawny.vercel.app",
-    siteName: "Project X",
+    url: "https://notena.app",
+    siteName: "Notena",
   },
   twitter: {
     card: "summary",
-    title: "Project X — Dein Schul-Cockpit",
+    title: "Notena — Dein Schul-Cockpit",
     description:
       "Notenrechner, Klausuren-Tracking und tägliches KI-Briefing für ambitionierte Oberstufen-Schüler.",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Project X",
+    title: "Notena",
   },
   formatDetection: {
     telephone: false,
@@ -71,8 +71,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const store = await cookies();
-  const theme = (store.get("project-x-theme")?.value ?? "dark") as Theme;
-  const accent = (store.get("project-x-accent")?.value ?? "blue") as AccentColor;
+  const theme = (store.get("notena-theme")?.value ?? "dark") as Theme;
+  const accent = (store.get("notena-accent")?.value ?? "blue") as AccentColor;
   // SSR: "system" → "dark" (Script korrigiert das sofort clientseitig)
   const ssrDark = theme !== "light";
 
@@ -84,7 +84,7 @@ export default async function RootLayout({
     >
       <head>
         {/* FOUC-Prävention: Theme + Akzent vor erstem Paint setzen */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var c=document.cookie.match(/project-x-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="system"){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}if(t==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}var a=document.cookie.match(/project-x-accent=([^;]+)/);document.documentElement.setAttribute("data-accent",a?a[1]:"blue");})();` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var c=document.cookie.match(/notena-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="system"){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}if(t==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}var a=document.cookie.match(/notena-accent=([^;]+)/);document.documentElement.setAttribute("data-accent",a?a[1]:"blue");})();` }} />
       </head>
       <body className="min-h-full">
         {children}

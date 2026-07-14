@@ -66,7 +66,7 @@ export function AppNav({
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Project X
+              Notena
             </span>
           </Link>
 

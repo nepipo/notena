@@ -8,7 +8,7 @@
 
 ## 1. Zusammenfassung
 
-Project X bekommt ein **Soft-Freemium-Modell**: Alle Kern-Features bleiben gratis und
+Notena bekommt ein **Soft-Freemium-Modell**: Alle Kern-Features bleiben gratis und
 unbegrenzt, die KI-Features und Komfort-Extras kommen ins Pro-Abo. Pro wird **zum
 Beta-Launch scharf geschaltet** (echtes Geld ab Tag 1).
 

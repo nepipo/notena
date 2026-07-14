@@ -15,7 +15,7 @@ export default function OfflinePage() {
         Kein Internet
       </h1>
       <p className="mt-3 max-w-xs font-mono text-sm text-text-dim">
-        Project X braucht kurz eine Verbindung. Deine Noten und Klausuren sind sicher gespeichert.
+        Notena braucht kurz eine Verbindung. Deine Noten und Klausuren sind sicher gespeichert.
       </p>
       <button
         onClick={() => window.location.reload()}

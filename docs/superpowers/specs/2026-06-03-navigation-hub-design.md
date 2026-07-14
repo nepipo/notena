@@ -2,7 +2,7 @@
 
 **Datum:** 2026-06-03
 **Status:** Design (vor Implementierung)
-**Phase:** Project X — Information Architecture / App-Struktur
+**Phase:** Notena — Information Architecture / App-Struktur
 
 ---
 

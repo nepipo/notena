@@ -4,7 +4,7 @@ import { Resend } from "resend";
 //   RESEND_API_KEY=re_...
 //   RESEND_FROM_EMAIL=hallo@deinedomain.de
 
-const APP_URL = "https://project-x-seven-tawny.vercel.app";
+const APP_URL = "https://notena.app";
 
 const BETREFF = "Dein Account ist bereit.";
 

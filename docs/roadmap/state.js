@@ -1,7 +1,7 @@
-// Project X — Roadmap State
+// Notena — Roadmap State
 // Wird von Claude aktualisiert wenn Tasks erledigt werden.
 // Nach Update: Dashboard neu laden (Cmd+R) → Tasks haken sich automatisch ab.
-// Stand: 2026-07-04
+// Stand: 2026-07-14
 
 window.ROAD_STATE = {
   // Coding
@@ -11,12 +11,13 @@ window.ROAD_STATE = {
   c06: true, c07: true, c08: true,
   c09: true, c10: true, c11: true,
   c12: true, c13: true,
-  c14: false, c15: false, c16: false,
+  c14: true, c15: false, c16: false,
   c17: false,
   c18: false, c19: false,
 
   // Marketing
-  m01: false, m02: false, m03: false,
+  m01: true, m02: false, m03: false, // m01: Name "Notena" final (14.07) — Social-Handles-Sicherung noch prüfen
+
   m04: false,
   m05: false, m06: false,
   m07: false,
@@ -43,13 +44,14 @@ window.ROAD_STATE = {
   u03: true,
   u04: true,
   u05: true,
-  u06: false, u07: false, u08: false,
+  u06: true, u07: false, u08: false, // u06: Name "Notena" in PWA-Manifest + OG-Tags gesetzt
+
 
   // General
-  g01: false, g02: false, g03: true,
-  g04: true, g05: false,
-  g06: false,
-  g07: false,
+  g01: true, g02: true, g03: true, // g01: notena.app gekauft (14.07) · g02: Leaked-Password-Protection aktiviert
+  g04: true, g05: true, // g05: Favicon + PWA-Icons (icon.tsx, apple-icon.tsx, favicon.ico, icon512, manifest.ts)
+  g06: true, // OG-Image 1200×630 (opengraph-image.tsx)
+  g07: true, // Feedback-Kanal: feedback-button.tsx in App eingebunden
   g08: false, g09: false,
 
   // Metriken & KPIs

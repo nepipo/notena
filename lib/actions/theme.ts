@@ -7,7 +7,7 @@ export type AccentColor = "blue" | "violet" | "pink" | "green" | "orange" | "red
 
 export async function setTheme(theme: Theme): Promise<void> {
   const store = await cookies();
-  store.set("project-x-theme", theme, {
+  store.set("notena-theme", theme, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",
@@ -16,7 +16,7 @@ export async function setTheme(theme: Theme): Promise<void> {
 
 export async function setAccent(accent: AccentColor): Promise<void> {
   const store = await cookies();
-  store.set("project-x-accent", accent, {
+  store.set("notena-accent", accent, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",

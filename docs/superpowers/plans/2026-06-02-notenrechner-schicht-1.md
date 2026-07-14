@@ -112,7 +112,7 @@ git commit -m "chore: Vitest + sonner einrichten (Test-Runner, Toaster im Layout
 Create `supabase/migrations/0003_profil_praeferenzen.sql`:
 ```sql
 -- =====================================================================
--- Project X — Profil-Praeferenzen: Notensystem + Eingabe-Modus.
+-- Notena — Profil-Praeferenzen: Notensystem + Eingabe-Modus.
 -- Notensystem ist vorbereitet fuer spaetere Erweiterung (CH/AT/IB),
 -- jetzt nur 'de_0_15' erlaubt.
 -- =====================================================================

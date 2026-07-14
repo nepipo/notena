@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =====================================================================
-   Project X — Theme (abgeleitet aus Mockup v4)
+   Notena — Theme (abgeleitet aus Mockup v4)
    - Dark als Default (html.dark im Layout gesetzt)
    - Brand: Coral (#1da1ff) + Amber (#5b8bff), Indigo als Sekundär-Akzent
    - shadcn-Tokens (--primary/--card/...) gemappt auf das Theme
@@ -46,7 +46,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Project-X Brand & Surfaces (Mockup-Extras) */
+  /* Notena Brand & Surfaces (Mockup-Extras) */
   --color-brand: var(--brand);
   --color-brand-2: var(--brand-2);
   --color-brand-soft: var(--brand-soft);

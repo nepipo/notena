@@ -29,8 +29,8 @@ import type { Theme, AccentColor } from "@/lib/actions/theme";
 export default async function EinstellungenPage() {
   const supabase = await createClient();
   const cookieStore = await cookies();
-  const theme = (cookieStore.get("project-x-theme")?.value ?? "dark") as Theme;
-  const accent = (cookieStore.get("project-x-accent")?.value ?? "blue") as AccentColor;
+  const theme = (cookieStore.get("notena-theme")?.value ?? "dark") as Theme;
+  const accent = (cookieStore.get("notena-accent")?.value ?? "blue") as AccentColor;
 
   const { data: authData } = await supabase.auth.getClaims();
   const email = typeof authData?.claims?.email === "string" ? authData.claims.email : "";

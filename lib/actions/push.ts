@@ -72,7 +72,7 @@ export async function testPushAnMich(): Promise<{ ok: boolean; error?: string }>
     if (!subs?.length) return { ok: false, error: "Keine Subscription gefunden — Push in Einstellungen erst aktivieren." };
 
     await sendPushZuUser(auth.claims.sub, {
-      title: "Project X ✓",
+      title: "Notena ✓",
       body: "Push-Benachrichtigungen funktionieren!",
       url: "/einstellungen",
     });

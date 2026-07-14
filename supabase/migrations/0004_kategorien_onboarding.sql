@@ -1,5 +1,5 @@
 -- =====================================================================
--- Project X — Schicht 2: Erweiterte Kategorien + Onboarding-Flag
+-- Notena — Schicht 2: Erweiterte Kategorien + Onboarding-Flag
 -- =====================================================================
 
 -- Bestehende CHECK-Constraint für kategorie entfernen und neu setzen.

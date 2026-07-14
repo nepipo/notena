@@ -1,5 +1,5 @@
 -- =====================================================================
--- Project X — Profil-Praeferenzen: Notensystem + Eingabe-Modus.
+-- Notena — Profil-Praeferenzen: Notensystem + Eingabe-Modus.
 -- Notensystem ist vorbereitet fuer spaetere Erweiterung (CH/AT/IB),
 -- jetzt nur 'de_0_15' erlaubt.
 -- =====================================================================

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Datenschutzerklärung — Project X",
+  title: "Datenschutzerklärung — Notena",
 };
 
 export default function DatenschutzPage() {
@@ -53,7 +53,7 @@ export default function DatenschutzPage() {
             2. Arten der verarbeiteten Daten
           </h2>
           <p className="mb-3">
-            Im Rahmen der Nutzung von Project X werden folgende
+            Im Rahmen der Nutzung von Notena werden folgende
             personenbezogene Daten verarbeitet:
           </p>
           <div className="space-y-3">
@@ -91,7 +91,7 @@ export default function DatenschutzPage() {
               <div className="mb-1 font-semibold text-foreground">Zahlungsdaten (nur Pro)</div>
               <p className="text-xs">
                 Zahlungsdaten werden ausschließlich von Lemon Squeezy (Merchant of
-                Record) verarbeitet. Project X speichert keine Kreditkartendaten
+                Record) verarbeitet. Notena speichert keine Kreditkartendaten
                 oder Bankverbindungen. Wir erhalten lediglich eine Bestätigung des
                 Abonnementstatus.
               </p>
@@ -189,7 +189,7 @@ export default function DatenschutzPage() {
               </div>
               <p className="text-xs">
                 Lemon Squeezy ist Merchant of Record und verarbeitet alle
-                Zahlungsdaten direkt. Project X erhält lediglich eine
+                Zahlungsdaten direkt. Notena erhält lediglich eine
                 Abonnement-Bestätigung (Plan-Status). Der Datentransfer in die
                 USA erfolgt auf Basis der SCC. Weitere Informationen:{" "}
                 <a href="https://www.lemonsqueezy.com/privacy" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
@@ -301,7 +301,7 @@ export default function DatenschutzPage() {
             9. Minderjährige (Art. 8 DSGVO)
           </h2>
           <p>
-            Project X richtet sich an Schülerinnen und Schüler. Gemäß Art. 8
+            Notena richtet sich an Schülerinnen und Schüler. Gemäß Art. 8
             DSGVO i. V. m. § 1 Abs. 4 TTDSG ist die Einwilligung in die
             Datenverarbeitung für Nutzer unter 16 Jahren nur mit Zustimmung der
             Erziehungsberechtigten wirksam. Mit der Registrierung bestätigt der
@@ -331,7 +331,7 @@ export default function DatenschutzPage() {
             11. Cookies und lokale Speicherung
           </h2>
           <p className="mb-3">
-            Project X verwendet keine Tracking-Cookies und keine
+            Notena verwendet keine Tracking-Cookies und keine
             Werbe-Cookies. Folgende technisch notwendige Speicherungen werden verwendet:
           </p>
           <div className="space-y-2">
@@ -376,7 +376,7 @@ export default function DatenschutzPage() {
             an geänderte Rechtslagen oder Änderungen des Dienstes anzupassen. Die
             jeweils aktuelle Version ist unter{" "}
             <Link href="/datenschutz" className="text-brand hover:underline">
-              project-x.app/datenschutz
+              notena.app/datenschutz
             </Link>{" "}
             abrufbar. Bei wesentlichen Änderungen werden registrierte Nutzer per
             E-Mail informiert.

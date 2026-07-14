@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Project X unterstützt fünf Notensysteme (DE 0–15, DE 1–6, CH 1–6, AT 1–5, IB 1–7) mit korrekter Eingabe, Anzeige, Schnitt-Berechnung, Was-wäre-wenn und Farb-Coding pro System.
+**Goal:** Notena unterstützt fünf Notensysteme (DE 0–15, DE 1–6, CH 1–6, AT 1–5, IB 1–7) mit korrekter Eingabe, Anzeige, Schnitt-Berechnung, Was-wäre-wenn und Farb-Coding pro System.
 
 **Architecture:** `lib/grades/systems.ts` wird Single Source of Truth — jedes System implementiert ein erweitertes `Notensystem`-Interface (Bereich, Richtung, Format, Parse, Farbe). `calc.ts` wird system-agnostisch (Clamp/Range/Richtung kommen aus dem System). Das aktive System wird per React-Context (`NotensystemProvider`) aus dem Profil an die UI gereicht. Noten werden roh als `numeric(4,2)` gespeichert; keine Cross-System-Umrechnung.
 
@@ -749,7 +749,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ```sql
 -- =====================================================================
--- Project X — Multi-Notensystem.
+-- Notena — Multi-Notensystem.
 -- punkte: smallint -> numeric(4,2) (CH-Kommanoten). Coarse-Guard bleibt.
 -- notensystem-CHECK um DE-1-6/CH/AT/IB erweitern.
 -- Bestehende Daten (0-15, de_0_15) bleiben gültig — kein Backfill.

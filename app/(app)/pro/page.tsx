@@ -29,7 +29,7 @@ export default async function ProPage() {
 
   return (
     <div className="mx-auto max-w-3xl p-6">
-      <h1 className="font-display text-2xl font-bold">Project X Pro</h1>
+      <h1 className="font-display text-2xl font-bold">Notena Pro</h1>
       <p className="mt-2 text-muted-foreground">
         KI-Coach, tägliches Briefing und mehr. 7 Tage gratis testen, jederzeit kündbar.
       </p>

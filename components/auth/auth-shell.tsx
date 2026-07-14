@@ -32,7 +32,7 @@ export function AuthShell({
           className="mb-8 flex items-center justify-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.25em] text-brand"
         >
           <span className="inline-block size-1.5 rounded-full bg-brand" />
-          Project X
+          Notena
         </Link>
 
         <div

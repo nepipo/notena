@@ -8,7 +8,7 @@
 
 ## 1. Ziel & Motivation
 
-Project X unterstützt heute nur das deutsche Oberstufen-System (0–15 Punkte). Ziel: weitere
+Notena unterstützt heute nur das deutsche Oberstufen-System (0–15 Punkte). Ziel: weitere
 Notensysteme für mehr Reichweite — DACH (gleiche Sprache, billigster Reichweiten-Hebel) plus IB.
 
 **Reichweiten-Logik:** Schweiz + Österreich sind deutschsprachig → dieselben Insta/TikTok-Kanäle

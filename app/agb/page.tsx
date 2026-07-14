@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "AGB — Project X",
+  title: "AGB — Notena",
 };
 
 export default function AgbPage() {
@@ -33,7 +33,7 @@ export default function AgbPage() {
           </h2>
           <p className="mb-3">
             (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend „AGB“) regeln
-            die Nutzung der Web-Applikation Project X (nachfolgend „Dienst“),
+            die Nutzung der Web-Applikation Notena (nachfolgend „Dienst“),
             angeboten von:
           </p>
           <p className="mb-3 font-mono">
@@ -63,7 +63,7 @@ export default function AgbPage() {
             § 2 Leistungsbeschreibung
           </h2>
           <p className="mb-3">
-            (1) Project X ist eine Software-as-a-Service-Anwendung (SaaS) für
+            (1) Notena ist eine Software-as-a-Service-Anwendung (SaaS) für
             Schülerinnen und Schüler mit folgenden Funktionen:
           </p>
           <div className="space-y-2 mb-3">
@@ -379,7 +379,7 @@ export default function AgbPage() {
           </p>
           <p>
             (4) Der Anbieter übernimmt keine Haftung für die Richtigkeit der vom
-            Nutzer eingetragenen Daten (Noten, Klausurtermine). Project X ist
+            Nutzer eingetragenen Daten (Noten, Klausurtermine). Notena ist
             ein Organisationswerkzeug und keine amtliche Datenquelle.
           </p>
         </section>
@@ -396,7 +396,7 @@ export default function AgbPage() {
             </Link>
             , die Bestandteil dieser AGB ist und unter{" "}
             <Link href="/datenschutz" className="text-brand hover:underline">
-              project-x.app/datenschutz
+              notena.app/datenschutz
             </Link>{" "}
             abrufbar ist.
           </p>

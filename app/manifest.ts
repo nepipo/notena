@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Project X — Dein Schul-Cockpit",
-    short_name: "Project X",
+    name: "Notena — Dein Schul-Cockpit",
+    short_name: "Notena",
     description:
       "Notenrechner, Klausuren-Tracking und KI-Briefing für ambitionierte Oberstufen-Schüler.",
     start_url: "/dashboard",

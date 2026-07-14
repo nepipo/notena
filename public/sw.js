@@ -1,4 +1,4 @@
-const CACHE_NAME = "project-x-v1";
+const CACHE_NAME = "notena-v1";
 const OFFLINE_URL = "/offline";
 
 // ── Install: /offline precachen ──────────────────────────────────────────
@@ -65,9 +65,9 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: "Project X", body: event.data.text() };
+    payload = { title: "Notena", body: event.data.text() };
   }
-  const { title = "Project X", body = "", url = "/dashboard", icon = "/icon" } = payload;
+  const { title = "Notena", body = "", url = "/dashboard", icon = "/icon" } = payload;
   event.waitUntil(
     self.registration.showNotification(title, {
       body,

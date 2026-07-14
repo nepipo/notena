@@ -47,7 +47,7 @@ export function KlausurErinnerungConfig({ initial }: { initial: number[] }) {
     <div className="mt-5 border-t border-border pt-4">
       <p className="mb-1 text-sm font-semibold">Klausur-Erinnerungen</p>
       <p className="mb-3 font-mono text-[11px] text-text-mute">
-        Wann soll Project X dich an bevorstehende Klausuren erinnern?
+        Wann soll Notena dich an bevorstehende Klausuren erinnern?
       </p>
       <div className="flex flex-wrap gap-2">
         {OPTIONEN.map(({ tage, label }) => {

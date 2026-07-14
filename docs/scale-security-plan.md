@@ -1,4 +1,4 @@
-# Scale & Security Plan — Project X für 100k User
+# Scale & Security Plan — Notena für 100k User
 
 **Stand:** 11.06.2026  
 **Ziel:** Die App ist bereits gut gebaut — dieser Plan zeigt was noch fehlt, bevor sie wirklich 100k User tragen kann.
