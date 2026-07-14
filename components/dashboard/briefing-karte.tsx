@@ -1,4 +1,4 @@
-import { holeBriefing } from "@/lib/actions/briefing";
+import { holeBriefingCached } from "@/lib/briefing/get";
 
 function heuteDatum(): string {
   return new Date().toLocaleDateString("de-DE", {
@@ -11,7 +11,7 @@ function heuteDatum(): string {
 }
 
 export async function BriefingKarte() {
-  const text = await holeBriefing();
+  const text = await holeBriefingCached();
 
   if (text === null) return null;
 
