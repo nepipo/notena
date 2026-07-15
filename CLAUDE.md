@@ -11,7 +11,7 @@
 - **DB-Schema:** ✅ Angewendet auf Supabase (`0001_initial_schema`). 4 Tabellen mit RLS: `nutzer_profil`, `schule_fach`, `schule_note`, `schule_klausur`. Auto-Profil-Trigger `on_auth_user_created`. TS-Types in `lib/supabase/database.types.ts`. Hardening (`0002_harden_handle_new_user`): RPC-Zugriff auf den Trigger-Helper entzogen.
 - **Onboarding:** ✅ Anonymer Flow **vor** Registrierung (8 Mini-Steps, `localStorage`-Bridge → `applyOnboarding()`), Migration `0005_onboarding_profil_felder`. Siehe §11. Live-Test der E-Mail-Bestätigungs-Bridge steht noch aus.
 - **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo) · Onboarding-Felder in `/einstellungen/profil` editierbar machen.
-- **Live:** https://notena.app (Domain gekauft 14.07.2026, DNS-Setup läuft · Vercel-Fallback: `project-x-seven-tawny.vercel.app`)
+- **Live:** ✅ https://notena.app (seit 14.07.2026 live — A-Record `@`→`216.198.79.1` bei GoDaddy, HTTPS/Cert von Vercel, Supabase Site-URL + Redirect umgestellt · Vercel-Fallback: `project-x-seven-tawny.vercel.app`). Offen: `www.notena.app` nachrüsten + Resend-Absender `notena.app` verifizieren.
 
 ---
 
