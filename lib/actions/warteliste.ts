@@ -31,6 +31,19 @@ export async function wartelisteEintragen(
 
   const supabase = createAdminClient();
 
+  // Wer schon ein Konto hat, gehört nicht auf die Warteliste — direkt zum Login.
+  const { data: hatAccount, error: accountError } = await supabase.rpc(
+    "email_hat_account",
+    { p_email: email },
+  );
+  if (accountError) return { error: GENERISCHER_FEHLER };
+  if (hatAccount === true) {
+    return {
+      error:
+        "Diese E-Mail hat bereits ein Konto. Melde dich einfach an.",
+    };
+  }
+
   const { data: vorhanden, error: selectError } = await supabase
     .from("warteliste")
     .select("token, bestaetigt_am, letzte_mail_am")

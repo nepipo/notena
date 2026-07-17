@@ -162,7 +162,7 @@ export function SignupForm() {
           required
           className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-border accent-brand"
         />
-        <Label htmlFor="consent" className="cursor-pointer text-xs leading-relaxed text-text-dim">
+        <label htmlFor="consent" className="cursor-pointer select-none text-xs leading-relaxed text-text-dim">
           Ich habe die{" "}
           <Link href="/agb" target="_blank" className="text-brand hover:underline">
             AGB
@@ -173,7 +173,7 @@ export function SignupForm() {
           </Link>{" "}
           gelesen und stimme ihnen zu. Ich bestätige, dass ich mindestens 16 Jahre alt
           bin oder die Einwilligung meiner Erziehungsberechtigten vorliegt.
-        </Label>
+        </label>
       </div>
 
       <Button
