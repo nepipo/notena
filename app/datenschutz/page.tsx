@@ -22,7 +22,7 @@ export default function DatenschutzPage() {
       <h1 className="font-display text-4xl font-extrabold leading-tight">
         Datenschutzerklärung
       </h1>
-      <p className="mt-3 font-mono text-sm text-text-dim">Stand: Juni 2026</p>
+      <p className="mt-3 font-mono text-sm text-text-dim">Stand: Juli 2026</p>
 
       <div className="mt-10 space-y-8 text-sm leading-relaxed text-text-dim">
 
@@ -172,7 +172,7 @@ export default function DatenschutzPage() {
               </div>
               <p className="text-xs">
                 Wenn du das KI-Briefing oder den KI-Coach verwendest, werden
-                anonymisierte Schuldaten (Noten, Klausurtermine, Stundenplan) an
+                pseudonymisierte Schuldaten (Noten, Klausurtermine, Stundenplan) an
                 Anthropic übermittelt. Es werden keine direkt identifizierenden
                 Daten (Name, E-Mail) übermittelt. Der Datentransfer in die USA
                 erfolgt auf Basis der SCC. Weitere Informationen:{" "}
@@ -194,6 +194,22 @@ export default function DatenschutzPage() {
                 USA erfolgt auf Basis der SCC. Weitere Informationen:{" "}
                 <a href="https://www.lemonsqueezy.com/privacy" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
                   lemonsqueezy.com/privacy
+                </a>
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-surface-2 p-4">
+              <div className="mb-1 font-semibold text-foreground">Resend (Plus Five Five, Inc.)</div>
+              <div className="mb-2 font-mono text-xs text-text-mute">
+                Zweck: Versand von E-Mails (Warteliste-Bestätigung, System-Mails) · USA
+              </div>
+              <p className="text-xs">
+                Resend versendet in unserem Auftrag transaktionale E-Mails, etwa
+                die Bestätigung der Warteliste. Dafür wird deine E-Mail-Adresse
+                verarbeitet. Der Datentransfer in die USA erfolgt auf Basis der
+                SCC. Weitere Informationen:{" "}
+                <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
+                  resend.com/legal/privacy-policy
                 </a>
               </p>
             </div>

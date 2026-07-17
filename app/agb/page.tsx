@@ -22,7 +22,7 @@ export default function AgbPage() {
       <h1 className="font-display text-4xl font-extrabold leading-tight">
         Allgemeine Geschäftsbedingungen
       </h1>
-      <p className="mt-3 font-mono text-sm text-text-dim">Stand: Juni 2026</p>
+      <p className="mt-3 font-mono text-sm text-text-dim">Stand: Juli 2026</p>
 
       <div className="mt-10 space-y-8 text-sm leading-relaxed text-text-dim">
 
@@ -131,7 +131,12 @@ export default function AgbPage() {
           </h2>
           <p className="mb-3">
             (1) Die Nutzung des kostenlosen Grundangebots steht Nutzern ab
-            13 Jahren offen.
+            13 Jahren offen. Nutzer unter 16 Jahren dürfen den Dienst nur mit
+            Einwilligung eines Erziehungsberechtigten nutzen (siehe § 9 der{" "}
+            <Link href="/datenschutz" className="text-brand hover:underline">
+              Datenschutzerklärung
+            </Link>
+            ).
           </p>
           <p className="mb-3">
             (2) Der Abschluss eines kostenpflichtigen Pro-Abonnements ist
