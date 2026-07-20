@@ -7,10 +7,10 @@
 
 ### Fortschritt
 - **Phase 0 (Setup):** ✅ Next.js 16 + TS + Tailwind v4, GitHub (`nepipo/notena`), Vercel Auto-Deploy, Supabase Frankfurt (`rxmcexzlwocgfocyligd`), Theme (Azurblau/Indigo, Fonts, shadcn/ui), Showcase-Startseite.
-- **Phase 1 (Auth):** ✅ Supabase Auth — Email/Passwort-Login + Signup, geschütztes Dashboard, Proxy (Next.js 16 `proxy.ts`) mit `getClaims()`. Google-OAuth im Code vorbereitet (Provider-Config offen). Apple bewusst später (€99/Jahr).
+- **Phase 1 (Auth):** ✅ Supabase Auth — Email/Passwort-Login + Signup, geschütztes Dashboard, Proxy (Next.js 16 `proxy.ts`) mit `getClaims()`. ✅ **Google-OAuth live** (Google-Cloud-Projekt `Notena` unter Firmen-Account `notena.team@gmail.com`, Consent-Screen veröffentlicht, Client in Supabase eingetragen — getestet & funktioniert, 20.07.2026). Apple bewusst später (€99/Jahr).
 - **DB-Schema:** ✅ Angewendet auf Supabase (`0001_initial_schema`). 4 Tabellen mit RLS: `nutzer_profil`, `schule_fach`, `schule_note`, `schule_klausur`. Auto-Profil-Trigger `on_auth_user_created`. TS-Types in `lib/supabase/database.types.ts`. Hardening (`0002_harden_handle_new_user`): RPC-Zugriff auf den Trigger-Helper entzogen.
 - **Onboarding:** ✅ Anonymer Flow **vor** Registrierung (8 Mini-Steps, `localStorage`-Bridge → `applyOnboarding()`), Migration `0005_onboarding_profil_felder`. Siehe §11. Live-Test der E-Mail-Bestätigungs-Bridge steht noch aus.
-- **Offen:** Google-Provider in Supabase + Google Cloud konfigurieren · Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo) · Onboarding-Felder in `/einstellungen/profil` editierbar machen.
+- **Offen:** Leaked-Password-Protection in Supabase Auth aktivieren · Notenrechner-UI fürs eingeloggte Dashboard (statt nur public Demo) · Onboarding-Felder in `/einstellungen/profil` editierbar machen.
 - **Live:** ✅ https://notena.app (seit 14.07.2026 — A-Record `@`→`216.198.79.1` GoDaddy, HTTPS/Cert Vercel, Supabase Site-URL+Redirect umgestellt · `www.notena.app` 308-Redirect ✅ · Fallback: `project-x-seven-tawny.vercel.app`).
 - **Email:** ✅ Resend-Domain `notena.app` verifiziert (Region Ireland/eu-west-1, DKIM+SPF+MX bei GoDaddy, mail-tester 10/10). Env `RESEND_API_KEY`+`RESEND_FROM_EMAIL` (`Notena <hallo@notena.app>`) in Vercel gesetzt. Offen: Reputation-Warmup (erste Mails landen noch im Spam — normal), Email-Weiterleitung `hallo@notena.app`→Gmail für Antworten.
 
