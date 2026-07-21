@@ -1,5 +1,5 @@
 # LAUNCH COUNTDOWN
-Stand: 20.07.2026 | **42 Tage** bis Beta-Launch (31.08.2026) | **31 Werktage**
+Stand: 21.07.2026 | **41 Tage** bis Beta-Launch (31.08.2026) | **29 Werktage**
 
 ## Fortschritt: 16 von 16 Tech-Blockern erledigt (100%) ✅
 
@@ -8,7 +8,7 @@ Stand: 20.07.2026 | **42 Tage** bis Beta-Launch (31.08.2026) | **31 Werktage**
 ## BLOCKER (Launch nicht möglich ohne diese)
 
 ### A — Technische Must-Haves
-- ✅ Build grün (`next build` — compiled in 10.4s, alle Routes, kein Fehler)
+- ✅ Build grün (`next build` — alle Routes, kein Fehler)
 - ✅ TypeScript 0 Fehler (`tsc --noEmit` — 0 Zeilen Output)
 - ✅ Login/Signup — `app/login/page.tsx` + `app/signup/page.tsx` mit echtem Form-Code
 - ✅ Onboarding-Flow — `app/onboarding/onboarding-flow.tsx` (Multi-Step, 9 Steps, localStorage-Bridge)
@@ -24,23 +24,23 @@ Stand: 20.07.2026 | **42 Tage** bis Beta-Launch (31.08.2026) | **31 Werktage**
 ### B — DSGVO / Legal
 - ✅ `/impressum` — `app/impressum/page.tsx` vorhanden, deployed
 - ✅ `/datenschutz` — `app/datenschutz/page.tsx` vorhanden, deployed
-- ✅ Links zu Impressum/Datenschutz/AGB in App — `app/(app)/einstellungen/page.tsx:312–314`
+- ✅ Links zu Impressum/Datenschutz/AGB — Landing-Footer `app/page.tsx:294-299` + Einstellungen
 - ✅ Account löschen — `DeleteAccountButton` in Einstellungen, `delete_current_user()` in Supabase
 
 ---
 
 ## SICHERHEITS-WARNINGS (kein direkter Launch-Blocker, aber vor Beta beheben)
 
-- ❌ **Leaked Password Protection DEAKTIVIERT** — Supabase Auth-Setting, manuell im Dashboard aktivieren
+- ❌ **Rate-Limit-Bypass möglich** — `check_coach_rate_limit()` ist SECURITY DEFINER und via
+  REST für alle `authenticated`-User erreichbar. Ein User kann das Limit mit `p_limit: 999999`
+  umgehen und unbegrenzt KI-Coach-Anfragen stellen → echte Kosten bei Scale.
+  Fix: Admin-Client in `app/api/coach/route.ts` + EXECUTE für `authenticated` revoken.
+  **Seit 2 Tagen offen — höchste Priorität.**
+- ❌ **Leaked Password Protection DEAKTIVIERT** — Supabase Auth-Setting, manuell aktivieren.
   → https://supabase.com/dashboard/project/rxmcexzlwocgfocyligd/auth/security
-- ❌ **Rate-Limit-Bypass möglich** — `check_coach_rate_limit()` ist als SECURITY DEFINER von jedem
-  `authenticated`-User via REST aufrufbar (`/rest/v1/rpc/check_coach_rate_limit`). Da `p_limit`
-  ein Parameter ist, kann ein User das Limit mit `{"p_limit": 999999}` umgehen.
-  Fix: Admin-Client in `app/api/coach/route.ts` für Rate-Limit nutzen + user_id als Parameter übergeben
-  + EXECUTE für `authenticated` revoken. Siehe Prompt-Block unten.
-- ⚠️ `invite_code`-Tabelle: RLS aktiv, keine Policies — Zugriff nur via Service-Role (vermutlich OK)
-- ⚠️ `warteliste`-Tabelle: RLS aktiv, keine Policies — Zugriff nur via Service-Role (vermutlich OK)
-- ⚠️ `delete_current_user()`: SECURITY DEFINER von `authenticated` aufrufbar — intentional (Account-Löschung)
+  5 Minuten Aufwand, kein Code nötig.
+- ⚠️ `invite_code` + `warteliste`: RLS aktiv, 0 Policies — nur via Service-Role (intentional)
+- ⚠️ `delete_current_user()`: SECURITY DEFINER von `authenticated` aufrufbar — intentional
 
 ---
 
@@ -48,12 +48,12 @@ Stand: 20.07.2026 | **42 Tage** bis Beta-Launch (31.08.2026) | **31 Werktage**
 
 - ✅ 404-Seite gestaltet — `app/not-found.tsx` mit Notena-Design
 - ✅ Loading-States — `app/(app)/loading.tsx` + Skeleton-Komponenten (6 Verwendungen)
-- ✅ Vercel Deployment — Auto-Deploy via GitHub, letzter Commit `aedeb44` heute
-- ✅ Supabase Status — `ACTIVE_HEALTHY`, PostgreSQL 17.6.1, Region eu-central-1
-- ⬜ Leaked Password Protection aktivieren (5 Min. Aufwand — manuell im Supabase-Dashboard)
-- ⬜ Marketing-Start — TikTok/Instagram-Handles sichern, ersten Post vorbereiten (m02–m11 alle offen)
+- ✅ Vercel Deployment — READY (commit `ac72613`, heute deployed, Auto-Deploy aktiv)
+- ✅ Supabase Status — `ACTIVE_HEALTHY`, PostgreSQL 17.6.1, Region eu-central-1, 6 aktive User
+- ⬜ Leaked Password Protection aktivieren (5 Min. — manuell im Supabase-Dashboard)
+- ⬜ Marketing-Start — TikTok/Instagram-Handles, erster Post (m02–m11 alle offen)
 - ⬜ Pro-Plan / Monetarisierung — komplett ungeplant (f01–f07 alle offen)
-- ⬜ Deutsche Tippfehler in UI — nicht automatisch geprüft
+- ⬜ Migrations-Tracking: 35 lokal / 51 remote (16 nur remote — Doku-Issue, kein Sicherheitsrisiko)
 
 ---
 
@@ -61,13 +61,14 @@ Stand: 20.07.2026 | **42 Tage** bis Beta-Launch (31.08.2026) | **31 Werktage**
 
 - Build-Pipeline, TypeScript strict, Tailwind v4, shadcn/ui
 - GitHub `nepipo/notena`, Vercel Auto-Deploy, Domain `notena.app` live
-- Supabase-Schema (Tabellen mit RLS), Auto-Profil-Trigger, Hardening
+- Supabase-Schema (15 Tabellen mit RLS), Auto-Profil-Trigger, Security-Hardening
 - Email/Passwort Auth, Google OAuth, geschütztes Dashboard, Proxy/Middleware
 - Onboarding-Flow (anonym → Signup → applyOnboarding → Dashboard)
 - Notenrechner Hero (0–15 Punkte, GK/LK, Halbjahre, Was-wäre-wenn)
 - KI-Briefing (Claude Sonnet, Tages-Cache, Ferien-Erkennung)
+- KI-Coach (Chat mit Tool-Use, Rate-Limiting via DB)
 - Email-Infrastruktur (Resend, notena.app, 10/10 mail-tester)
-- Halbjahr-Wechsler im Header
+- Halbjahr-Wechsler im Header + Einstellungen
 - Passwort ändern / Account löschen in Einstellungen
 - Impressum / Datenschutz / AGB — rechtlich geprüft und live
 - PWA-Manifest, Icons, OG-Image, Favicon
@@ -79,7 +80,8 @@ Stand: 20.07.2026 | **42 Tage** bis Beta-Launch (31.08.2026) | **31 Werktage**
 
 ## EMPFEHLUNG HEUTE
 
-**Rate-Limit-Bypass in `check_coach_rate_limit` fixen** — ein authentifizierter User kann aktuell das
-KI-Coach-Limit (20 Anfragen/Stunde) umgehen, indem er die Supabase-RPC direkt mit `p_limit: 999999`
-aufruft. Das kostet echtes Geld bei Scale. Fix ist ~30 Minuten Arbeit (Admin-Client + Migration).
-Danach noch 5 Minuten: Leaked Password Protection im Supabase-Dashboard aktivieren.
+**Rate-Limit-Bypass in `check_coach_rate_limit` fixen** — authentifizierte User können
+aktuell das KI-Coach-Limit (20 Anfragen/Stunde) umgehen, indem sie Supabase RPC direkt
+mit `p_limit: 999999` aufrufen. Kostet echtes Geld bei Scale. Seit 2 Tagen offen.
+Fix: ~30 Min (Admin-Client in `app/api/coach/route.ts` + Migration EXECUTE revoken).
+Danach 5 Min: Leaked Password Protection im Supabase-Dashboard aktivieren.
