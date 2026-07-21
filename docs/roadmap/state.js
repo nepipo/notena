@@ -48,7 +48,7 @@ window.ROAD_STATE = {
 
 
   // General
-  g01: true, g02: true, g03: true, // g01: notena.app gekauft (14.07) · g02: Leaked-Password-Protection aktiviert
+  g01: true, g02: false, g03: true, // g01: notena.app gekauft (14.07) · g02: Leaked-Password-Protection OFFEN — Supabase Advisor bestätigt deaktiviert (21.07)
   g04: true, g05: true, // g05: Favicon + PWA-Icons (icon.tsx, apple-icon.tsx, favicon.ico, icon512, manifest.ts)
   g06: true, // OG-Image 1200×630 (opengraph-image.tsx)
   g07: true, // Feedback-Kanal: feedback-button.tsx in App eingebunden
