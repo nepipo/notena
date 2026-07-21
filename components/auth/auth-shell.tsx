@@ -90,9 +90,9 @@ export function AuthShell({
         />
       </div>
 
-      <div className="flex w-full max-w-[400px] items-center justify-center gap-16 lg:max-w-[940px] lg:justify-between">
+      <div className="w-full max-w-[400px] lg:flex lg:max-w-[940px] lg:items-center lg:justify-between lg:gap-16">
         {/* Formular-Spalte */}
-        <div className="animate-fade-up w-full max-w-[400px] shrink-0">
+        <div className="animate-fade-up w-full lg:max-w-[400px] lg:shrink-0">
           {/* Logo / Eyebrow */}
           <Link
             href="/"
