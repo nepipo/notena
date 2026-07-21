@@ -16,7 +16,7 @@ window.ROAD_STATE = {
   c18: false, c19: false,
 
   // Marketing
-  m01: true, m02: false, m03: false, // m01: Name "Notena" final (14.07) — Social-Handles-Sicherung noch prüfen
+  m01: true, m02: true, m03: true, // m01: Name "Notena" final (14.07) · m02: TikTok @notena (20.07) · m03: Instagram @notena.app (20.07)
 
   m04: false,
   m05: false, m06: false,
