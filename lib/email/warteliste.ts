@@ -55,6 +55,9 @@ Falls du dich nicht eingetragen hast, kannst du diese Mail einfach ignorieren.`;
       subject: BETREFF,
       text,
       html,
+      // Antworten der User landen im Firmen-Postfach (notena.team@gmail.com),
+      // nicht im Nichts — Absender bleibt hallo@notena.app.
+      replyTo: "notena.team@gmail.com",
     });
     if (error) {
       console.error("sendWartelisteBestaetigungsMail: Resend-Fehler:", error);
