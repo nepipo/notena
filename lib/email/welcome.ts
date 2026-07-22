@@ -45,6 +45,9 @@ export async function sendWelcomeMail(email: string): Promise<void> {
       subject: BETREFF,
       text: TEXT,
       html: HTML,
+      // Antworten der User landen im Firmen-Postfach (notena.team@gmail.com),
+      // nicht im Nichts — Absender bleibt hallo@notena.app.
+      replyTo: "notena.team@gmail.com",
     });
     if (error) {
       console.error("sendWelcomeMail: Resend-Fehler:", error);
