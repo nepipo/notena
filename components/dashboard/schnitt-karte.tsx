@@ -25,7 +25,7 @@ export function SchnittKarte({ gesamt, faecherAnzahl, animationDelay }: Props) {
 
   return (
     <section
-      className="lift animate-fade-up card-glow relative overflow-hidden rounded-3xl border border-border p-8"
+      className="glass-panel lift animate-fade-up card-glow relative overflow-hidden rounded-3xl border border-border p-8"
       style={{
         background: "var(--hero-grad)",
         animationDelay,

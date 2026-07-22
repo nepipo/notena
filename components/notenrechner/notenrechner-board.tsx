@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FachCard } from "./fach-card";
-import { FachDialog } from "./fach-dialog";
 import { HalbjahrSwitcher } from "./halbjahr-switcher";
-import { JahresTabelle } from "./jahres-tabelle";
 import { addFach, removeNote, addNote, updateNote } from "@/lib/actions/schule";
 import { gesamtSchnittGerundet } from "@/lib/grades/calc";
 import { schnittFarbe } from "@/lib/grades/schnitt-farbe";
@@ -15,7 +14,21 @@ import { useNotensystem } from "@/components/notensystem-provider";
 import type { Fach, Kategorie } from "@/lib/grades/types";
 import { assembleKlausuren, type KlausurRow } from "@/lib/grades/db";
 import type { JahresUebersicht } from "@/lib/grades/jahr";
-import { WasWaereWennSeite } from "@/components/was-waere-wenn-seite";
+
+// Lazy: Tab-Inhalte + Dialog laden erst bei Interaktion, nicht im /noten-Initial-Bundle.
+// FachDialog zieht @base-ui/react/dialog (~96 kB) — nur nötig wenn ein Dialog offen ist.
+const FachDialog = dynamic(
+  () => import("./fach-dialog").then((m) => m.FachDialog),
+  { ssr: false },
+);
+const JahresTabelle = dynamic(
+  () => import("./jahres-tabelle").then((m) => m.JahresTabelle),
+  { ssr: false, loading: () => <div className="h-48 animate-pulse rounded-xl bg-white/5" /> },
+);
+const WasWaereWennSeite = dynamic(
+  () => import("@/components/was-waere-wenn-seite").then((m) => m.WasWaereWennSeite),
+  { ssr: false, loading: () => <div className="h-48 animate-pulse rounded-xl bg-white/5" /> },
+);
 
 let tempCounter = 0;
 const tempId = () => `temp-${tempCounter++}`;

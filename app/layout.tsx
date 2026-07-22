@@ -89,7 +89,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full">
         {children}
-        <Toaster theme={theme === "light" || isGlass ? "light" : "dark"} position="top-center" richColors />
+        <Toaster theme={theme === "light" ? "light" : "dark"} position="top-center" richColors />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -17,7 +17,7 @@ export async function BriefingKarte() {
 
   return (
     <section
-      className="animate-fade-up relative overflow-hidden rounded-3xl border border-border p-6 sm:p-8"
+      className="glass-panel animate-fade-up relative overflow-hidden rounded-3xl border border-border p-6 sm:p-8"
       style={{
         background: "var(--hero-grad)",
         animationDelay: "0.02s",

@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { setHalbjahr } from "@/lib/actions/schule";
 import { halbjahrLabel, naechstesHalbjahr } from "@/lib/grades/halbjahr";
-import { NeuesHalbjahrDialog } from "./neues-halbjahr-dialog";
 import type { Fach } from "@/lib/grades/types";
+
+// Lazy: zieht @base-ui/react/dialog — erst laden, wenn der User „neues HJ" öffnet.
+const NeuesHalbjahrDialog = dynamic(
+  () => import("./neues-halbjahr-dialog").then((m) => m.NeuesHalbjahrDialog),
+  { ssr: false },
+);
 
 export function HalbjahrSwitcher({
   verfuegbareHalbjahre,
@@ -62,12 +68,14 @@ export function HalbjahrSwitcher({
         + neues HJ
       </button>
 
-      <NeuesHalbjahrDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        vorschlagHj={naechstesHalbjahr(aktuellesHj)}
-        aktuelleFaecher={aktuelleFaecher}
-      />
+      {dialogOpen && (
+        <NeuesHalbjahrDialog
+          open
+          onClose={() => setDialogOpen(false)}
+          vorschlagHj={naechstesHalbjahr(aktuellesHj)}
+          aktuelleFaecher={aktuelleFaecher}
+        />
+      )}
     </div>
   );
 }

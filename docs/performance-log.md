@@ -89,3 +89,40 @@ Empfehlungen (manuell):
    webpack.treeshake.removeDebugLogging und webpack.automaticVercelMonitors
    (erst wenn Turbopack-Support da ist).
 ---
+
+===================================================================
+NACHTRAG / KORREKTUR — 2026-07-22 (Chunk-Analyse + Fixes umgesetzt)
+===================================================================
+
+Die "unbekannten" Chunks wurden per Signatur-Scan + route-bundle-stats.json
+identifiziert (Hashes driften pro Build, Inhalt bleibt gleich):
+
+PROBLEM 1 — die zwei großen "shared" Chunks:
+- 0w0xc8cunx4s~.js (108 kB)  = Next.js 16 App-Router Client-Runtime
+    (RSC/Flight-Protokoll, Router-/Segment-Cache, Prefetching, Hydration).
+    → FRAMEWORK-BODEN. Nicht reduzierbar ohne Framework-Wechsel. Bleibt.
+- 14pm0t~x0opoo.js (93.9 kB) = @base-ui/react (Dialog-Primitives + Positioning).
+    → KORREKTUR zum Audit: dieser Chunk ist NICHT truly shared. In der aktuellen
+    Build-Struktur lädt base-ui NUR auf /noten (die einzige Route mit Dialogen).
+    Button/Input-Primitives sind leicht und liegen im Shared-Chunk; der schwere
+    96-kB-Brocken ist der Dialog. → per Lazy-Load von /noten-Initial entfernt (s.u.).
+- Bonus: 03~yq9q893hmn.js (110 kB, "core-js") ist server-side only, zählt gar
+    nicht im Client-First-Load. Sentry ist nur ~12 kB (gut tree-geshaked, kein Problem).
+
+Die einzige echte Fremd-Library im Shared-Baseline (alle 21 Routen) ist
+sonner (Toaster im Root-Layout, ~41 kB). Rest = react-dom (227 kB) + Next-Runtime.
+
+PROBLEM 2 — Ziel revidiert (siehe CLAUDE.md §10 "Performance-Budget"):
+    ALT: 150 kB unkomprimiert/Route  →  unerreichbar (react-dom allein 227 kB).
+    NEU: Route-Overhead über der Shared-Baseline < 100 kB unkomprimiert;
+         keine Route schwerer als die Landing Page; Schweres lazy-loaden.
+
+PROBLEM 3 — /noten (–193 kB Overhead) FIXES UMGESETZT:
+    /noten-spezifische Chunks waren: 07n0=base-ui-Dialog 96 kB, board-internals ~41 kB.
+    Umgesetzt (alle hinter Interaktion, ssr:false):
+    - FachDialog + NeuesHalbjahrDialog → dynamic()  (verschiebt ~96 kB base-ui-Dialog
+      aus dem Initial-Load; lädt erst wenn ein Dialog geöffnet wird)
+    - WasWaereWennSeite (851 Zeilen, nur "What-If"-Tab) → dynamic()
+    - JahresTabelle (nur "Ganzes Jahr"-Tab) → dynamic()
+    Gemessenes Ergebnis: siehe Messung unten.
+---

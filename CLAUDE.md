@@ -187,6 +187,12 @@ Das ist keine Aspirationsaussage. Es ist ein technischer Constraint. Auch wenn d
 - Keine N+1 Queries — wenn ein Feature X Items lädt, sollte es 1 Query sein, nicht X Queries in einer Loop
 - Error-Handling an allen System-Boundaries (API-Calls, DB-Calls, externe Services)
 
+**Performance-Budget (revidiert 22.07.2026 — ersetzt das alte 150-kB-Ziel)**
+- Das alte Ziel „150 kB unkomprimiert pro Route" war unerreichbar: React 19 + ReactDOM allein sind ~227 kB unkomprimiert (~70 kB gzipped), Next.js-16-App-Router-Runtime nochmal ~110 kB. Der Framework-Boden liegt bei ~600 kB unkomprimiert / ~180 kB gzipped — das ist der physikalische Startpunkt, nicht Verschwendung.
+- **Neues Ziel: Keine Route soll schwerer sein als die Landing Page.** Konkret: **< 300 kB gzipped-Äquivalent ist Quatsch → wir messen First Load JS und der Route-spezifische Overhead über der Shared-Baseline soll < 100 kB unkomprimiert bleiben.** Alles darüber wird per `next/dynamic({ ssr: false })` lazy-geladen.
+- Regel: Schwere Client-Komponenten hinter Interaktion (Dialoge, Tabs, Modals, Charts) **immer** lazy-loaden. Nie eager importieren, wenn sie nicht beim ersten Render sichtbar sind.
+- Audit-Referenz: `docs/performance-log.md` (wöchentlich).
+
 ---
 
 ### Was ich NICHT will

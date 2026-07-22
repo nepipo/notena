@@ -150,27 +150,27 @@
    DARK  (Graphit — ruhig, kontrolliert)
    ===================================================================== */
 .dark {
-  --background: #08080c;
-  --foreground: #f0f0f4;
-  --card: #111015;
-  --card-foreground: #f0f0f4;
-  --popover: #141319;
-  --popover-foreground: #f0f0f4;
+  --background: #0e0e0f;
+  --foreground: #f3f3f4;
+  --card: #1c1c1d;
+  --card-foreground: #f3f3f4;
+  --popover: #202021;
+  --popover-foreground: #f3f3f4;
 
   --primary: var(--brand);
   --primary-foreground: #08131d;
 
-  --secondary: #1a1922;
-  --secondary-foreground: #f0f0f4;
-  --muted: #111015;
-  --muted-foreground: #8f8f9a;
+  --secondary: #282829;
+  --secondary-foreground: #f3f3f4;
+  --muted: #1c1c1d;
+  --muted-foreground: #9b9b9e;
 
-  --accent: #1a1922;
-  --accent-foreground: #f0f0f4;
+  --accent: #282829;
+  --accent-foreground: #f3f3f4;
 
   --destructive: #f4566a;
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.10);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.13);
   --ring: var(--brand);
 
   --chart-1: var(--brand);
@@ -179,13 +179,13 @@
   --chart-4: #34d399;
   --chart-5: #f4566a;
 
-  --sidebar: #0c0b10;
-  --sidebar-foreground: #f0f0f4;
+  --sidebar: #151516;
+  --sidebar-foreground: #f3f3f4;
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #08131d;
-  --sidebar-accent: #1a1922;
-  --sidebar-accent-foreground: #f0f0f4;
-  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-accent: #282829;
+  --sidebar-accent-foreground: #f3f3f4;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: var(--brand);
 
   --brand: #1da1ff;
@@ -194,27 +194,27 @@
   --brand-deep: #0a6fc8;
   --indigo: #5b6eff;
 
-  --surface-1: #0c0b10;
-  --surface-2: #111015;
-  --surface-3: #1a1922;
-  --text-dim: #8f8f9a;
-  --text-mute: #58575f;
+  --surface-1: #151516;
+  --surface-2: #1c1c1d;
+  --surface-3: #282829;
+  --text-dim: #9b9b9e;
+  --text-mute: #606063;
   --success: #34d399;
 
-  --hero-grad: linear-gradient(160deg, #14131a 0%, #0c0b10 100%);
-  --card-grad: linear-gradient(160deg, #14131a 0%, #111015 100%);
+  --hero-grad: linear-gradient(160deg, #202021 0%, #171718 100%);
+  --card-grad: linear-gradient(160deg, #202021 0%, #1c1c1d 100%);
   --num-grad: linear-gradient(180deg, var(--foreground) 0%, var(--text-dim) 140%);
 
   --panel-blur: 0px;
   --panel-bg: var(--surface-1);
 }
 
-/* Mystische Tiefe: dunkler, monochromer Verlauf (kein farbiger KI-Glow) */
+/* Charcoal-Tiefe: cleaner, neutraler Verlauf (kein farbiger KI-Glow) */
 .dark body {
   background:
-    radial-gradient(circle 1100px at 50% -12%, #131218 0%, transparent 55%),
-    linear-gradient(180deg, #0a090e 0%, #060608 100%);
-  background-color: #08080c;
+    radial-gradient(circle 1100px at 50% -12%, #1c1c1e 0%, transparent 55%),
+    linear-gradient(180deg, #0f0f10 0%, #0a0a0b 100%);
+  background-color: #0e0e0f;
   background-attachment: fixed;
 }
 
@@ -224,93 +224,129 @@
    bleiben halbtransparent aber lesbar.
    ===================================================================== */
 [data-theme="glass"] {
-  --radius: 0.85rem;
+  --radius: 1.1rem;
 
-  --background: #dce0e8;
-  --foreground: #16181e;
-  --card: rgba(255, 255, 255, 0.22);
-  --card-foreground: #16181e;
-  --popover: rgba(248, 250, 252, 0.75);
-  --popover-foreground: #16181e;
+  --background: #0a0a0c;
+  --foreground: #f3f3f6;
+  --card: rgba(28, 29, 33, 0.5);
+  --card-foreground: #f3f3f6;
+  --popover: rgba(26, 27, 31, 0.92);
+  --popover-foreground: #f3f3f6;
 
   --primary: var(--brand);
-  --primary-foreground: #ffffff;
+  --primary-foreground: #08131d;
 
-  --secondary: rgba(255, 255, 255, 0.34);
-  --secondary-foreground: #16181e;
-  --muted: rgba(255, 255, 255, 0.24);
-  --muted-foreground: #4d515c;
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: #f3f3f6;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #a2a2ac;
 
-  --accent: rgba(255, 255, 255, 0.4);
-  --accent-foreground: #16181e;
+  --accent: rgba(255, 255, 255, 0.1);
+  --accent-foreground: #f3f3f6;
 
-  --destructive: #e11d48;
-  --border: rgba(255, 255, 255, 0.55);
-  --input: rgba(255, 255, 255, 0.5);
+  --destructive: #f4566a;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.12);
   --ring: var(--brand);
 
   --chart-1: var(--brand);
   --chart-2: var(--brand-2);
   --chart-3: var(--indigo);
-  --chart-4: #0ea371;
-  --chart-5: #e11d48;
+  --chart-4: #34d399;
+  --chart-5: #f4566a;
 
-  --sidebar: rgba(255, 255, 255, 0.45);
-  --sidebar-foreground: #16181e;
+  --sidebar: rgba(28, 29, 33, 0.5);
+  --sidebar-foreground: #f3f3f6;
   --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.45);
-  --sidebar-accent-foreground: #16181e;
-  --sidebar-border: rgba(255, 255, 255, 0.55);
+  --sidebar-primary-foreground: #08131d;
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: #f3f3f6;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: var(--brand);
 
   --brand: #1da1ff;
   --brand-2: #4f8bff;
   --brand-soft: #a0d4ff;
   --brand-deep: #0a6fc8;
-  --indigo: #4858d6;
+  --indigo: #5b6eff;
 
-  --surface-1: rgba(255, 255, 255, 0.45);
-  --surface-2: rgba(255, 255, 255, 0.28);
-  --surface-3: rgba(255, 255, 255, 0.2);
-  --text-dim: #4d515c;
-  --text-mute: #6b6f7a;
-  --success: #0ea371;
+  --surface-1: rgba(28, 29, 33, 0.55);
+  --surface-2: rgba(28, 29, 33, 0.42);
+  --surface-3: rgba(255, 255, 255, 0.08);
+  --text-dim: #a2a2ac;
+  --text-mute: #66666e;
+  --success: #34d399;
 
-  --hero-grad: linear-gradient(160deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.12) 100%);
-  --card-grad: linear-gradient(160deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 100%);
+  --hero-grad: linear-gradient(160deg, rgba(40, 41, 46, 0.55) 0%, rgba(28, 29, 33, 0.48) 100%);
+  --card-grad: linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 55%, rgba(255, 255, 255, 0.03) 100%);
   --num-grad: linear-gradient(180deg, var(--foreground) 0%, var(--text-dim) 140%);
 
-  --panel-blur: 16px;
-  --panel-bg: rgba(255, 255, 255, 0.22);
+  --panel-blur: 22px;
+  --panel-bg: rgba(28, 29, 33, 0.5);
 }
 
-/* Grund mit Tiefe — damit der Blur etwas zum Brechen hat (neutral, kein
-   bunter Mesh). Hellere und mitteldunkle Zonen erzeugen das Glas-Spiel. */
+/* Dunkler Grund mit Tiefe — damit das Glas etwas zum Brechen hat.
+   Dezente Lichtzonen (neutral, kein bunter Mesh) geben dem Blur Spiel. */
 [data-theme="glass"] body {
   background:
-    radial-gradient(circle 850px at 14% -8%, #f4f6fb 0%, transparent 52%),
-    radial-gradient(circle 780px at 88% 8%, #d3d8e2 0%, transparent 55%),
-    radial-gradient(circle 700px at 60% 108%, #cfd4df 0%, transparent 50%),
-    linear-gradient(165deg, #e6e9f0 0%, #d2d7e1 100%);
-  background-color: #dce0e8;
+    radial-gradient(circle 800px at 50% -6%, #151517 0%, transparent 50%),
+    linear-gradient(180deg, #0b0b0d 0%, #060607 100%);
+  background-color: #0a0a0c;
   background-attachment: fixed;
 }
 
-/* Panel-Material (Briefing-Look, neutral) — Frosted, weiche Tiefe,
-   feine Lichtkante, großzügige Rundung. Nur die großen Flächen. */
+/* Liquid-Glass-Material (Bild-5-Look) — dunkel-transluzentes Charcoal-
+   Glas, diffuser weißer Lichtschein oben, feine Kante, tiefe Schatten. */
 [data-theme="glass"] [data-slot="card"],
 [data-theme="glass"] [data-slot="popover"],
 [data-theme="glass"] .glass-panel {
+  position: relative;
+  background-color: var(--panel-bg);
   background-image: var(--card-grad);
-  border-radius: 1.25rem;
-  border-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(var(--panel-blur)) saturate(1.6);
-  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(1.6);
+  border-radius: 1.4rem;
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(var(--panel-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(1.2);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    0 10px 34px rgba(20, 24, 40, 0.10);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 24px 60px rgba(0, 0, 0, 0.6);
+}
+/* Diffuser weißer Lichtschein oben im Glas (durchscheinendes Licht) */
+[data-theme="glass"] [data-slot="card"]::before,
+[data-theme="glass"] .glass-panel::before {
+  content: "";
+  position: absolute;
+  top: -32%;
+  left: 12%;
+  width: 76%;
+  height: 72%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 40%, transparent 70%);
+  filter: blur(38px);
+  pointer-events: none;
+  z-index: 0;
+}
+[data-theme="glass"] [data-slot="card"] > *,
+[data-theme="glass"] .glass-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Alles glasig — auch kleinere Flächen, Nav, Header und Inputs bekommen
+   Blur + feine Kante, damit der ganze Modus als Material wirkt. */
+[data-theme="glass"] [class*="bg-surface-1"],
+[data-theme="glass"] [class*="bg-surface-2"],
+[data-theme="glass"] [class*="bg-surface-3"],
+[data-theme="glass"] [data-slot="input"],
+[data-theme="glass"] header,
+[data-theme="glass"] nav {
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+[data-theme="glass"] [data-slot="input"] {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* =====================================================================
@@ -363,7 +399,8 @@
   --ring: #a1a1aa; --primary: #52525b; --primary-foreground: #ffffff; --chart-1: #71717a; --chart-2: #a1a1aa;
   --sidebar-primary: #52525b; --sidebar-ring: #a1a1aa;
 }
-.dark [data-accent="mono"], .dark[data-accent="mono"] {
+.dark [data-accent="mono"], .dark[data-accent="mono"],
+[data-theme="glass"] [data-accent="mono"], [data-theme="glass"][data-accent="mono"] {
   --primary: #e4e4e7; --primary-foreground: #18181b;
   --sidebar-primary: #e4e4e7;
 }
