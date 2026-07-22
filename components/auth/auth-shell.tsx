@@ -28,7 +28,7 @@ function MarketingPanel() {
   return (
     <div className="hidden w-full max-w-[420px] flex-col lg:flex">
       <div className="mb-5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-brand">
-        <span className="inline-block size-1.5 animate-pulse rounded-full bg-success" />
+        <span className="inline-block size-1.5 rounded-full bg-success" />
         Notena · Dein Cockpit
       </div>
 
@@ -78,18 +78,6 @@ export function AuthShell({
 }) {
   return (
     <main className="relative z-[5] flex min-h-screen flex-col items-center justify-center px-5 py-10">
-      {/* Background glow */}
-      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
-        <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 size-[500px] rounded-full opacity-[0.10] blur-[80px]"
-          style={{ background: "radial-gradient(circle, var(--brand) 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute bottom-0 right-[-100px] size-[300px] rounded-full opacity-[0.06] blur-[80px]"
-          style={{ background: "radial-gradient(circle, var(--indigo) 0%, transparent 70%)" }}
-        />
-      </div>
-
       <div className="w-full max-w-[400px] lg:flex lg:max-w-[940px] lg:items-center lg:justify-between lg:gap-16">
         {/* Formular-Spalte */}
         <div className="animate-fade-up w-full lg:max-w-[400px] lg:shrink-0">

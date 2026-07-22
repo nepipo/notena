@@ -11,7 +11,9 @@ const AKZENTE: { value: AccentColor; label: string; brand: string; brand2: strin
   { value: "red",    label: "Rot",     brand: "#ef4444", brand2: "#f87171" },
   { value: "orange", label: "Orange",  brand: "#f97316", brand2: "#fb923c" },
   { value: "green",  label: "Grün",    brand: "#22c55e", brand2: "#4ade80" },
+  { value: "mint",   label: "Mint",    brand: "#2dd4bf", brand2: "#5eead4" },
   { value: "teal",   label: "Teal",    brand: "#14b8a6", brand2: "#2dd4bf" },
+  { value: "mono",   label: "Mono",    brand: "#71717a", brand2: "#a1a1aa" },
 ];
 
 export function AccentPicker({ current }: { current: AccentColor }) {

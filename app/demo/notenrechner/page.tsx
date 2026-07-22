@@ -114,16 +114,9 @@ export default function NotenrechnerDemo() {
         className="lift animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-8"
         style={{
           background: "var(--hero-grad)",
-          borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
           animationDelay: "0.05s",
         }}
       >
-        <div
-          className="pointer-events-none absolute -right-24 -top-28 size-80 rounded-full opacity-50"
-          style={{
-            background: "radial-gradient(circle, var(--brand) 0%, transparent 65%)",
-          }}
-        />
         <div className="relative z-[2]">
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
             Gesamtschnitt

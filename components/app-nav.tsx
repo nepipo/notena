@@ -42,30 +42,13 @@ export function AppNav({
 
   return (
     <>
-      {/* Top-Header: lebendig durch Gradient-Glow + Live-Dot am Logo */}
-      <header
-        className="sticky top-0 z-40 border-b border-border bg-surface-1/70 backdrop-blur-xl"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle 600px at 20% -50%, color-mix(in srgb, var(--brand) 18%, transparent), transparent), radial-gradient(circle 500px at 80% -30%, color-mix(in srgb, var(--brand-2) 15%, transparent), transparent)",
-        }}
-      >
+      {/* Top-Header: ruhig, Material statt Glow */}
+      <header className="sticky top-0 z-40 border-b border-border bg-surface-1/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-5 py-3 sm:px-8">
-          {/* Logo mit Live-Dot */}
+          {/* Logo mit dezentem Live-Dot (statisch, kein Dauer-Puls) */}
           <Link href="/dashboard" className="group flex items-center gap-2.5">
-            <span className="relative flex size-2 items-center justify-center">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60" />
-              <span className="relative inline-flex size-2 rounded-full bg-success" />
-            </span>
-            <span
-              className="font-display text-lg font-extrabold tracking-[-0.02em]"
-              style={{
-                background: "linear-gradient(135deg, var(--foreground) 0%, var(--brand) 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
+            <span className="inline-flex size-2 rounded-full bg-success" />
+            <span className="font-display text-lg font-extrabold tracking-[-0.02em] text-foreground">
               Notena
             </span>
           </Link>
@@ -79,23 +62,13 @@ export function AppNav({
                 <Link
                   key={t.href}
                   href={t.href}
-                  className={`group relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-sans text-sm font-medium transition-[transform,background-color,color,box-shadow] duration-200 ${
+                  className={`group relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-sans text-sm font-medium transition-[background-color,color] duration-200 ${
                     aktiv
-                      ? "text-black"
-                      : "text-text-dim hover:scale-[1.04] hover:text-foreground"
+                      ? "bg-secondary text-foreground shadow-sm"
+                      : "text-text-dim hover:bg-secondary/50 hover:text-foreground"
                   }`}
-                  style={
-                    aktiv
-                      ? {
-                          background:
-                            "linear-gradient(135deg, var(--brand), var(--brand-2))",
-                          boxShadow:
-                            "0 6px 20px color-mix(in srgb, var(--brand) 45%, transparent), 0 0 0 1px color-mix(in srgb, var(--brand) 60%, transparent) inset",
-                        }
-                      : undefined
-                  }
                 >
-                  <Icon className="size-4 transition-transform group-hover:scale-110" />
+                  <Icon className={`size-4 transition-transform group-hover:scale-110 ${aktiv ? "text-brand" : ""}`} />
                   {t.label}
                 </Link>
               );
@@ -120,8 +93,6 @@ export function AppNav({
               style={{
                 background:
                   "linear-gradient(135deg, var(--brand) 0%, var(--indigo) 100%)",
-                boxShadow:
-                  "0 4px 14px color-mix(in srgb, var(--brand) 40%, transparent)",
               }}
             >
               {initiale}
@@ -158,7 +129,6 @@ export function AppNav({
                 left: 0,
                 transform: `translateX(calc(${indicatorCenter}vw - 16px))`,
                 transitionTimingFunction: "var(--ease-spring)",
-                boxShadow: "0 0 12px var(--brand), 0 0 4px var(--brand)",
               }}
             />
             {TABS.map((t) => {

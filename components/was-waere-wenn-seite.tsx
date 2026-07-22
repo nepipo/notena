@@ -221,15 +221,11 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
           BLOCK A — Kombinations-Simulator
       ══════════════════════════════════════════════════════════════════════ */}
       <section
-        className="animate-fade-up relative overflow-hidden rounded-[28px] border-2 p-6 sm:p-8"
+        className="animate-fade-up relative overflow-hidden rounded-[28px] border border-border p-6 sm:p-8"
         style={{
           background: "var(--hero-grad)",
-          borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
         }}
       >
-        <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full opacity-30"
-          style={{ background: "radial-gradient(circle, var(--brand) 0%, transparent 65%)" }}
-        />
         <div className="relative z-[2]">
           {/* Live-Schnitt */}
           <div className="mb-5">

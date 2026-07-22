@@ -48,24 +48,6 @@ export default async function Home() {
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[640px] px-5 py-16 sm:px-8">
 
-      {/* Animated glow blobs */}
-      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
-        <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 size-[500px] rounded-full opacity-[0.12] blur-[80px]"
-          style={{
-            background: "radial-gradient(circle, var(--brand) 0%, transparent 70%)",
-            animation: "glow-drift 8s ease-in-out infinite alternate",
-          }}
-        />
-        <div
-          className="absolute bottom-0 right-[-100px] size-[350px] rounded-full opacity-[0.08] blur-[80px]"
-          style={{
-            background: "radial-gradient(circle, var(--indigo) 0%, transparent 70%)",
-            animation: "glow-drift 11s ease-in-out infinite alternate-reverse",
-          }}
-        />
-      </div>
-
       {/* ── HERO ──────────────────────────────────────────── */}
       <div className="flex flex-col items-center text-center">
         {/* Eyebrow */}
@@ -73,7 +55,7 @@ export default async function Home() {
           className="anim mb-6 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-brand"
           style={{ animationDelay: "0ms" }}
         >
-          <span className="inline-block size-1.5 animate-pulse rounded-full bg-success" />
+          <span className="inline-block size-1.5 rounded-full bg-success" />
           Notena · Geschlossene Beta
         </div>
 
@@ -199,10 +181,6 @@ export default async function Home() {
             borderColor: "color-mix(in srgb, var(--brand) 20%, transparent)",
           }}
         >
-          <div
-            className="pointer-events-none absolute -top-20 -right-20 size-[240px] rounded-full opacity-[0.07] blur-[60px]"
-            style={{ background: "var(--brand)" }}
-          />
           <div className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
             Für dich, wenn
           </div>
@@ -263,13 +241,6 @@ export default async function Home() {
             borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
           }}
         >
-          <div
-            className="pointer-events-none absolute inset-0 -z-10"
-            style={{
-              background:
-                "radial-gradient(circle at 50% -20%, color-mix(in srgb, var(--brand) 15%, transparent), transparent 60%)",
-            }}
-          />
           <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-brand">
             Geschlossene Beta · Warteliste
           </div>

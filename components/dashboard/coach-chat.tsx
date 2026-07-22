@@ -651,7 +651,6 @@ export function CoachChat() {
             className="flex size-10 shrink-0 items-center justify-center rounded-xl transition-[transform,box-shadow,opacity] duration-150 active:scale-[0.93] disabled:opacity-40"
             style={{
               background: "linear-gradient(135deg, var(--brand), var(--brand-2))",
-              boxShadow: input.trim() ? "0 4px 14px color-mix(in srgb, var(--brand) 40%, transparent)" : "none",
             }}
           >
             {loading ? (
