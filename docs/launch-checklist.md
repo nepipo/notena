@@ -1,5 +1,5 @@
 # LAUNCH COUNTDOWN
-Stand: 21.07.2026 | **41 Tage** bis Beta-Launch (31.08.2026) | **29 Werktage**
+Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
 
 ## Fortschritt: 16 von 16 Tech-Blockern erledigt (100%) ✅
 
@@ -8,37 +8,37 @@ Stand: 21.07.2026 | **41 Tage** bis Beta-Launch (31.08.2026) | **29 Werktage**
 ## BLOCKER (Launch nicht möglich ohne diese)
 
 ### A — Technische Must-Haves
-- ✅ Build grün (`next build` — alle Routes, kein Fehler)
+- ✅ Build grün (`next build` — alle Routes, kein Fehler, 14.6s)
 - ✅ TypeScript 0 Fehler (`tsc --noEmit` — 0 Zeilen Output)
 - ✅ Login/Signup — `app/login/page.tsx` + `app/signup/page.tsx` mit echtem Form-Code
-- ✅ Onboarding-Flow — `app/onboarding/onboarding-flow.tsx` (Multi-Step, 9 Steps, localStorage-Bridge)
-- ✅ Middleware prüft `onboarding_abgeschlossen` — `lib/supabase/proxy.ts` + `app/(app)/layout.tsx`
-- ✅ Dashboard zeigt echte Daten — `app/(app)/dashboard/page.tsx` mit Supabase-Calls
-- ✅ Notenerfassung — `addNote`, `updateNote`, `removeNote` in `notenrechner-board.tsx`
-- ✅ Notenberechnung korrekt — `lib/grades/systems.ts` DE 0–15 Punkte, GK/LK-Gewichtung, LK-Toggle in Einstellungen
-- ✅ Fächer verwalten — `components/einstellungen/faecher-verwaltung.tsx` mit add/update/remove
-- ✅ Halbjahr wechseln — `HalbjahrWechsler` + `HalbjahrVerschieben` in Einstellungen, Halbjahr-Picker im Header
+- ✅ Onboarding-Flow — `app/onboarding/onboarding-flow.tsx` (Multi-Step, localStorage-Bridge)
+- ✅ Middleware prüft `onboarding_abgeschlossen` — `app/(app)/layout.tsx:25-26` + Redirect nach `/onboarding`
+- ✅ Dashboard zeigt echte Daten — `app/(app)/dashboard/page.tsx` mit Suspense + Skeleton
+- ✅ Notenerfassung — `addNote` in `lib/actions/schule.ts`, `NotenrechnerBoard` in `/noten`
+- ✅ Notenberechnung korrekt — `lib/grades/calc.ts` + `systems.ts`, DE 0–15 Punkte, GK/LK-Gewichtung
+- ✅ Fächer verwalten — `faecher-verwaltung.tsx` mit add/update/remove + GK/LK-Toggle per Fach
+- ✅ Halbjahr wechseln — `HalbjahrWechsler` + `HalbjahrVerschieben` in Einstellungen
 - ✅ Mobile-Ansicht — Responsive-Klassen vorhanden (`sm:`, `md:`, `lg:`), 375px-tauglich
-- ✅ Passwort ändern — `PasswortAendern`-Komponente in `/einstellungen`
+- ✅ Passwort ändern — `components/einstellungen/passwort-aendern.tsx` in `/einstellungen`
 
 ### B — DSGVO / Legal
-- ✅ `/impressum` — `app/impressum/page.tsx` vorhanden, deployed
-- ✅ `/datenschutz` — `app/datenschutz/page.tsx` vorhanden, deployed
-- ✅ Links zu Impressum/Datenschutz/AGB — Landing-Footer `app/page.tsx:294-299` + Einstellungen
-- ✅ Account löschen — `DeleteAccountButton` in Einstellungen, `delete_current_user()` in Supabase
+- ✅ `/impressum` — `app/impressum/page.tsx` vorhanden, im Build als Route (ƒ /impressum)
+- ✅ `/datenschutz` — `app/datenschutz/page.tsx` vorhanden, im Build als Route (ƒ /datenschutz)
+- ✅ Links zu Impressum/Datenschutz — Landing-Footer + Einstellungen + AGB (14+ Stellen)
+- ✅ Account löschen — `DeleteAccountButton` in Einstellungen, `deleteAccount` Server-Action
 
 ---
 
 ## SICHERHEITS-WARNINGS (kein direkter Launch-Blocker, aber vor Beta beheben)
 
-- ❌ **Rate-Limit-Bypass möglich** — `check_coach_rate_limit()` ist SECURITY DEFINER und via
-  REST für alle `authenticated`-User erreichbar. Ein User kann das Limit mit `p_limit: 999999`
-  umgehen und unbegrenzt KI-Coach-Anfragen stellen → echte Kosten bei Scale.
-  Fix: Admin-Client in `app/api/coach/route.ts` + EXECUTE für `authenticated` revoken.
-  **Seit 2 Tagen offen — höchste Priorität.**
-- ❌ **Leaked Password Protection DEAKTIVIERT** — Supabase Auth-Setting, manuell aktivieren.
+- ❌ **Rate-Limit-Bypass möglich** — `check_coach_rate_limit()` akzeptiert `p_limit` als Parameter.
+  Jeder `authenticated`-User kann Supabase RPC direkt mit `p_limit: 999999` aufrufen und
+  das KI-Coach-Limit (20/h) umgehen → unbegrenzte Claude-API-Kosten bei Scale.
+  `anon` wurde via Migration 0017 revoked, `authenticated` jedoch nicht.
+  Fix: `p_limit` aus RPC entfernen, Limit im SQL hardcoden ODER Admin-Client in `app/api/coach/route.ts`.
+  **Seit 3+ Tagen offen — höchste Priorität.**
+- ❌ **Leaked Password Protection DEAKTIVIERT** — Supabase Auth-Setting, 5 Min. Fix.
   → https://supabase.com/dashboard/project/rxmcexzlwocgfocyligd/auth/security
-  5 Minuten Aufwand, kein Code nötig.
 - ⚠️ `invite_code` + `warteliste`: RLS aktiv, 0 Policies — nur via Service-Role (intentional)
 - ⚠️ `delete_current_user()`: SECURITY DEFINER von `authenticated` aufrufbar — intentional
 
@@ -46,14 +46,12 @@ Stand: 21.07.2026 | **41 Tage** bis Beta-Launch (31.08.2026) | **29 Werktage**
 
 ## NICE-TO-HAVE (können nach Launch kommen)
 
-- ✅ 404-Seite gestaltet — `app/not-found.tsx` mit Notena-Design
-- ✅ Loading-States — `app/(app)/loading.tsx` + Skeleton-Komponenten (6 Verwendungen)
-- ✅ Vercel Deployment — READY (commit `ac72613`, heute deployed, Auto-Deploy aktiv)
-- ✅ Supabase Status — `ACTIVE_HEALTHY`, PostgreSQL 17.6.1, Region eu-central-1, 6 aktive User
-- ⬜ Leaked Password Protection aktivieren (5 Min. — manuell im Supabase-Dashboard)
+- ✅ 404-Seite gestaltet — `app/not-found.tsx` vorhanden
+- ✅ Loading-States — `app/(app)/loading.tsx` + Skeleton-Komponenten (BriefingSkeleton, DashboardCardsSkeleton, FerienSkeleton)
+- ✅ Supabase Status — `ACTIVE_HEALTHY`, PostgreSQL 17.6.1, Region eu-central-1
+- ⬜ Vercel letztes Deployment — nicht geprüft (curl blockiert via Proxy in dieser Umgebung)
 - ⬜ Marketing-Start — TikTok/Instagram-Handles, erster Post (m02–m11 alle offen)
 - ⬜ Pro-Plan / Monetarisierung — komplett ungeplant (f01–f07 alle offen)
-- ⬜ Migrations-Tracking: 35 lokal / 51 remote (16 nur remote — Doku-Issue, kein Sicherheitsrisiko)
 
 ---
 
@@ -61,7 +59,7 @@ Stand: 21.07.2026 | **41 Tage** bis Beta-Launch (31.08.2026) | **29 Werktage**
 
 - Build-Pipeline, TypeScript strict, Tailwind v4, shadcn/ui
 - GitHub `nepipo/notena`, Vercel Auto-Deploy, Domain `notena.app` live
-- Supabase-Schema (15 Tabellen mit RLS), Auto-Profil-Trigger, Security-Hardening
+- Supabase-Schema (30+ Migrationen, 15+ Tabellen mit RLS), Auto-Profil-Trigger, Security-Hardening
 - Email/Passwort Auth, Google OAuth, geschütztes Dashboard, Proxy/Middleware
 - Onboarding-Flow (anonym → Signup → applyOnboarding → Dashboard)
 - Notenrechner Hero (0–15 Punkte, GK/LK, Halbjahre, Was-wäre-wenn)
@@ -71,17 +69,18 @@ Stand: 21.07.2026 | **41 Tage** bis Beta-Launch (31.08.2026) | **29 Werktage**
 - Halbjahr-Wechsler im Header + Einstellungen
 - Passwort ändern / Account löschen in Einstellungen
 - Impressum / Datenschutz / AGB — rechtlich geprüft und live
-- PWA-Manifest, Icons, OG-Image, Favicon
+- PWA-Manifest, Icons, OG-Image, Favicon, Offline-Page
 - Feedback-Button, Sentry-Integration
 - LK-Doppelgewichtung als Einstellung
 - Zweispaltiges Auth-Layout mit Marketing-Panel (Desktop)
+- Stundenplan, Aufgaben, Pro-Page, Warteliste, What-If
 
 ---
 
 ## EMPFEHLUNG HEUTE
 
-**Rate-Limit-Bypass in `check_coach_rate_limit` fixen** — authentifizierte User können
-aktuell das KI-Coach-Limit (20 Anfragen/Stunde) umgehen, indem sie Supabase RPC direkt
-mit `p_limit: 999999` aufrufen. Kostet echtes Geld bei Scale. Seit 2 Tagen offen.
-Fix: ~30 Min (Admin-Client in `app/api/coach/route.ts` + Migration EXECUTE revoken).
-Danach 5 Min: Leaked Password Protection im Supabase-Dashboard aktivieren.
+**Rate-Limit-Bypass in `check_coach_rate_limit` schließen.**
+Authentifizierte User können das KI-Coach-Limit umgehen und unbegrenzt Claude-API-Anfragen
+auslösen. Das kostet echtes Geld. Fix: `p_limit`-Parameter aus der SQL-Funktion entfernen
+und den LIMIT-Wert im SQL hardcoden (1 Migration, ~15 Min.). Dann 5 Min. Leaked-Password-
+Protection im Supabase-Dashboard aktivieren.
