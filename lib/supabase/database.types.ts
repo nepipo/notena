@@ -491,7 +491,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_coach_rate_limit: { Args: { p_limit?: number }; Returns: Json }
+      check_coach_rate_limit: { Args: Record<PropertyKey, never>; Returns: Json }
       delete_current_user: { Args: never; Returns: undefined }
       klausur_erinnerungen_heute: {
         Args: never
