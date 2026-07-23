@@ -107,7 +107,7 @@ export function KategorieSelector({
               key={opt.wert}
               type="button"
               onClick={() => { onChange(opt.wert); setOpen(false); }}
-              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] text-left transition-colors ${value === opt.wert ? "bg-brand font-semibold text-black" : "text-text-dim hover:bg-surface-3"}`}
+              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] text-left transition-colors ${value === opt.wert ? "bg-primary font-semibold text-primary-foreground" : "text-text-dim hover:bg-surface-3"}`}
             >
               <span className="w-4 shrink-0 text-center opacity-60">{opt.kurz}</span>
               {opt.label}

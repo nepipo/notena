@@ -128,7 +128,7 @@ export default async function NotenPage() {
           </p>
           <Link
             href="/einstellungen#faecher"
-            className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-brand px-6 font-display text-sm font-bold text-black transition-colors hover:bg-brand/90"
+            className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-primary px-6 font-display text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Fach hinzufügen
           </Link>

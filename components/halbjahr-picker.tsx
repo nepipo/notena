@@ -56,7 +56,7 @@ export function HalbjahrPicker({
             aria-current={aktiv ? "true" : undefined}
             className={`shrink-0 rounded-[10px] px-2.5 py-1 font-mono text-[11px] font-semibold transition-[background-color,color,opacity] duration-200 disabled:opacity-60 ${
               aktiv
-                ? "bg-brand text-black"
+                ? "bg-primary text-primary-foreground"
                 : "text-text-dim hover:bg-surface-3 hover:text-foreground"
             }`}
           >

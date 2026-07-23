@@ -128,7 +128,7 @@ export function FeedbackButton() {
                 <button
                   onClick={submit}
                   disabled={!text.trim() || status === "loading"}
-                  className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 font-display text-sm font-extrabold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-display text-sm font-extrabold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send className="size-3.5" />
                   {status === "loading" ? "Sendet…" : "Senden"}

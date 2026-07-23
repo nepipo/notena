@@ -129,7 +129,7 @@ export function FachDialog({
                   onClick={() => setNiveau(n)}
                   className={`flex-1 rounded-xl border px-4 py-2.5 font-display font-bold transition-colors ${
                     niveau === n
-                      ? "border-brand bg-brand text-black"
+                      ? "border-brand bg-primary text-primary-foreground"
                       : "border-border bg-surface-2 text-text-dim hover:bg-surface-3"
                   }`}
                 >

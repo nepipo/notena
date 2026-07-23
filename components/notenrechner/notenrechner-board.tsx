@@ -235,7 +235,7 @@ export function NotenrechnerBoard({
             onClick={() => setAnsicht(wert)}
             className={`flex-1 rounded-xl px-5 py-2.5 font-display text-sm font-bold transition-colors ${
               ansicht === wert
-                ? "bg-brand text-black shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-text-dim hover:bg-surface-3"
             }`}
           >

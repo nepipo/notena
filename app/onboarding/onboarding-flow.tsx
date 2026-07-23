@@ -41,7 +41,7 @@ const LAENDER: { code: string; emoji: string; label: string }[] = [
 const textInput =
   "mt-8 w-full rounded-2xl border border-border bg-surface-2 px-4 py-3.5 text-base outline-none transition-colors focus:border-brand focus:bg-surface-3";
 const primaryBtn =
-  "mt-8 w-full rounded-2xl bg-brand px-6 py-4 font-display font-extrabold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
+  "mt-8 w-full rounded-2xl bg-primary px-6 py-4 font-display font-extrabold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
 const subtleBtn =
   "mt-3 w-full font-mono text-sm text-text-mute transition-colors hover:text-text-dim";
 
@@ -504,7 +504,7 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
                     onClick={() => toggleVorschlag(fach)}
                     className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-[border-color,background-color,color] ${
                       ausgewaehlt
-                        ? "border-brand bg-brand text-black"
+                        ? "border-brand bg-primary text-primary-foreground"
                         : "border-border bg-surface-2 text-foreground hover:border-brand/40 hover:bg-surface-3"
                     }`}
                   >
@@ -534,7 +534,7 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
               <button
                 onClick={freitextHinzufuegen}
                 disabled={!freitextName.trim()}
-                className="rounded-xl bg-brand px-3 py-2.5 text-sm font-bold text-black disabled:opacity-50"
+                className="rounded-xl bg-primary px-3 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
               >
                 +
               </button>

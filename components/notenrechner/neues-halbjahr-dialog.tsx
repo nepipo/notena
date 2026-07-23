@@ -125,7 +125,7 @@ export function NeuesHalbjahrDialog({
                     onClick={() => setNummer(n)}
                     className={`flex-1 py-2 font-mono text-sm transition-colors ${
                       nummer === n
-                        ? "bg-brand font-semibold text-black"
+                        ? "bg-primary font-semibold text-primary-foreground"
                         : "bg-surface-2 text-text-dim hover:bg-surface-3"
                     }`}
                   >

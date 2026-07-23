@@ -51,7 +51,7 @@ export function HalbjahrSwitcher({
               disabled={pending}
               className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors ${
                 hj === aktuellesHj
-                  ? "bg-brand font-semibold text-black"
+                  ? "bg-primary font-semibold text-primary-foreground"
                   : "text-text-dim hover:bg-surface-3"
               }`}
             >
