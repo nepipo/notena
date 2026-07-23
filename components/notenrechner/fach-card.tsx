@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { TrendingUp, Sparkles, Settings2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +16,13 @@ import { useNotensystem } from "@/components/notensystem-provider";
 import { noteEingabeProps } from "@/lib/grades/systems";
 import { useCustomKategorien } from "@/components/kategorien-provider";
 import { KategorieSelector, katKuerzel, katLabel } from "./kategorie-selector";
-import { WasWaereWennPanel } from "./was-waere-wenn-panel";
 import type { Fach, Kategorie, Note } from "@/lib/grades/types";
+
+// Lazy: nur sichtbar wenn der User „Was-wäre-wenn" pro Fach aufklappt (wwwOffen).
+const WasWaereWennPanel = dynamic(
+  () => import("./was-waere-wenn-panel").then((m) => m.WasWaereWennPanel),
+  { ssr: false, loading: () => <div className="h-24 animate-pulse rounded-xl bg-white/5" /> },
+);
 
 function tageBis(datumIso: string): number {
   const [y, m, d] = datumIso.slice(0, 10).split("-").map(Number);
