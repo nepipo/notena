@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
+import { ImportStundenArraySchema, dbError } from "@/lib/validation";
 import type { FachRow } from "@/lib/grades/db";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -140,7 +141,7 @@ Antworte NUR mit einem JSON-Array, keine weiteren Erklärungen:
 
     return { ok: true, stunden, neueFachNamen: Array.from(neueFachNamen), hatAbWochen };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -152,6 +153,11 @@ export async function importStunden(
   if (stunden.length === 0) return { ok: false, error: "Keine Stunden zum Importieren." };
   if (stunden.length > MAX_STUNDEN_IMPORT) {
     return { ok: false, error: `Zu viele Stunden (max. ${MAX_STUNDEN_IMPORT}).` };
+  }
+  // Jede Zeile serverseitig gegenchecken — dieser Action ist direkt aufrufbar,
+  // die Daten dürfen nicht blind vertraut werden (Längen-Caps, Wochentag, Enums).
+  if (!ImportStundenArraySchema.safeParse(stunden).success) {
+    return { ok: false, error: "Ungültige Stundendaten." };
   }
   try {
     const supabase = await createClient();
@@ -205,7 +211,7 @@ export async function importStunden(
           ausgeschlossen: false,
         }));
         const { data, error } = await supabase.from("schule_fach").insert(rows).select("id, name");
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: dbError(error) };
         data?.forEach((f) => neuFachIdMap.set(f.name, f.id));
       }
     }
@@ -224,11 +230,11 @@ export async function importStunden(
     }));
 
     const { error } = await supabase.from("stundenplan_stunde").insert(insert);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
 
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }

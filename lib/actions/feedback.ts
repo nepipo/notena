@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { dbError } from "@/lib/validation";
 
 export async function sendFeedback(
   nachricht: string,
@@ -21,6 +22,6 @@ export async function sendFeedback(
     seite: seite ?? null,
   });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: dbError(error) };
   return { ok: true };
 }
