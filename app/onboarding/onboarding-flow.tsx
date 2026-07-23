@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { applyOnboarding } from "@/lib/actions/schule";
+import { setTheme, type Theme } from "@/lib/actions/theme";
 import { BUNDESLAND_LABEL, type Bundesland } from "@/lib/ferien/ferien-data";
 import {
   type OnboardingData,
@@ -49,6 +50,8 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const [flushing, setFlushing] = useState(isLoggedIn);
   const [step, setStep] = useState(1);
+  // Modus-Wahl (Schwarz/Weiß) als erster Screen — eingeloggte überspringen ihn
+  const [modusGewaehlt, setModusGewaehlt] = useState(isLoggedIn);
 
   const [vorname, setVorname] = useState("");
   const [nachname, setNachname] = useState("");
@@ -111,6 +114,12 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn]);
+
+  function waehleModus(m: Theme) {
+    document.documentElement.classList.toggle("dark", m === "dark");
+    void setTheme(m);
+    setModusGewaehlt(true);
+  }
 
   const back = () => {
     // step 6 (Bundesland) → skip back to step 5 if non-DE
@@ -181,9 +190,12 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
     );
   }
 
-  // Displayed step number accounts for the skipped Bundesland step for non-DE
-  const displayStep = step === 7 && land && land !== "de" ? 6 : step;
-  const displayTotal = land && land !== "de" ? TOTAL_STEPS - 1 : TOTAL_STEPS;
+  // Modus-Screen zählt als Schritt 1; Bundesland-Auslassung (non-DE) reduziert die Gesamtzahl
+  const baseTotal = land && land !== "de" ? TOTAL_STEPS - 1 : TOTAL_STEPS;
+  const displayTotal = baseTotal + 1;
+  const displayStep = !modusGewaehlt
+    ? 1
+    : (step === 7 && land && land !== "de" ? 6 : step) + 1;
 
   return (
     <main className="relative z-[5] flex min-h-screen flex-col items-center px-5 py-12 sm:px-8">
@@ -208,9 +220,53 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
       </div>
 
-      <div className="mt-10 w-full max-w-md animate-fade-up" key={step}>
+      <div className="mt-10 w-full max-w-md animate-fade-up" key={modusGewaehlt ? `step-${step}` : "modus"}>
+        {/* ── 0 · Modus-Wahl (Schwarz / Weiß) ── */}
+        {!modusGewaehlt && (
+          <>
+            <h1 className="font-display text-4xl font-extrabold leading-tight">
+              Wähl deinen Look
+            </h1>
+            <p className="mt-2 text-sm text-text-dim">
+              Hell oder dunkel — du kannst das später jederzeit ändern.
+            </p>
+            <div className="mt-8 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => waehleModus("dark")}
+                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface-2 p-5 transition-[border-color] hover:border-brand/50"
+              >
+                <span
+                  className="flex h-20 w-full items-center justify-center rounded-xl border border-white/10"
+                  style={{ background: "linear-gradient(160deg, #202021, #0e0e0f)" }}
+                >
+                  <span
+                    className="size-8 rounded-full"
+                    style={{ background: "linear-gradient(150deg,#3a3a3d,#151516)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)" }}
+                  />
+                </span>
+                <span className="font-display font-extrabold">Schwarz</span>
+              </button>
+              <button
+                onClick={() => waehleModus("light")}
+                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface-2 p-5 transition-[border-color] hover:border-brand/50"
+              >
+                <span
+                  className="flex h-20 w-full items-center justify-center rounded-xl border border-black/10"
+                  style={{ background: "linear-gradient(160deg, #ffffff, #f0eee9)" }}
+                >
+                  <span
+                    className="size-8 rounded-full"
+                    style={{ background: "linear-gradient(150deg,#ffffff,#d8d8dd)", boxShadow: "0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 #fff" }}
+                  />
+                </span>
+                <span className="font-display font-extrabold">Weiß</span>
+              </button>
+            </div>
+          </>
+        )}
+
         {/* ── 1 · Vorname (Pflicht) ── */}
-        {step === 1 && (
+        {modusGewaehlt && step === 1 && (
           <>
             <h1 className="font-display text-4xl font-extrabold leading-tight">
               Wie heißt du?

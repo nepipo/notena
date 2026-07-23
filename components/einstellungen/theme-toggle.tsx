@@ -1,13 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
-import { Moon, Sun, Droplet } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { setTheme, type Theme } from "@/lib/actions/theme";
 
 const OPTIONS: { value: Theme; label: string; icon: React.ElementType }[] = [
   { value: "dark",   label: "Dunkel",  icon: Moon },
   { value: "light",  label: "Hell",    icon: Sun },
-  { value: "glass",  label: "Glas",    icon: Droplet },
 ];
 
 export function ThemeToggle({ current }: { current: Theme }) {
@@ -16,14 +15,7 @@ export function ThemeToggle({ current }: { current: Theme }) {
   function toggle(theme: Theme) {
     if (theme === current || isPending) return;
     // Sofort DOM updaten (kein Flash). Glass und Dark schließen sich aus.
-    const html = document.documentElement;
-    if (theme === "glass") {
-      html.classList.remove("dark");
-      html.setAttribute("data-theme", "glass");
-    } else {
-      html.removeAttribute("data-theme");
-      html.classList.toggle("dark", theme === "dark");
-    }
+    document.documentElement.classList.toggle("dark", theme === "dark");
     startTransition(() => setTheme(theme));
   }
 

@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
-type Theme = "dark" | "light" | "glass";
+type Theme = "dark" | "light";
 type AccentColor = "blue" | "violet" | "pink" | "green" | "mint" | "orange" | "red" | "teal" | "indigo" | "mono";
 
 const manrope = Manrope({
@@ -73,19 +73,17 @@ export default async function RootLayout({
   const store = await cookies();
   const theme = (store.get("notena-theme")?.value ?? "dark") as Theme;
   const accent = (store.get("notena-accent")?.value ?? "mono") as AccentColor;
-  const isGlass = theme === "glass";
-  const ssrDark = theme !== "light" && !isGlass;
+  const ssrDark = theme !== "light";
 
   return (
     <html
       lang="de"
       data-accent={accent}
-      data-theme={isGlass ? "glass" : undefined}
       className={`${ssrDark ? "dark" : ""} ${manrope.variable} ${inter.variable} ${oswald.variable} h-full antialiased`}
     >
       <head>
         {/* FOUC-Prävention: Theme + Akzent vor erstem Paint setzen */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement;var c=document.cookie.match(/notena-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="glass"){d.classList.remove("dark");d.setAttribute("data-theme","glass");}else{d.removeAttribute("data-theme");if(t==="light"){d.classList.remove("dark");}else{d.classList.add("dark");}}var a=document.cookie.match(/notena-accent=([^;]+)/);d.setAttribute("data-accent",a?a[1]:"mono");})();` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement;var c=document.cookie.match(/notena-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="light"){d.classList.remove("dark");}else{d.classList.add("dark");}var a=document.cookie.match(/notena-accent=([^;]+)/);d.setAttribute("data-accent",a?a[1]:"mono");})();` }} />
       </head>
       <body className="min-h-full">
         {children}

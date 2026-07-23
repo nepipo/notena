@@ -221,7 +221,7 @@ export function WasWaereWennSeite({ faecher }: { faecher: Fach[] }) {
           BLOCK A — Kombinations-Simulator
       ══════════════════════════════════════════════════════════════════════ */}
       <section
-        className="glass-panel animate-fade-up relative overflow-hidden rounded-[28px] border border-border p-6 sm:p-8"
+        className="animate-fade-up relative overflow-hidden rounded-[28px] border border-border p-6 sm:p-8"
         style={{
           background: "var(--hero-grad)",
         }}

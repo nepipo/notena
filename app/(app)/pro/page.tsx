@@ -56,8 +56,8 @@ export default async function ProPage() {
             <div
               key={iv}
               className={cn(
-                "relative rounded-xl border p-5",
-                hervorgehoben ? "border-primary" : "border-border",
+                "glass-panel relative rounded-xl p-5",
+                hervorgehoben && "ring-2 ring-primary/60",
               )}
             >
               {hervorgehoben && (

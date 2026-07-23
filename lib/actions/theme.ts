@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-export type Theme = "dark" | "light" | "glass";
+export type Theme = "dark" | "light";
 export type AccentColor = "blue" | "violet" | "pink" | "green" | "mint" | "orange" | "red" | "teal" | "indigo" | "mono";
 
 export async function setTheme(theme: Theme): Promise<void> {
