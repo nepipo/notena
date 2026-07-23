@@ -187,11 +187,12 @@ Das ist keine Aspirationsaussage. Es ist ein technischer Constraint. Auch wenn d
 - Keine N+1 Queries — wenn ein Feature X Items lädt, sollte es 1 Query sein, nicht X Queries in einer Loop
 - Error-Handling an allen System-Boundaries (API-Calls, DB-Calls, externe Services)
 
-**Performance-Budget (revidiert 22.07.2026 — ersetzt das alte 150-kB-Ziel)**
-- Das alte Ziel „150 kB unkomprimiert pro Route" war unerreichbar: React 19 + ReactDOM allein sind ~227 kB unkomprimiert (~70 kB gzipped), Next.js-16-App-Router-Runtime nochmal ~110 kB. Der Framework-Boden liegt bei ~600 kB unkomprimiert / ~180 kB gzipped — das ist der physikalische Startpunkt, nicht Verschwendung.
-- **Neues Ziel: Keine Route soll schwerer sein als die Landing Page.** Konkret: **< 300 kB gzipped-Äquivalent ist Quatsch → wir messen First Load JS und der Route-spezifische Overhead über der Shared-Baseline soll < 100 kB unkomprimiert bleiben.** Alles darüber wird per `next/dynamic({ ssr: false })` lazy-geladen.
-- Regel: Schwere Client-Komponenten hinter Interaktion (Dialoge, Tabs, Modals, Charts) **immer** lazy-loaden. Nie eager importieren, wenn sie nicht beim ersten Render sichtbar sind.
-- Audit-Referenz: `docs/performance-log.md` (wöchentlich).
+**Performance-Budget (revidiert 22.07.2026, präzisiert 23.07.2026 — ersetzt das alte 150-kB-Ziel)**
+- Das alte Ziel „150 kB unkomprimiert pro Route" war unerreichbar: React 19 + ReactDOM allein sind ~227 kB unkomprimiert (~70 kB gzipped), Next.js-16-App-Router-Runtime nochmal ~110 kB. Der Framework-Boden liegt bei ~608 kB unkomprimiert / ~177 kB gzipped — das ist der physikalische Startpunkt, nicht Verschwendung.
+- **Das Budget: Route-spezifischer Overhead über der Shared-Baseline < 100 kB unkomprimiert.** Nur diese Zahl ist steuerbar (der Framework-Boden ist fix). Die absolute First-Load-Zahl (~600–730 kB) NICHT als Budget nehmen — sie besteht zu ~85% aus dem Boden. „Nicht schwerer als die Landing" klingt gut, ist aber Rausch (die Landing hat selbst ~43 kB Overhead) → nur informativ, kein harter Check.
+- Regel: Schwere Client-Komponenten hinter Interaktion (Dialoge, Tabs, Modals, Charts) **immer** per `next/dynamic({ ssr: false })` lazy-loaden. Nie eager importieren, wenn sie nicht beim ersten Render sichtbar sind. (`ssr: false` ist Pflicht — nur das hält sie aus dem Initial-Bundle.)
+- **Messen:** `npm run build && npm run perf:audit` — das Script (`scripts/perf-audit.mjs`) zeigt pro Route roh + gzip + Overhead und failt (Exit 1) bei Budget-Bruch. Ehrliche Zahlen statt Hand-Audit. Narrativ-Log: `docs/performance-log.md`.
+- Aktueller Stand (23.07.): über Budget sind /einstellungen (120,8 kB), /stundenplan (120,1 kB), /noten (101,0 kB — grenzwertig, bewusst nicht weiter zerlegt).
 
 ---
 
