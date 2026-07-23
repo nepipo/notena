@@ -124,5 +124,22 @@ PROBLEM 3 — /noten (–193 kB Overhead) FIXES UMGESETZT:
       aus dem Initial-Load; lädt erst wenn ein Dialog geöffnet wird)
     - WasWaereWennSeite (851 Zeilen, nur "What-If"-Tab) → dynamic()
     - JahresTabelle (nur "Ganzes Jahr"-Tab) → dynamic()
-    Gemessenes Ergebnis: siehe Messung unten.
+
+    GEMESSEN (Rebuild mit Änderungen, route-bundle-stats.json):
+      /noten First Load:  801.8 kB  →  713.4 kB   (−88.4 kB)
+      Route-Overhead:     193.8 kB  →  105.5 kB   (−88.3 kB)
+      Der 96-kB-@base-ui/react-Dialog-Chunk ist aus dem Initial-Load raus und
+      lädt erst, wenn der User einen Dialog/Tab öffnet. Verifiziert per Rebuild.
+
+METHODEN-HINWEIS fürs nächste Audit:
+    - firstLoadUncompressedJsBytes zählt die Chunks fürs Initial-Rendern+Hydraten.
+      next/dynamic MIT { ssr: false } wird korrekt NICHT mitgezählt (lädt erst bei
+      Interaktion) — deshalb der −88-kB-Drop. next/dynamic OHNE ssr:false (Default
+      ssr:true, wie der NotenrechnerBoard) wird mitgezählt, weil es serverseitig
+      gerendert + hydriert wird. Wer Initial-Last senken will, braucht ssr:false
+      bei Sachen hinter Interaktion.
+    - Die Werte sind UNKOMPRIMIERT. Real überträgt Vercel gzip/brotli (~⅓). 713 kB
+      unkomprimiert ≈ ~210 kB über die Leitung. Das neue Ziel bezieht sich auf den
+      Route-Overhead über der Shared-Baseline (<100 kB unkomprimiert), nicht auf
+      die absolute Zahl.
 ---
