@@ -105,6 +105,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
     { data: entfallRows, error: entfallErr },
     { count: offeneHA, error: haErr },
     { data: alleFachRows, error: alleFachErr },
+    { data: halbjahrRows, error: halbjahrErr },
   ] = await Promise.all([
     supabase.from("schule_fach").select("*").eq("halbjahr", halbjahr).order("created_at", { ascending: true }),
     supabase.from("schule_klausur").select("*").gte("datum", todayUtc).order("datum", { ascending: true }).limit(1),
@@ -112,6 +113,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
     supabase.from("stundenplan_entfall").select("stunde_id, typ, begruendung").eq("datum", heuteLokal),
     supabase.from("hausaufgabe").select("*", { count: "exact", head: true }).eq("erledigt", false),
     supabase.from("schule_fach").select("id, name, farbe").order("name"),
+    supabase.from("stundenplan_halbjahr").select("id, aktiv, created_at").order("created_at"),
   ]);
   if (fachErr) console.error("[dashboard] schule_fach fetch error:", fachErr);
   if (klausurErr) console.error("[dashboard] schule_klausur fetch error:", klausurErr);
@@ -119,6 +121,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
   if (entfallErr) console.error("[dashboard] stundenplan_entfall fetch error:", entfallErr);
   if (haErr) console.error("[dashboard] hausaufgabe count error:", haErr);
   if (alleFachErr) console.error("[dashboard] alleFachRows fetch error:", alleFachErr);
+  if (halbjahrErr) console.error("[dashboard] stundenplan_halbjahr fetch error:", halbjahrErr);
 
   const fachIds = (fachRows ?? []).map((f) => f.id);
   const { data: noteRows, error: noteErr } = fachIds.length
@@ -133,7 +136,15 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
   const gesamt = gesamtSchnittGerundet(faecher);
   const fachInfo = new Map((alleFachRows ?? []).map((f) => [f.id, { name: f.name as string, farbe: f.farbe as string | null }]));
   const naechste = ((klausurRows ?? []) as KlausurRow[])[0] ?? null;
-  const heutigeStunden = (stundeRows ?? []) as StundeRow[];
+  // Nur Stunden des aktiven Stundenplan-Halbjahrs — analog zum Stundenplan-Tab,
+  // damit Widget und Tab dieselben Stunden zeigen (nicht die aus alten Halbjahren).
+  const stundenplanHalbjahre = (halbjahrRows ?? []) as { id: string; aktiv: boolean }[];
+  const aktivesStundenplanHalbjahr =
+    stundenplanHalbjahre.find((h) => h.aktiv) ?? stundenplanHalbjahre[0] ?? null;
+  const alleHeutigenStunden = (stundeRows ?? []) as StundeRow[];
+  const heutigeStunden = aktivesStundenplanHalbjahr
+    ? alleHeutigenStunden.filter((s) => s.halbjahr_id === aktivesStundenplanHalbjahr.id)
+    : alleHeutigenStunden;
   const entfallHeute = new Map(
     (entfallRows ?? []).map((e) => [e.stunde_id as string, { typ: e.typ as "entfall" | "krank", begruendung: (e.begruendung as string | null) ?? null }]),
   );
