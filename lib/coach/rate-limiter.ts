@@ -7,8 +7,6 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const LIMIT = 20;
-
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
