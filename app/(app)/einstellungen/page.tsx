@@ -134,8 +134,15 @@ export default async function EinstellungenPage() {
         <p className="mt-1 mb-4 text-sm text-text-dim">Theme und Akzentfarbe der App.</p>
         <ThemeToggle current={theme} />
         <div className="mt-4">
-          <p className="mb-2 text-xs font-semibold text-text-dim">Akzentfarbe</p>
-          <AccentPicker current={accent} />
+          <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-text-dim">
+            Akzentfarbe
+            {!istPro(profil) && (
+              <span className="rounded-full bg-brand/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+                Pro
+              </span>
+            )}
+          </p>
+          <AccentPicker current={accent} pro={istPro(profil)} />
         </div>
       </section>
 

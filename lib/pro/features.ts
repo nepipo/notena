@@ -8,7 +8,7 @@ export type ProFeature = { label: string; bald?: boolean };
 export const PRO_FEATURES: ProFeature[] = [
   { label: "KI-Coach — Chat mit Claude" },
   { label: "Tägliches KI-Briefing" },
-  { label: "Trend-Analyse & Abi-Prognose", bald: true },
-  { label: "Themes & Akzentfarben", bald: true },
+  { label: "Trend-Analyse & Abi-Prognose" },
+  { label: "Akzentfarben" },
   { label: "PDF-Report deiner Noten", bald: true },
 ];

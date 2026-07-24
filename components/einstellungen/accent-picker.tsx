@@ -1,7 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
+import { Lock } from "lucide-react";
 import { setAccent, type AccentColor } from "@/lib/actions/theme";
+import { cn } from "@/lib/utils";
 
 const AKZENTE: { value: AccentColor; label: string; brand: string; brand2: string }[] = [
   { value: "blue",   label: "Blau",    brand: "#1da1ff", brand2: "#5b8bff" },
@@ -16,25 +19,26 @@ const AKZENTE: { value: AccentColor; label: string; brand: string; brand2: strin
   { value: "mono",   label: "Mono",    brand: "#71717a", brand2: "#a1a1aa" },
 ];
 
-export function AccentPicker({ current }: { current: AccentColor }) {
+export function AccentPicker({ current, pro }: { current: AccentColor; pro: boolean }) {
   const [isPending, startTransition] = useTransition();
 
   function pick(accent: AccentColor) {
-    if (accent === current || isPending) return;
+    if (!pro || accent === current || isPending) return;
     // Sofort DOM updaten — kein Flash
     document.documentElement.setAttribute("data-accent", accent);
     startTransition(() => setAccent(accent));
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div>
+      <div className={cn("flex flex-wrap gap-2", !pro && "pointer-events-none opacity-50")}>
       {AKZENTE.map(({ value, label, brand, brand2 }) => {
         const aktiv = current === value;
         return (
           <button
             key={value}
             onClick={() => pick(value)}
-            disabled={isPending}
+            disabled={!pro || isPending}
             title={label}
             className="group flex items-center gap-2 rounded-xl border px-3 py-2 font-mono text-xs font-semibold transition-[background-color,border-color,opacity] disabled:opacity-50"
             style={{
@@ -57,6 +61,15 @@ export function AccentPicker({ current }: { current: AccentColor }) {
           </button>
         );
       })}
+      </div>
+      {!pro && (
+        <Link
+          href="/pro"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline"
+        >
+          <Lock className="size-3" /> Akzentfarben mit Pro freischalten →
+        </Link>
+      )}
     </div>
   );
 }
