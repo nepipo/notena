@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { checkoutUrl } from "@/lib/pro/checkout";
 import { PREISE, INTERVALL_LABEL, type PlanIntervall } from "@/lib/pro/plan";
+import { PRO_FEATURES } from "@/lib/pro/features";
 import { CheckoutButton } from "@/components/pro/checkout-button";
 import { TiltEffect } from "@/components/tilt-card";
 import { cn } from "@/lib/utils";
@@ -10,14 +11,6 @@ function euro(cent: number): string {
 }
 
 const INTERVALLE: PlanIntervall[] = ["woche", "monat", "jahr"];
-
-const PRO_FEATURES = [
-  "KI-Coach — Chat mit Claude",
-  "Tägliches KI-Briefing",
-  "Trend-Analyse & Abi-Prognose",
-  "Themes & Akzentfarben",
-  "PDF-Report deiner Noten",
-];
 
 export default async function ProPage() {
   const supabase = await createClient();
@@ -113,18 +106,27 @@ export default async function ProPage() {
 
                   <ul className="mt-5 space-y-2.5 text-sm">
                     {PRO_FEATURES.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5">
+                      <li key={f.label} className="flex items-start gap-2.5">
                         <span
                           className={cn(
                             "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px]",
-                            hervorgehoben
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-white/15 text-white/90",
+                            f.bald
+                              ? "bg-white/10 text-white/40"
+                              : hervorgehoben
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-white/15 text-white/90",
                           )}
                         >
                           ✓
                         </span>
-                        <span className="text-white/75">{f}</span>
+                        <span className={cn(f.bald ? "text-white/45" : "text-white/75")}>
+                          {f.label}
+                          {f.bald && (
+                            <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white/50">
+                              bald
+                            </span>
+                          )}
+                        </span>
                       </li>
                     ))}
                   </ul>
