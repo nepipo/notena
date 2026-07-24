@@ -377,7 +377,7 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
               {LAENDER.map((l) => (
                 <button
                   key={l.code}
-                  onClick={() => { setLand(l.code); setBundesland(""); next(); }}
+                  onClick={() => { setLand(l.code); setBundesland(""); setStep(l.code === "de" ? 6 : 7); }}
                   className={`flex flex-col items-center gap-2 rounded-2xl border py-6 font-display font-extrabold transition-[border-color,background-color,color,box-shadow] ${
                     land === l.code
                       ? "border-brand bg-brand/10 text-brand shadow-[0_0_20px_color-mix(in_srgb,var(--brand)_25%,transparent)]"
