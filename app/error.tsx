@@ -3,8 +3,6 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
-import { Button } from "@/components/ui/button";
-
 export default function Error({
   error,
   reset,
@@ -37,16 +35,19 @@ export default function Error({
           </p>
         )}
         <div className="mt-8 flex flex-col gap-3">
-          <Button onClick={reset} className="w-full font-display font-bold">
+          <button
+            onClick={reset}
+            className="w-full rounded-xl py-3 font-display text-sm font-bold text-black transition-opacity hover:opacity-80"
+            style={{ background: "var(--brand)" }}
+          >
             Nochmal versuchen
-          </Button>
-          <Button
-            variant="outline"
-            render={<Link href="/dashboard" />}
-            className="w-full font-display font-bold"
+          </button>
+          <Link
+            href="/dashboard"
+            className="w-full rounded-xl border border-border py-3 font-display text-sm font-bold transition-opacity hover:opacity-80 block"
           >
             Zum Dashboard
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "notena-v1";
+const CACHE_NAME = "notena-v2";
 const OFFLINE_URL = "/offline";
 
 // ── Install: /offline precachen ──────────────────────────────────────────

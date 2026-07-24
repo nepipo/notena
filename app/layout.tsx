@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Inter, Oswald } from "next/font/google";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
@@ -81,11 +82,13 @@ export default async function RootLayout({
       data-accent={accent}
       className={`${ssrDark ? "dark" : ""} ${manrope.variable} ${inter.variable} ${oswald.variable} h-full antialiased`}
     >
-      <head>
-        {/* FOUC-Prävention: Theme + Akzent vor erstem Paint setzen */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement;var c=document.cookie.match(/notena-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="light"){d.classList.remove("dark");}else{d.classList.add("dark");}var a=document.cookie.match(/notena-accent=([^;]+)/);d.setAttribute("data-accent",a?a[1]:"mono");})();` }} />
-      </head>
       <body className="min-h-full">
+        {/* FOUC-Prävention: Theme + Akzent vor erstem Paint setzen */}
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement;var c=document.cookie.match(/notena-theme=([^;]+)/);var t=c?c[1]:"dark";if(t==="light"){d.classList.remove("dark");}else{d.classList.add("dark");}var a=document.cookie.match(/notena-accent=([^;]+)/);d.setAttribute("data-accent",a?a[1]:"mono");})();` }}
+        />
         {children}
         <Toaster theme={theme === "light" ? "light" : "dark"} position="top-center" richColors />
         <Analytics />
