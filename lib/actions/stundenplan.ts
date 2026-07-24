@@ -2,6 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import {
+  StundeSchema,
+  HalbjahrBezeichnungSchema,
+  DatumSchema,
+  EntfallTypSchema,
+  EntfallBegruendungSchema,
+  dbError,
+} from "@/lib/validation";
 
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
@@ -19,7 +27,10 @@ export async function createHalbjahr(
   bezeichnung: string,
   kopierenVonId?: string,
 ): Promise<ActionResult & { id?: string }> {
-  if (!bezeichnung.trim()) return { ok: false, error: "Bezeichnung darf nicht leer sein." };
+  const parsedBez = HalbjahrBezeichnungSchema.safeParse(bezeichnung);
+  if (!parsedBez.success) {
+    return { ok: false, error: parsedBez.error.issues[0]?.message ?? "Ungültige Bezeichnung." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -32,10 +43,10 @@ export async function createHalbjahr(
 
     const { data: neues, error: hjErr } = await supabase
       .from("stundenplan_halbjahr")
-      .insert({ user_id: userId, bezeichnung: bezeichnung.trim(), aktiv: true })
+      .insert({ user_id: userId, bezeichnung: parsedBez.data, aktiv: true })
       .select("id")
       .single();
-    if (hjErr || !neues) return { ok: false, error: hjErr?.message ?? "Fehler beim Erstellen." };
+    if (hjErr || !neues) return { ok: false, error: hjErr ? dbError(hjErr) : "Fehler beim Erstellen." };
 
     // Optional: Stunden aus einem anderen Halbjahr kopieren (ohne Entfälle)
     if (kopierenVonId) {
@@ -50,14 +61,14 @@ export async function createHalbjahr(
           halbjahr_id: neues.id,
         }));
         const { error: copyErr } = await supabase.from("stundenplan_stunde").insert(kopien);
-        if (copyErr) return { ok: false, error: copyErr.message };
+        if (copyErr) return { ok: false, error: dbError(copyErr) };
       }
     }
 
     revalidatePath("/stundenplan");
     return { ok: true, id: neues.id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -74,11 +85,11 @@ export async function setAktivesHalbjahr(id: string): Promise<ActionResult> {
       .update({ aktiv: true })
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -94,12 +105,11 @@ export async function addStunde(params: {
   lehrer: string | null;
   wocheTyp: "A" | "B" | null;
 }): Promise<ActionResult & { id?: string; halbjahrId?: string }> {
-  if (params.wochentag < 1 || params.wochentag > 7) {
-    return { ok: false, error: "Ungültiger Wochentag." };
+  const parsed = StundeSchema.safeParse(params);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
   }
-  if (!params.zeitStart || !params.zeitEnd) {
-    return { ok: false, error: "Start- und Endzeit sind Pflicht." };
-  }
+  const s = parsed.data;
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -118,27 +128,27 @@ export async function addStunde(params: {
         .insert({ user_id: userId, bezeichnung: "Aktuell", aktiv: true })
         .select("id")
         .single();
-      if (hjErr || !neues) return { ok: false, error: hjErr?.message ?? "Kein aktives Halbjahr." };
+      if (hjErr || !neues) return { ok: false, error: hjErr ? dbError(hjErr) : "Kein aktives Halbjahr." };
       aktiv = neues;
     }
 
     const { data: neu, error } = await supabase.from("stundenplan_stunde").insert({
       user_id: userId,
       halbjahr_id: aktiv.id,
-      fach_id: params.fachId,
-      bezeichnung: params.bezeichnung || null,
-      wochentag: params.wochentag,
-      zeit_start: params.zeitStart,
-      zeit_end: params.zeitEnd,
-      raum: params.raum || null,
-      lehrer: params.lehrer || null,
-      woche_typ: params.wocheTyp,
+      fach_id: s.fachId,
+      bezeichnung: s.bezeichnung,
+      wochentag: s.wochentag,
+      zeit_start: s.zeitStart,
+      zeit_end: s.zeitEnd,
+      raum: s.raum,
+      lehrer: s.lehrer,
+      woche_typ: s.wocheTyp,
     }).select("id, halbjahr_id").single();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true, id: neu.id, halbjahrId: neu.halbjahr_id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -151,11 +161,11 @@ export async function removeStunde(id: string): Promise<ActionResult> {
       .delete()
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -172,34 +182,33 @@ export async function updateStunde(
     wocheTyp: "A" | "B" | null;
   },
 ): Promise<ActionResult> {
-  if (params.wochentag < 1 || params.wochentag > 7) {
-    return { ok: false, error: "Ungültiger Wochentag." };
+  const parsed = StundeSchema.safeParse(params);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
   }
-  if (!params.zeitStart || !params.zeitEnd) {
-    return { ok: false, error: "Start- und Endzeit sind Pflicht." };
-  }
+  const s = parsed.data;
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
     const { error } = await supabase
       .from("stundenplan_stunde")
       .update({
-        fach_id: params.fachId,
-        bezeichnung: params.bezeichnung || null,
-        wochentag: params.wochentag,
-        zeit_start: params.zeitStart,
-        zeit_end: params.zeitEnd,
-        raum: params.raum || null,
-        lehrer: params.lehrer || null,
-        woche_typ: params.wocheTyp,
+        fach_id: s.fachId,
+        bezeichnung: s.bezeichnung,
+        wochentag: s.wochentag,
+        zeit_start: s.zeitStart,
+        zeit_end: s.zeitEnd,
+        raum: s.raum,
+        lehrer: s.lehrer,
+        woche_typ: s.wocheTyp,
       })
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -209,6 +218,10 @@ export async function addEntfall(
   typ: "entfall" | "krank" = "entfall",
   begruendung: string | null = null,
 ): Promise<ActionResult> {
+  if (!DatumSchema.safeParse(datum).success) return { ok: false, error: "Ungültiges Datum." };
+  if (!EntfallTypSchema.safeParse(typ).success) return { ok: false, error: "Ungültiger Typ." };
+  const grundParsed = EntfallBegruendungSchema.safeParse(begruendung);
+  if (!grundParsed.success) return { ok: false, error: "Begründung ist zu lang (max. 280 Zeichen)." };
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -219,19 +232,20 @@ export async function addEntfall(
       .eq("user_id", userId)
       .single();
     if (!stunde) return { ok: false, error: "Stunde nicht gefunden." };
-    const grund = begruendung?.trim().slice(0, 280) || null;
+    const grund = grundParsed.data?.trim() || null;
     const { error } = await supabase
       .from("stundenplan_entfall")
       .upsert({ user_id: userId, stunde_id: stundeId, datum, typ, begruendung: grund }, { onConflict: "stunde_id,datum" });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
 export async function removeEntfall(stundeId: string, datum: string): Promise<ActionResult> {
+  if (!DatumSchema.safeParse(datum).success) return { ok: false, error: "Ungültiges Datum." };
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -241,11 +255,11 @@ export async function removeEntfall(stundeId: string, datum: string): Promise<Ac
       .eq("user_id", userId)
       .eq("stunde_id", stundeId)
       .eq("datum", datum);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -254,6 +268,10 @@ export async function addTagEntfall(
   typ: "entfall" | "krank" = "entfall",
   begruendung: string | null = null,
 ): Promise<ActionResult> {
+  if (!DatumSchema.safeParse(datum).success) return { ok: false, error: "Ungültiges Datum." };
+  if (!EntfallTypSchema.safeParse(typ).success) return { ok: false, error: "Ungültiger Typ." };
+  const grundParsed = EntfallBegruendungSchema.safeParse(begruendung);
+  if (!grundParsed.success) return { ok: false, error: "Begründung ist zu lang (max. 280 Zeichen)." };
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -266,20 +284,21 @@ export async function addTagEntfall(
       .eq("user_id", userId)
       .eq("wochentag", wochentag);
     if (!stundenHeute?.length) return { ok: true };
-    const grund = begruendung?.trim().slice(0, 280) || null;
+    const grund = grundParsed.data?.trim() || null;
     const rows = stundenHeute.map((s) => ({ user_id: userId, stunde_id: s.id, datum, typ, begruendung: grund }));
     const { error } = await supabase
       .from("stundenplan_entfall")
       .upsert(rows, { onConflict: "stunde_id,datum" });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
 export async function removeTagEntfall(datum: string): Promise<ActionResult> {
+  if (!DatumSchema.safeParse(datum).success) return { ok: false, error: "Ungültiges Datum." };
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
@@ -288,11 +307,11 @@ export async function removeTagEntfall(datum: string): Promise<ActionResult> {
       .delete()
       .eq("user_id", userId)
       .eq("datum", datum);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -306,10 +325,10 @@ export async function setAktuelleWoche(
       .from("nutzer_profil")
       .update({ aktuelle_woche: woche })
       .eq("id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }

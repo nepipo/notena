@@ -1,5 +1,5 @@
 # LAUNCH COUNTDOWN
-Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
+Stand: 23.07.2026 | **39 Tage** bis Beta-Launch (31.08.2026) | **27 Werktage**
 
 ## Fortschritt: 16 von 16 Tech-Blockern erledigt (100%) ✅
 
@@ -8,7 +8,7 @@ Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
 ## BLOCKER (Launch nicht möglich ohne diese)
 
 ### A — Technische Must-Haves
-- ✅ Build grün (`next build` — alle Routes, kein Fehler, 14.6s)
+- ✅ Build grün (`next build` — alle Routes, kein Fehler, 16.6s)
 - ✅ TypeScript 0 Fehler (`tsc --noEmit` — 0 Zeilen Output)
 - ✅ Login/Signup — `app/login/page.tsx` + `app/signup/page.tsx` mit echtem Form-Code
 - ✅ Onboarding-Flow — `app/onboarding/onboarding-flow.tsx` (Multi-Step, localStorage-Bridge)
@@ -29,14 +29,12 @@ Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
 
 ---
 
-## SICHERHEITS-WARNINGS (kein direkter Launch-Blocker, aber vor Beta beheben)
+## SICHERHEITS-WARNINGS
 
-- ❌ **Rate-Limit-Bypass möglich** — `check_coach_rate_limit()` akzeptiert `p_limit` als Parameter.
-  Jeder `authenticated`-User kann Supabase RPC direkt mit `p_limit: 999999` aufrufen und
-  das KI-Coach-Limit (20/h) umgehen → unbegrenzte Claude-API-Kosten bei Scale.
-  `anon` wurde via Migration 0017 revoked, `authenticated` jedoch nicht.
-  Fix: `p_limit` aus RPC entfernen, Limit im SQL hardcoden ODER Admin-Client in `app/api/coach/route.ts`.
-  **Seit 3+ Tagen offen — höchste Priorität.**
+- ✅ **Rate-Limit-Bypass BEHOBEN** — `check_coach_rate_limit()` hat keinen `p_limit`-Parameter mehr.
+  Limit 20/h ist nun im SQL hardcoded (`v_limit CONSTANT INT := 20`). Migration `0031` angewandt,
+  TypeScript-Aufruf in `lib/coach/rate-limiter.ts` und `database.types.ts` aktualisiert.
+  **Heute auto-gefixt (23.07.2026).**
 - ❌ **Leaked Password Protection DEAKTIVIERT** — Supabase Auth-Setting, 5 Min. Fix.
   → https://supabase.com/dashboard/project/rxmcexzlwocgfocyligd/auth/security
 - ⚠️ `invite_code` + `warteliste`: RLS aktiv, 0 Policies — nur via Service-Role (intentional)
@@ -48,8 +46,8 @@ Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
 
 - ✅ 404-Seite gestaltet — `app/not-found.tsx` vorhanden
 - ✅ Loading-States — `app/(app)/loading.tsx` + Skeleton-Komponenten (BriefingSkeleton, DashboardCardsSkeleton, FerienSkeleton)
+- ✅ Vercel letztes Deployment — READY (`dpl_5Hmtc7T`, Commit: "docs: weekly audit log 2026-07-23")
 - ✅ Supabase Status — `ACTIVE_HEALTHY`, PostgreSQL 17.6.1, Region eu-central-1
-- ⬜ Vercel letztes Deployment — nicht geprüft (curl blockiert via Proxy in dieser Umgebung)
 - ⬜ Marketing-Start — TikTok/Instagram-Handles, erster Post (m02–m11 alle offen)
 - ⬜ Pro-Plan / Monetarisierung — komplett ungeplant (f01–f07 alle offen)
 
@@ -59,12 +57,12 @@ Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
 
 - Build-Pipeline, TypeScript strict, Tailwind v4, shadcn/ui
 - GitHub `nepipo/notena`, Vercel Auto-Deploy, Domain `notena.app` live
-- Supabase-Schema (30+ Migrationen, 15+ Tabellen mit RLS), Auto-Profil-Trigger, Security-Hardening
+- Supabase-Schema (31+ Migrationen, 15+ Tabellen mit RLS), Auto-Profil-Trigger, Security-Hardening
 - Email/Passwort Auth, Google OAuth, geschütztes Dashboard, Proxy/Middleware
 - Onboarding-Flow (anonym → Signup → applyOnboarding → Dashboard)
 - Notenrechner Hero (0–15 Punkte, GK/LK, Halbjahre, Was-wäre-wenn)
 - KI-Briefing (Claude Sonnet, Tages-Cache, Ferien-Erkennung)
-- KI-Coach (Chat mit Tool-Use, Rate-Limiting via DB)
+- KI-Coach (Chat mit Tool-Use, Rate-Limiting via DB — Bypass **heute geschlossen**)
 - Email-Infrastruktur (Resend, notena.app, 10/10 mail-tester)
 - Halbjahr-Wechsler im Header + Einstellungen
 - Passwort ändern / Account löschen in Einstellungen
@@ -79,8 +77,7 @@ Stand: 22.07.2026 | **40 Tage** bis Beta-Launch (31.08.2026) | **28 Werktage**
 
 ## EMPFEHLUNG HEUTE
 
-**Rate-Limit-Bypass in `check_coach_rate_limit` schließen.**
-Authentifizierte User können das KI-Coach-Limit umgehen und unbegrenzt Claude-API-Anfragen
-auslösen. Das kostet echtes Geld. Fix: `p_limit`-Parameter aus der SQL-Funktion entfernen
-und den LIMIT-Wert im SQL hardcoden (1 Migration, ~15 Min.). Dann 5 Min. Leaked-Password-
-Protection im Supabase-Dashboard aktivieren.
+**Leaked Password Protection in Supabase aktivieren — 5 Minuten, direkt im Dashboard.**
+Geh auf: https://supabase.com/dashboard/project/rxmcexzlwocgfocyligd/auth/security
+Dort "Enable leaked password protection" aktivieren.
+Das ist der letzte offene Security-Punkt — danach ist die App launch-ready aus Security-Sicht.

@@ -23,7 +23,7 @@ type RpcResult = {
 };
 
 export async function checkRateLimit(supabase: SupabaseClient): Promise<RateLimitResult> {
-  const { data, error } = await supabase.rpc("check_coach_rate_limit", { p_limit: LIMIT });
+  const { data, error } = await supabase.rpc("check_coach_rate_limit");
 
   if (error) {
     console.error("[rate-limiter] RPC-Fehler — fail open:", error.message);

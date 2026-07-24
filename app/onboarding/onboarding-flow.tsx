@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { applyOnboarding } from "@/lib/actions/schule";
 import { setTheme, type Theme } from "@/lib/actions/theme";
+import { istPlausiblesGeburtsdatum, fruehestesGeburtsdatum } from "@/lib/date/datum";
 import { BUNDESLAND_LABEL, type Bundesland } from "@/lib/ferien/ferien-data";
 import {
   type OnboardingData,
@@ -137,6 +138,16 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
       return;
     }
     setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  };
+
+  // Geburtsdatum ist optional — leer = ok. Ist aber etwas eingetippt, muss es
+  // plausibel sein (kein 9999, keine Zukunft), sonst hakt es später beim Speichern.
+  const weiterVonGeburtsdatum = () => {
+    if (geburtsdatum && !istPlausiblesGeburtsdatum(geburtsdatum)) {
+      toast.error("Bitte gib ein realistisches Geburtsdatum ein.");
+      return;
+    }
+    next();
   };
 
   function toggleVorschlag(name: string) {
@@ -326,11 +337,12 @@ export function OnboardingFlow({ isLoggedIn }: { isLoggedIn: boolean }) {
               autoFocus
               type="date"
               value={geburtsdatum}
+              min={fruehestesGeburtsdatum()}
               max={new Date().toISOString().slice(0, 10)}
               onChange={(e) => setGeburtsdatum(e.target.value)}
               className={textInput}
             />
-            <button onClick={next} className={primaryBtn}>Weiter →</button>
+            <button onClick={weiterVonGeburtsdatum} className={primaryBtn}>Weiter →</button>
             <button onClick={() => { setGeburtsdatum(""); next(); }} className={subtleBtn}>
               Überspringen
             </button>

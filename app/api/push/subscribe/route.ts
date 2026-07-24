@@ -40,11 +40,16 @@ export async function DELETE(req: Request) {
   const { endpoint } = await req.json() as { endpoint: string };
   if (!endpoint) return NextResponse.json({ error: "Endpoint fehlt" }, { status: 400 });
 
-  await supabase
+  const { error: deleteError } = await supabase
     .from("push_subscription")
     .delete()
     .eq("user_id", auth.claims.sub)
     .eq("endpoint", endpoint);
+
+  if (deleteError) {
+    console.error("[push/subscribe] delete error:", deleteError);
+    return NextResponse.json({ error: "Löschen fehlgeschlagen." }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { AddHausaufgabeSchema, UpdateHausaufgabeSchema, dbError } from "@/lib/validation";
 
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
@@ -18,27 +19,29 @@ export async function addHausaufgabe(params: {
   beschreibung: string;
   faelligAm: string; // "YYYY-MM-DD"
 }): Promise<ActionResult & { id?: string }> {
-  if (!params.beschreibung.trim()) {
-    return { ok: false, error: "Bitte eine Beschreibung eingeben." };
-  }
-  if (!params.faelligAm) {
-    return { ok: false, error: "Fälligkeitsdatum ist Pflicht." };
+  const parsed = AddHausaufgabeSchema.safeParse({
+    fachId: params.fachId || null,
+    beschreibung: params.beschreibung,
+    faelligAm: params.faelligAm,
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
   }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
     const { data: neu, error } = await supabase.from("hausaufgabe").insert({
       user_id: userId,
-      fach_id: params.fachId || null,
-      beschreibung: params.beschreibung.trim(),
-      faellig_am: params.faelligAm,
+      fach_id: parsed.data.fachId,
+      beschreibung: parsed.data.beschreibung,
+      faellig_am: parsed.data.faelligAm,
     }).select("id").single();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
     return { ok: true, id: neu.id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -51,12 +54,12 @@ export async function removeHausaufgabe(id: string): Promise<ActionResult> {
       .delete()
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/aufgaben");
     revalidatePath("/stundenplan");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -72,11 +75,11 @@ export async function toggleErledigt(
       .update({ erledigt })
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/aufgaben");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }
 
@@ -84,25 +87,25 @@ export async function updateHausaufgabe(
   id: string,
   updates: { beschreibung?: string; faelligAm?: string },
 ): Promise<ActionResult> {
+  const parsed = UpdateHausaufgabeSchema.safeParse(updates);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
   try {
     const userId = await requireUserId();
     const supabase = await createClient();
     const patch: Record<string, unknown> = {};
-    if (updates.beschreibung !== undefined) {
-      const trimmed = updates.beschreibung.trim();
-      if (!trimmed) return { ok: false, error: "Beschreibung darf nicht leer sein." };
-      patch.beschreibung = trimmed;
-    }
-    if (updates.faelligAm !== undefined) patch.faellig_am = updates.faelligAm;
+    if (parsed.data.beschreibung !== undefined) patch.beschreibung = parsed.data.beschreibung;
+    if (parsed.data.faelligAm !== undefined) patch.faellig_am = parsed.data.faelligAm;
     const { error } = await supabase
       .from("hausaufgabe")
       .update(patch)
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: dbError(error) };
     revalidatePath("/aufgaben");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fehler." };
+    return { ok: false, error: dbError(e) };
   }
 }

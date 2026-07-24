@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { dbError } from "@/lib/validation";
 import type { CustomKategorie } from "@/lib/grades/types";
 
 const KategorieSchema = z.object({
@@ -47,7 +48,7 @@ export async function addCustomKategorie(
     .from("nutzer_profil")
     .update({ custom_kategorien: [...existing, newEntry] });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: dbError(error) };
   revalidatePath("/", "layout");
   return { ok: true, entry: newEntry };
 }
@@ -68,7 +69,7 @@ export async function removeCustomKategorie(
     .from("nutzer_profil")
     .update({ custom_kategorien: updated });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: dbError(error) };
   revalidatePath("/", "layout");
   return { ok: true };
 }
