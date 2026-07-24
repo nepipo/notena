@@ -1,4 +1,27 @@
 ---
+Datum: 2026-07-24
+
+**Build-Status:** OK — 1 Lint-Warning behoben (unused `LIMIT` in rate-limiter.ts), TypeScript 0 Fehler, Build erfolgreich (32 Routen, Turbopack)
+**Vercel:** OK — letztes Deployment READY (`79372e3`, 24.07, feat: Onboarding+Server-Actions Validierung). Alle 18 geprüften Deployments im Zustand READY. Keine fehlgeschlagenen Builds.
+**Supabase:** WARNUNG — 4 Security-WARNs (davon 1 Dauerwarnung Leaked-PW-Protection, 1 Funktions-Warnung seit 3+ Tagen persistent) + 7 Performance-Infos (unverändert)
+
+**Bauplan-Abgleich:**
+- Fertig: Woche 1–3 komplett. Woche 4–6 Schule Core MVP weitgehend fertig (Noten, Klausuren, Notenrechner, Halbjahres-System, LK-Gewichtung ✅). KI-Coach + Briefing fertig (eigentlich erst Woche 9–10). PWA/Push-Benachrichtigungen fertig (eigentlich Woche 7–8). LemonSqueezy-Webhook vorhanden (Pro-Flow gestartet).
+- In Arbeit: Woche 6 (24.07) — Validierungshärtung abgeschlossen. Noch: Marketing-Aufbau, Beta-Listen-Management, Cookie-Banner-Prüfung.
+- Noch offen: Leaked-PW-Protection (Dashboard), Marketing-Tasks (m01–m11), Metriken (k01–k07), Finanzen (f06 Test-Zahlung), c15 (i18n), c16 (PDF-Report).
+- Einschätzung: **deutlich vor Plan** — Core-Features durch Woche 9 bereits fertig. Beta-Launch 13.08. technisch problemlos möglich. Fokus jetzt: Marketing + Leaked-PW-Protection.
+
+**Behobene Fehler:**
+- `LIMIT`-Konstante in `lib/coach/rate-limiter.ts` (Zeile 10) war ungenutzt (`no-unused-vars` Lint-Warning) — gelöscht, da der Limit-Wert serverseitig in der DB-Funktion `check_coach_rate_limit` definiert ist.
+
+**Offene Probleme (konnten nicht automatisch gefixt werden):**
+- **[SECURITY WARN, persistent seit 3+ Tagen] `check_coach_rate_limit()` von `anon` aufrufbar als SECURITY DEFINER** — Trotz `bd2ca06` (fix: Rate-Limit-Bypass geschlossen) zeigt der Supabase-Advisor diesen Warn immer noch. Migration hat anscheinend nicht gereicht oder Advisor-Cache veraltet. Manueller Check: `REVOKE EXECUTE ON FUNCTION public.check_coach_rate_limit() FROM anon;` in Supabase SQL-Editor prüfen.
+- **[SECURITY WARN] Leaked-Password-Protection deaktiviert** — Supabase Dashboard → Auth → Password Security → „Have I Been Pwned" aktivieren. 5 Minuten Aufwand.
+- **[SECURITY WARN] `delete_current_user()` von `authenticated` aufrufbar als SECURITY DEFINER** — Gewollt (User-Delete-Flow), aber Supabase Advisor flaggt es. Kein akutes Risiko.
+- **[PERFORMANCE INFO] 7 ungenutzte Indexes** — erwartet bei kleiner User-Base (< 10 User), kein Handlungsbedarf.
+---
+
+---
 Datum: 2026-07-21
 
 **Build-Status:** OK — kein TypeScript-Fehler, kein Lint-Fehler, Build erfolgreich (32 Routen, Turbopack)
