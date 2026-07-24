@@ -12,6 +12,7 @@ import { HalbjahrVerschieben } from "@/components/einstellungen/halbjahr-verschi
 import { PasswortAendern } from "@/components/einstellungen/passwort-aendern";
 import { ThemeToggle } from "@/components/einstellungen/theme-toggle";
 import { AccentPicker } from "@/components/einstellungen/accent-picker";
+import { FileText, Lock } from "lucide-react";
 import { BriefingToggle } from "@/components/einstellungen/briefing-toggle";
 import { BundeslandSelector } from "@/components/einstellungen/bundesland-selector";
 import { NotensystemWahl } from "@/components/einstellungen/notensystem-wahl";
@@ -305,6 +306,31 @@ export default async function EinstellungenPage() {
         <p className="mt-2 font-mono text-[11px] text-text-mute">
           Enthält Fächer, Noten und Klausuren. DSGVO Art. 20.
         </p>
+
+        <div className="mt-4">
+          {istPro(profil) ? (
+            <a
+              href="/noten/report"
+              target="_blank"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-mono text-sm font-semibold text-foreground transition-colors hover:border-brand/40 hover:text-brand"
+            >
+              <FileText className="size-4" /> PDF-Report öffnen
+            </a>
+          ) : (
+            <Link
+              href="/pro"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-mono text-sm font-semibold text-text-dim transition-colors hover:border-brand/40 hover:text-brand"
+            >
+              <Lock className="size-4" /> PDF-Report
+              <span className="rounded-full bg-brand/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+                Pro
+              </span>
+            </Link>
+          )}
+          <p className="mt-2 font-mono text-[11px] text-text-mute">
+            Druckfertige Notenübersicht des aktuellen Halbjahrs — als PDF speichern.
+          </p>
+        </div>
       </section>
 
       {/* ── RECHTLICHES ───────────────────────────────────── */}

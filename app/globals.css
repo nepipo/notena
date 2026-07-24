@@ -567,3 +567,21 @@
   .tilt-card { transform: none !important; }
   .tilt-card::before { display: none; }
 }
+
+/* ── PRINT — nur das Report-Dokument drucken (PDF-Report Pro-Feature) ──────── */
+@media print {
+  /* App-Chrome raus: Header + Bottom-Nav display:none (kein Top-Gap),
+     alles andere unsichtbar; nur .print-report bleibt im Fluss → paginiert korrekt. */
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-report,
+  .print-report * {
+    visibility: visible;
+  }
+}

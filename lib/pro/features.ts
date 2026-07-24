@@ -10,5 +10,5 @@ export const PRO_FEATURES: ProFeature[] = [
   { label: "Tägliches KI-Briefing" },
   { label: "Trend-Analyse & Abi-Prognose" },
   { label: "Akzentfarben" },
-  { label: "PDF-Report deiner Noten", bald: true },
+  { label: "PDF-Report deiner Noten" },
 ];
