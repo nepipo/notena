@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { PRO_FEATURES } from "@/lib/pro/features";
@@ -10,9 +11,19 @@ import { cn } from "@/lib/utils";
  * Paywall-Popup, das beim Öffnen eines gesperrten Pro-Bereichs automatisch aufploppt.
  * Schließbar per X, Escape oder Backdrop-Klick → dahinter bleibt der gesperrte Bereich sichtbar.
  * Der eigentliche Checkout liegt auf /pro (Button „Pro freischalten").
+ *
+ * Wird per Portal an document.body gehängt: Elternelemente mit `transform`
+ * (z.B. .animate-fade-up) würden sonst den Bezugsrahmen für `position: fixed`
+ * kapern und das Overlay in eine winzige Box klemmen.
  */
 export function PaywallOverlay({ feature }: { feature: string }) {
   const [open, setOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -29,9 +40,9 @@ export function PaywallOverlay({ feature }: { feature: string }) {
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -117,6 +128,7 @@ export function PaywallOverlay({ feature }: { feature: string }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
