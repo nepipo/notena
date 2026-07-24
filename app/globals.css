@@ -404,19 +404,79 @@
   .card-glow:hover::after { opacity: 1; }
 }
 
-/* Hover-Lift — minimal, neutraler Schatten (kein farbiger Glow) */
+/* Hover-Lift — Karte kommt spürbar in den Vordergrund: anheben + leicht
+   vergrößern, über die Nachbarn legen (z-index), geschichtete Schatten
+   für echte Tiefe. Neutraler Schatten, kein farbiger Glow. */
 .lift {
-  transition: transform 200ms var(--ease-out), box-shadow 200ms ease, border-color 200ms ease;
+  position: relative;
+  transition:
+    transform 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out),
+    border-color 260ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
   .lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    border-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+    transform: translateY(-5px) scale(1.018);
+    z-index: 10;
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.05),
+      0 20px 44px rgba(0, 0, 0, 0.16);
+    border-color: color-mix(in srgb, var(--foreground) 24%, transparent);
   }
 }
 .dark .lift:hover {
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 24px 54px rgba(0, 0, 0, 0.62);
+  border-color: color-mix(in srgb, #ffffff 20%, transparent);
+}
+
+/* 3D-Tilt zum Cursor + mitlaufender Lichtreflex (siehe TiltCard).
+   Neigung ganz leicht, Karte kommt nach vorn (scale + Tiefe + z-index). */
+.tilt-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  --tilt: 0;
+  position: relative;
+  overflow: hidden;
+  /* Verlassen: smoother Reset zur Neutrallage */
+  transition: transform 500ms var(--ease-out), box-shadow 500ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .tilt-card {
+    transform:
+      perspective(650px)
+      rotateX(var(--rx))
+      rotateY(var(--ry))
+      scale(calc(1 + 0.045 * var(--tilt)));
+  }
+  .tilt-card:hover {
+    /* Folgen: schnell, damit die Karte an der Maus „klebt" */
+    transition: transform 90ms linear, box-shadow 220ms var(--ease-out);
+    z-index: 10;
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.08),
+      0 44px 90px rgba(0, 0, 0, 0.3);
+  }
+  .dark .tilt-card:hover {
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.5),
+      0 48px 100px rgba(0, 0, 0, 0.85);
+  }
+  /* Lichtreflex folgt dem Cursor innerhalb der Karte */
+  .tilt-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle 260px at var(--mx) var(--my), rgba(255, 255, 255, 0.18), transparent 60%);
+    opacity: var(--tilt);
+    transition: opacity 250ms ease;
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 /* Emil Kowalski: scale(0.97) auf :active = sofortiges taktiles Feedback */
@@ -461,4 +521,6 @@
     scroll-behavior: auto !important;
   }
   .lift:hover { transform: none; }
+  .tilt-card { transform: none !important; }
+  .tilt-card::before { display: none; }
 }

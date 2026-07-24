@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
+  Home,
   Calculator,
   CalendarDays,
-  ClipboardList,
+  ListChecks,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import { HalbjahrPicker } from "@/components/halbjahr-picker";
@@ -15,13 +16,16 @@ interface Tab {
   href: string;
   label: string;
   icon: LucideIcon;
+  isPro?: boolean;
+  isHome?: boolean;
 }
 
 const TABS: Tab[] = [
-  { href: "/dashboard", label: "Übersicht", icon: LayoutDashboard },
   { href: "/noten", label: "Noten", icon: Calculator },
+  { href: "/ki-coach", label: "Coach", icon: Bot, isPro: true },
+  { href: "/dashboard", label: "Home", icon: Home, isHome: true },
+  { href: "/aufgaben", label: "Aufgaben & Klausuren", icon: ListChecks },
   { href: "/stundenplan", label: "Stundenplan", icon: CalendarDays },
-  { href: "/aufgaben", label: "Aufgaben", icon: ClipboardList },
 ];
 
 function istAktiv(pathname: string, href: string): boolean {
@@ -62,7 +66,9 @@ export function AppNav({
                 <Link
                   key={t.href}
                   href={t.href}
-                  className={`group relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-sans text-sm font-medium transition-[background-color,color] duration-200 ${
+                  className={`group relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-sans transition-[background-color,color] duration-200 ${
+                    t.isHome ? "text-base font-extrabold" : "text-sm font-medium"
+                  } ${
                     aktiv
                       ? "bg-secondary text-foreground shadow-sm"
                       : "text-text-dim hover:bg-secondary/50 hover:text-foreground"
@@ -70,6 +76,11 @@ export function AppNav({
                 >
                   <Icon className={`size-4 transition-transform group-hover:scale-110 ${aktiv ? "text-brand" : ""}`} />
                   {t.label}
+                  {t.isPro && (
+                    <span className="rounded-full bg-brand/15 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-brand">
+                      Pro
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -146,7 +157,7 @@ export function AppNav({
                     className={`size-5 transition-transform duration-300 ${aktiv ? "scale-110" : ""}`}
                     style={{ transitionTimingFunction: "var(--ease-spring)" }}
                   />
-                  <span className="leading-none">{t.label.split("-")[0]}</span>
+                  <span className="leading-none">{t.label.split(" ")[0]}</span>
                 </Link>
               );
             })}

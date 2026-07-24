@@ -3,13 +3,13 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCachedProfil } from "@/lib/supabase/cache";
 import { BriefingKarte } from "@/components/dashboard/briefing-karte";
-import { CoachChat } from "@/components/dashboard/coach-chat";
 import { UpgradePrompt } from "@/components/pro/upgrade-prompt";
 import { istPro } from "@/lib/pro/plan";
 
 import { GrussText } from "@/components/dashboard/gruss-text";
 import { FerienCountdown } from "@/components/dashboard/ferien-countdown";
 import { SchnittKarte } from "@/components/dashboard/schnitt-karte";
+import { TiltEffect } from "@/components/tilt-card";
 import {
   assembleFaecher,
   type FachRow,
@@ -19,7 +19,19 @@ import {
 import { aktuellesHalbjahr } from "@/lib/grades/halbjahr";
 import { gesamtSchnittGerundet } from "@/lib/grades/calc";
 import { fmtZeit, type StundeRow } from "@/lib/stundenplan/types";
+import { FERIEN, type Bundesland } from "@/lib/ferien/ferien-data";
+import { getFeiertag } from "@/lib/ferien/feiertage";
 import { ArrowRight } from "lucide-react";
+
+// Gleiche Logik wie im Stundenplan-Tab (stundenplan-board.tsx), damit
+// Widget und Tab synchron sind: an welchem ISO-Datum liegen Ferien?
+function ferienNameFuerDatum(bundesland: Bundesland | null, iso: string): string | null {
+  if (!bundesland) return null;
+  for (const p of FERIEN[bundesland] ?? []) {
+    if (iso >= p.von && iso <= p.bis) return p.name;
+  }
+  return null;
+}
 
 function tageBis(iso: string): number {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
@@ -42,6 +54,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="relative z-[5] mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8">
+      <TiltEffect />
       <header className="animate-fade-up mb-8">
         <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
           <span className="inline-block size-1.5 rounded-full bg-success" />
@@ -66,10 +79,7 @@ export default async function DashboardPage() {
         <DashboardData halbjahr={halbjahr} />
       </Suspense>
 
-      {/* KI-Coach — Pro-Feature */}
-      <div className="mt-4">
-        {pro ? <CoachChat /> : <UpgradePrompt feature="KI-Coach" />}
-      </div>
+
     </main>
   );
 }
@@ -80,6 +90,13 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
   const todayUtc = new Date().toISOString().slice(0, 10) + "T00:00:00.000Z";
   const jetzt = new Date();
   const heuteLokal = `${jetzt.getFullYear()}-${String(jetzt.getMonth() + 1).padStart(2, "0")}-${String(jetzt.getDate()).padStart(2, "0")}`;
+
+  // Bundesland aus dem Profil (getCachedProfil ist dedupliziert — kein Extra-Query).
+  const profil = await getCachedProfil();
+  const bundesland = (profil?.bundesland as Bundesland | null | undefined) ?? null;
+  const ferienHeute = ferienNameFuerDatum(bundesland, heuteLokal);
+  const feiertagHeute = bundesland ? getFeiertag(bundesland, heuteLokal) : null;
+  const freierTag = ferienHeute ?? feiertagHeute;
 
   const [
     { data: fachRows, error: fachErr },
@@ -129,7 +146,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
   if (faecher.length === 0) {
     return (
       <section
-        className="lift animate-fade-up card-glow mt-4 rounded-3xl border border-border p-8"
+        className="tilt-card animate-fade-up mt-4 rounded-3xl border border-border p-8"
         style={{ background: "var(--card-grad)", animationDelay: "0.05s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
@@ -162,7 +179,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
         />
 
         <section
-          className="lift animate-fade-up card-glow rounded-3xl border border-border p-8"
+          className="tilt-card animate-fade-up rounded-3xl border border-border p-8"
           style={{ background: "var(--card-grad)", animationDelay: "0.1s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-brand">
@@ -190,7 +207,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link
           href="/aufgaben"
-          className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          className="tilt-card animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.15s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
@@ -207,7 +224,7 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
 
         <Link
           href="/what-if"
-          className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          className="tilt-card animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.2s" }}
         >
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
@@ -226,18 +243,29 @@ async function DashboardData({ halbjahr }: { halbjahr: string }) {
 
         <Link
           href="/stundenplan"
-          className="lift animate-fade-up card-glow group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+          className="tilt-card animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
           style={{ background: "var(--card-grad)", animationDelay: "0.25s" }}
         >
           <div
             className="font-mono text-[10px] font-semibold uppercase tracking-[.2em]"
-            style={{ color: tagKomplettWeg ? (tagKrank ? "#f59e0b" : "#ff3050") : "var(--brand)" }}
+            style={{ color: freierTag ? "var(--brand)" : tagKomplettWeg ? (tagKrank ? "#f59e0b" : "#ff3050") : "var(--brand)" }}
           >
-            Heute · {tagKomplettWeg
+            Heute · {freierTag
+              ? ferienHeute ? "Ferien" : "Feiertag"
+              : tagKomplettWeg
               ? tagKrank ? "Krankgemeldet" : "Fällt aus"
               : heutigeStunden.length > 0 ? `${heutigeStunden.length} Stunde${heutigeStunden.length !== 1 ? "n" : ""}` : "Stundenplan"}
           </div>
-          {tagKomplettWeg ? (
+          {freierTag ? (
+            <>
+              <div className="mt-2 font-display text-xl font-extrabold leading-tight">
+                {freierTag}
+              </div>
+              <div className="mt-1 font-mono text-xs text-text-mute">
+                {ferienHeute ? "Genieß die freie Zeit." : "Heute ist schulfrei."}
+              </div>
+            </>
+          ) : tagKomplettWeg ? (
             <>
               <div
                 className="mt-2 font-display text-xl font-extrabold leading-tight"
