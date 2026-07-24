@@ -268,6 +268,43 @@
 }
 
 /* =====================================================================
+   PRO-GLASS — kräftiges „Liquid Glass" (Apple Vision OS Vibe) für die
+   Pro-Preiskacheln. Dickeres Material als .glass-panel: mehr Blur +
+   Sättigung + Helligkeit, heller Specular-Rand oben, tiefe Schlagschatten
+   (= schwebt = 3D). Nutzt KEIN ::before — bleibt frei für .tilt-card
+   (Cursor-Lichtreflex). Der obere Glanz steckt im background-image.
+   ===================================================================== */
+.pro-glass {
+  border-radius: 26px;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  /* Heller, transluzenter Frost-Fill — auf Schwarz sichtbar als dunkelgraues
+     Glas; wo das helle Wortmark dahinter liegt, leuchtet die Flaeche auf. */
+  background-color: rgba(255, 255, 255, 0.055);
+  background-image:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 42%, rgba(255, 255, 255, 0) 60%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),          /* heller Specular-Rand oben */
+    inset 0 -30px 60px -30px rgba(0, 0, 0, 0.4),        /* Innenschatten unten = Volumen */
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 30px 60px -18px rgba(0, 0, 0, 0.7);               /* tiefer Schlagschatten = schwebt */
+}
+/* Hervorgehobene Kachel: farbiger Glanz + intensiverer Rand */
+.pro-glass-featured {
+  background-color: color-mix(in srgb, var(--brand) 10%, rgba(255, 255, 255, 0.06));
+  background-image:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.03) 42%, rgba(255, 255, 255, 0) 60%);
+  border-color: color-mix(in srgb, var(--brand) 55%, rgba(255, 255, 255, 0.14));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px color-mix(in srgb, var(--brand) 22%, transparent),
+    inset 0 -30px 60px -30px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 34px 80px -16px color-mix(in srgb, var(--brand) 40%, rgba(0, 0, 0, 0.75));
+}
+
+/* =====================================================================
    AKZENT-FARBEN — via data-accent="X" auf <html>
    Setzen nur Brand/Ring/Primary/Chart, nie Flächen.
    ===================================================================== */
@@ -439,10 +476,15 @@
   --mx: 50%;
   --my: 50%;
   --tilt: 0;
+  /* Lichtreflex-Farbe: im Weiß-Modus dunkel, im Schwarz-Modus hell */
+  --spotlight: rgba(0, 0, 0, 0.055);
   position: relative;
   overflow: hidden;
   /* Verlassen: smoother Reset zur Neutrallage */
   transition: transform 500ms var(--ease-out), box-shadow 500ms var(--ease-out);
+}
+.dark .tilt-card {
+  --spotlight: rgba(255, 255, 255, 0.16);
 }
 @media (hover: hover) and (pointer: fine) {
   .tilt-card {
@@ -450,7 +492,8 @@
       perspective(650px)
       rotateX(var(--rx))
       rotateY(var(--ry))
-      scale(calc(1 + 0.045 * var(--tilt)));
+      translateY(calc(-8px * var(--tilt)))
+      scale(calc(1 + 0.04 * var(--tilt)));
   }
   .tilt-card:hover {
     /* Folgen: schnell, damit die Karte an der Maus „klebt" */
@@ -471,7 +514,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle 260px at var(--mx) var(--my), rgba(255, 255, 255, 0.18), transparent 60%);
+    background: radial-gradient(circle 260px at var(--mx) var(--my), var(--spotlight), transparent 60%);
     opacity: var(--tilt);
     transition: opacity 250ms ease;
     pointer-events: none;
