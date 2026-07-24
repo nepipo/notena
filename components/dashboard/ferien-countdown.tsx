@@ -20,7 +20,7 @@ export async function FerienCountdown() {
     return (
       <Link
         href="/einstellungen"
-        className="lift animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
+        className="tilt-card animate-fade-up group relative overflow-hidden rounded-3xl border border-border p-5 transition-colors hover:border-brand/40"
         style={{ background: "var(--card-grad)", animationDelay: "0.3s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">
@@ -42,7 +42,7 @@ export async function FerienCountdown() {
     const tage = status.tagesBisEnde ?? 0;
     return (
       <div
-        className="lift animate-fade-up relative overflow-hidden rounded-3xl border-2 p-5"
+        className="tilt-card animate-fade-up relative overflow-hidden rounded-3xl border-2 p-5"
         style={{
           background: "var(--hero-grad)",
           borderColor: "color-mix(in srgb, var(--brand) 30%, transparent)",
@@ -69,7 +69,7 @@ export async function FerienCountdown() {
     const tage = status.tagesBisNaechste;
     return (
       <div
-        className="lift animate-fade-up relative overflow-hidden rounded-3xl border border-border p-5"
+        className="tilt-card animate-fade-up relative overflow-hidden rounded-3xl border border-border p-5"
         style={{ background: "var(--card-grad)", animationDelay: "0.3s" }}
       >
         <div className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-brand">

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const MAX_TILT = 11; // maximaler Neigungswinkel in Grad (kräftiger 3D-Effekt)
+const MAX_TILT = 10; // maximaler Neigungswinkel in Grad (kräftiger 3D-Effekt)
 
 /**
  * Aktiviert den 3D-Tilt + Cursor-Lichtreflex für alle `.tilt-card`-Elemente
